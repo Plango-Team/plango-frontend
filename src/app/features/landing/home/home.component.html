@@ -1,0 +1,29 @@
+Home Component HTML Template
+<div
+  class="min-h-screen flex flex-col items-center justify-center gap-8 p-8 transition-colors duration-300"
+>
+  <h1 class="text-4xl font-bold">Design System Test PlanGo 🎨</h1>
+
+  <div class="flex gap-4">
+    <button
+      (click)="toggleTheme()"
+      class="px-6 py-3 rounded-xl font-bold border-2 border-border bg-card text-card-foreground hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-all shadow-sm flex items-center gap-2"
+    >
+      {{ isDark() ? 'Light' : 'Dark' }}
+    </button>
+
+    <button
+      class="px-6 py-3 rounded-xl font-bold bg-primary-500 text-white hover:bg-primary-600 active:scale-95 transition-all shadow-sm"
+    >
+      Add new appointment
+    </button>
+  </div>
+
+  <div
+    class="mt-8 p-8 rounded-2xl bg-card border border-border shadow-sm max-w-md w-full text-center"
+  >
+    <h2 class="text-2xl font-bold text-primary-500 mb-2">Welcome, Basma</h2>
+    <p class="text-muted">Enjoy your experience with PlanGo!</p>
+    <app-icon [iconName]="'Handshake'" [iconSize]="40" [iconColor]="'#d32e18'"></app-icon>
+  </div>
+</div>
