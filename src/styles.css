@@ -1,3 +1,128 @@
-/* You can add global styles to this file, and also import other style files */
+/* 1. استدعاء Tailwind v4 */
+@import 'tailwindcss';
+@custom-variant dark (&:is(.dark *));
 
-@import "tailwindcss";
+/* 2. تعريف الخطوط (الـ Fonts) */
+@font-face {
+  font-family: 'Myriad Pro';
+  src: url('./assets/fonts/English/MYRIADPRO-REGULAR.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Myriad Pro';
+  src: url('./assets/fonts/English/MYRIADPRO-BOLD.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Myriad Arabic';
+  src: url('./assets/fonts/Arabic/MMSFONTMyriadArabicPhone-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  /* ده بيخلي الخط ده يشتغل بس مع الحروف العربية */
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+@font-face {
+  font-family: 'Myriad Arabic';
+  src: url('./assets/fonts/Arabic/MMSFONTMyriadArabic-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+/* 3. تعريف الـ Theme (بديل tailwind.config.js) */
+@theme {
+  /* WebsiteColors (Primary / Red) */
+  --color-primary-50: #fceae8;
+  --color-primary-100: #fad6d1;
+  --color-primary-200: #f5ada3;
+  --color-primary-300: #ef8476;
+  --color-primary-400: #ea5b48;
+  --color-primary-500: #d32e18; /* Buttons-color */
+  --color-primary-600: #b72815;
+  --color-primary-700: #891e10;
+  --color-primary-800: #5c140a;
+  --color-primary-900: #2e0a05;
+
+  /* Others (Accent / Orange) */
+  --color-accent-50: #fef4e7;
+  --color-accent-100: #fce9cf;
+  --color-accent-200: #f9d49f;
+  --color-accent-300: #f6be6f;
+  --color-accent-400: #f4a83e;
+  --color-accent-500: #f29c24;
+  --color-accent-600: #c1750b;
+  --color-accent-700: #905809;
+  --color-accent-800: #603b06;
+  --color-accent-900: #301d03;
+  --color-accent-950: #180f01;
+
+  /* Background (Neutral / Beige-Brown) */
+  --color-neutral-50: #f7f0ed;
+  --color-neutral-100: #f0e0db;
+  --color-neutral-200: #e0c1b8;
+  --color-neutral-300: #d1a294;
+  --color-neutral-400: #c18471;
+  --color-neutral-500: #e8d1ca;
+  --color-neutral-600: #8e513e;
+  --color-neutral-700: #6b3c2e;
+  --color-neutral-800: #47281f;
+  --color-neutral-900: #24140f;
+  --color-neutral-950: #120a08;
+
+  /* ربط ألوان الـ System المتغيرة (Light/Dark) */
+  --color-background: var(--bg-color);
+  --color-foreground: var(--fg-color);
+  --color-sidebar: var(--sidebar-bg); /* لون السايدبار */
+  --color-card: var(--card-bg); /* لون الكروت */
+  --color-muted: var(--muted-fg); /* لون النصوص الفرعية (باهتة) */
+  --color-border: var(--border-color); /* لون الفواصل والحدود */
+  --color-input: var(--input-bg); /* لون خلفية شريط البحث */
+
+  /* الخطوط */
+  --font-plango: 'Myriad Arabic', 'Myriad Pro', sans-serif;
+  --font-cairo: 'Cairo', sans-serif;
+}
+
+/* 4. التعامل مع الـ Light والـ Dark Mode */
+@layer base {
+  :root {
+    --bg-color: #ffffff;
+    --sidebar-bg: #ffffff;
+    --card-bg: #ffffff;
+
+    --fg-color: #170503;
+    --muted-fg: #8e513e;
+
+    --border-color: #e0c1b8;
+    --input-bg: #f0e0db;
+  }
+
+  .dark {
+    --bg-color: #120a08;
+    --sidebar-bg: #2e0a05;
+    --card-bg: #24140f;
+
+    --fg-color: #f7f0ed;
+    --muted-fg: #d1a294;
+    --border-color: #47281f;
+    --input-bg: #2e0a05;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-plango);
+    transition-property: color, background-color;
+    transition-duration: 300ms;
+    -webkit-font-smoothing: antialiased;
+  }
+}
