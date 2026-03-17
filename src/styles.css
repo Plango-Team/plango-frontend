@@ -1,4 +1,7 @@
 /* 1. استدعاء Tailwind v4 */
+@import "flowbite/src/themes/default"; /* استدعاء flowbite */
+@plugin "flowbite/plugin";
+@source "../node_modules/flowbite";
 @import 'tailwindcss';
 @custom-variant dark (&:is(.dark *));
 
