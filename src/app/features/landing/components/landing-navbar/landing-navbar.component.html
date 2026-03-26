@@ -1,0 +1,34 @@
+<nav class="bg-(--card-bg) px-20 fixed w-full z-20 top-0 inset-s-0 border-b border-(--bg-color) shadow">
+  <div class="max-w-7xl flex flex-wrap items-center justify-between mx-auto p-4">
+    <div class="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
+        <button type="button" class="btn-main-red">ابدأ الآن</button>
+        <button data-collapse-toggle="navbar-sticky" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-body rounded-base md:hidden hover:bg-neutral-secondary-soft hover:text-heading focus:outline-none focus:ring-2 focus:ring-neutral-tertiary" aria-controls="navbar-sticky" aria-expanded="false">
+            <span class="sr-only">Open main menu</span>
+            <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h14"/></svg>
+        </button>
+    </div>
+    <a routerLink="/" class="flex items-center space-x-3 rtl:space-x-reverse">
+        <img src="/images/PlanGoLogo.png"  class="dark:hidden h-10" alt="PlanGo Logo">
+        <img src="/images/PlanGoLogo-darkMode.png" class="hidden dark:block h-10" alt="PlanGo Logo">
+    </a>
+    <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
+      <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-border rounded-base md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0">
+        <li>
+          <a routerLink="/" fragment="why" class="block font-semibold text-2xl py-2 px-3 text-(--fg-color) transition-all duration-500 rounded-sm md:bg-transparent md:text-primary-500 md:p-0" aria-current="page">عن بلان جو</a>
+        </li>
+        <li>
+          <a routerLink="/" fragment="features" class="block font-semibold text-2xl py-2 px-3 text-(--fg-color) transition-all duration-500 rounded hover:bg-neutral-50 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 md:dark:hover:bg-transparent">المميزات</a>
+        </li>
+        <li>
+          <a routerLink="/" fragment="start" class="block font-semibold text-2xl py-2 px-3 text-(--fg-color) transition-all duration-500 rounded hover:bg-neutral-50 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 md:dark:hover:bg-transparent">كيف يعمل</a>
+        </li>
+        <li>
+          <a routerLink="/" fragment="subscribtion" class="block font-semibold text-2xl py-2 px-3 text-(--fg-color) transition-all duration-500 rounded hover:bg-neutral-50 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 md:dark:hover:bg-transparent">الأسعار</a>
+        </li>
+        <li>
+          <a routerLink="/" fragment="team" class="block font-semibold text-2xl py-2 px-3 text-(--fg-color) transition-all duration-500 rounded hover:bg-neutral-50 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 md:dark:hover:bg-transparent">الفريق</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

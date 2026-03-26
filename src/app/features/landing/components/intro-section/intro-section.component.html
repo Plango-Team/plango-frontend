@@ -1,0 +1,28 @@
+<section class="grid grid-cols-1 md:grid-cols-2 container mx-auto items-center min-h-screen">
+  <div class="flex flex-col gap-10">
+    <h1 class="flex flex-col text-7xl text-(--fg-color) font-bold leading-tight gap-2">
+      <span>خطّط بذكاء ،</span>
+      <span>و وفر مجهودك</span>
+      <span><span class="text-primary-500">و كن في الموعد </span>دائماً .</span>
+    </h1> 
+    <div>
+      <p class="text-(--muted-fg) font-medium mb-5 text-[20px]">
+      إتقان المواعيد النهائية (Deadlines) ، التحكم الكامل في جداولك اليومية ، إدارة وقت خروجك و تجمعاتك .
+      </p>
+      <div class="flex flex-col items-start gap-4">
+        <button class="btn-main-red rounded-md">ابدأ تجربتك المجانية</button>
+        <button class="btn-main-white rounded-md hover:scale-105">اكتشف المميزات</button>
+      </div>
+    </div>
+  </div>
+  <div class="relative">
+    <img src="/images/meeting.png" alt="Meeting" class="w-full p-12 h-auto animate-wiggle" [style.animation-play-state]="isTop ? 'running' : 'paused'">
+    <div class="absolute bottom-14 right-16 bg-(--card-bg) px-6 rounded-lg shadow-lg flex items-center justify-between gap-4">
+      <app-icon class="drop-shadow-lg drop-shadow-green-500 pt-2" [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'green'"></app-icon>
+      <div class="flex flex-col justify-center">
+        <span class="font-bold text-(--muted-fg)">موعد قادم :</span>
+        <span class="mb-1 font-bold text-xl text-(--fg-color)">اجتماع مع الفريق</span>
+      </div>
+    </div>
+  </div>
+</section>
