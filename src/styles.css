@@ -3,6 +3,7 @@
 @plugin "flowbite/plugin";
 @source "../node_modules/flowbite";
 @import 'tailwindcss';
+@import "aos/dist/aos.css";
 @custom-variant dark (&:is(.dark *));
 
 /* 2. تعريف الخطوط (الـ Fonts) */
@@ -89,6 +90,7 @@
   --color-muted: var(--muted-fg); /* لون النصوص الفرعية (باهتة) */
   --color-border: var(--border-color); /* لون الفواصل والحدود */
   --color-input: var(--input-bg); /* لون خلفية شريط البحث */
+  --shadow-main : 0 0 5px 5px var(--main-shadow-color);
 
   /* الخطوط */
   --font-plango: 'Myriad Arabic', 'Myriad Pro', sans-serif;
@@ -107,6 +109,7 @@
 
     --border-color: #e0c1b8;
     --input-bg: #f0e0db;
+    --main-shadow-color : #fad6d1 ;
   }
 
   .dark {
@@ -118,6 +121,7 @@
     --muted-fg: #d1a294;
     --border-color: #47281f;
     --input-bg: #2e0a05;
+    --main-shadow-color : #2e0a05 ;
   }
 
   body {
@@ -128,4 +132,12 @@
     transition-duration: 300ms;
     -webkit-font-smoothing: antialiased;
   }
+}
+@layer components {
+    .btn-main-red{
+      @apply text-neutral-50 cursor-pointer bg-primary-500 hover:bg-(--bg-color) hover:text-primary-500 box-border font-bold leading-5 rounded-3xl text-xl px-3 py-2 focus:outline-none transition-all duration-700 w-40
+    } 
+    .btn-main-white{
+      @apply text-primary-500 cursor-pointer bg-(--bg-color) hover:bg-primary-500 hover:text-neutral-50 box-border shadow-(--shadow-main) font-bold leading-5 rounded-3xl text-xl px-3 py-2 focus:outline-none transition-all duration-700 w-40
+    }
 }
