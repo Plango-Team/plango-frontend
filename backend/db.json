@@ -1,0 +1,32 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "email": "nader@plango.com",
+      "password": "123456",
+      "firstName": "Nader",
+      "lastName": "Mohamed",
+      "role": "user",
+      "preferences": {
+        "theme": "dark",
+        "language": "ar",
+        "preferredTransport": "car",
+        "defaultBufferTime": 15
+      }
+    },
+    {
+      "id": "2",
+      "email": "basma@plango.com",
+      "password": "123456",
+      "firstName": "Basma",
+      "lastName": "Gamal",
+      "role": "user",
+      "preferences": {
+        "theme": "dark",
+        "language": "ar",
+        "preferredTransport": "car",
+        "defaultBufferTime": 15
+      }
+    }
+  ]
+}

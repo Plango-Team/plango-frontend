@@ -5,11 +5,11 @@ import Aos from 'aos';
   providedIn: 'root',
 })
 export class AnimationService {
-  initAos(options? : Aos.AosOptions){
+  initAos(options?: Aos.AosOptions) {
     Aos.init({
-      duration : 700,
-      once : true,
-      easing : 'ease-in-out-cubic' 
-    })
+      duration: 700,
+      once: true,
+      easing: 'ease-in-out-cubic',
+    });
   }
 }

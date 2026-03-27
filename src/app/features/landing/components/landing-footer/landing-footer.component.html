@@ -1,52 +1,165 @@
-<section class="p-20 bg-primary-500 text-white">
-    <div class="grid grid-cols-4 gap-10">
-        <div>
-            <div class="pb-4 flex justify-center items-end gap-4 border-b border-white">
-               <img class="w-10" src="/images/PlanGoLogo-white.png" alt="PlanGo logo"/>
-               <p class="font-bold text-4xl">بلان جو</p>
-            </div>
-            <p class="mt-4 text-xl">نحن نؤمن بأن الوقت هو أغلي ما يملكه الإنسان، و لذلك نسعى لتوفير أفضل الأدوات لإدارته بكفاءة .</p>
-            <div class="mt-4 text-center">
-                <span class="mx-1 px-2 pt-3.5 pb-0.5 rounded-xl hover:bg-primary-600 transition-all duration-700 bg-primary-400 cursor-pointer"><app-icon [iconColor]="'white'" [iconName]="'Facebook02FreeIcons'"></app-icon></span>
-                <span class="mx-1 px-2 pt-3.5 pb-0.5 rounded-xl hover:bg-primary-600 transition-all duration-700 bg-primary-400 cursor-pointer"><app-icon [iconColor]="'white'" [iconName]="'GithubIcon'"></app-icon></span>
-                <span class="mx-1 px-2 pt-3.5 pb-0.5 rounded-xl hover:bg-primary-600 transition-all duration-700 bg-primary-400 cursor-pointer"><app-icon [iconColor]="'white'" [iconName]="'Linkedin02FreeIcons'"></app-icon></span>
-                <span class="mx-1 px-2 pt-3.5 pb-0.5 rounded-xl hover:bg-primary-600 transition-all duration-700 bg-primary-400 cursor-pointer"><app-icon [iconColor]="'white'" [iconName]="'NewTwitterIcon'"></app-icon></span>
-            </div>
-        </div>
-        <div>
-            <p class="text-center pb-4 font-bold text-4xl border-b border-white">روابط سريعة</p>
-            <div class="flex flex-col items-center mt-4 text-xl">
-                <a routerLink="/" fragment="why" class="cursor-pointer hover:scale-105 transition-all duration-700">عن بلان جو</a>
-                <a routerLink="/" fragment="features" class="cursor-pointer hover:scale-105 transition-all duration-700">المميزات</a>
-                <a routerLink="/" fragment="start" class="cursor-pointer hover:scale-105 transition-all duration-700">كيف يعمل</a>
-                <a routerLink="/" fragment="subscribtion" class="cursor-pointer hover:scale-105 transition-all duration-700">الأسعار</a>
-                <a routerLink="/" fragment="team" class="cursor-pointer hover:scale-105 transition-all duration-700">الفريق</a>
-            </div>
-        </div>
-        <div>
-            <p class="text-center pb-4 font-bold text-4xl border-b border-white">صفحات أساسية</p>
-            <div class="flex flex-col items-center mt-4 text-xl">
-                <a class="cursor-pointer hover:scale-105 transition-all duration-700">لوحة التحكم</a>
-                <a class="cursor-pointer hover:scale-105 transition-all duration-700">المواعيد</a>
-                <a class="cursor-pointer hover:scale-105 transition-all duration-700">التقويم</a>
-                <a class="cursor-pointer hover:scale-105 transition-all duration-700">الخريطة</a>
-                <a class="cursor-pointer hover:scale-105 transition-all duration-700">الفعاليات</a>
-            </div>
-        </div>
-        <div>
-            <p class="text-center pb-4 font-bold text-4xl border-b border-white">تواصل معنا</p>
-            <div class="flex flex-col items-center mt-4 text-xl">
-                <a class="cursor-pointer hover:scale-105 transition-all duration-700">تواصل مع الدعم</a>
-                <a class="cursor-pointer hover:scale-105 transition-all duration-700">الأسئلة الشائعة</a>
-                <a class="cursor-pointer hover:scale-105 transition-all duration-700">ساعدنا في التطوير</a>
-            </div>
-        </div>
+<section
+  class="relative bg-primary-500 text-white pt-16 pb-8 px-6 md:px-20 overflow-hidden"
+  dir="rtl"
+>
+  <div class="container mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+    <div
+      class="flex flex-col items-center sm:items-start text-center sm:text-right"
+      data-aos="fade-up"
+    >
+      <div
+        class="pb-4 flex items-center gap-3 border-b border-white/20 w-full justify-center sm:justify-start"
+      >
+        <img class="w-10 h-auto" src="/images/PlanGoLogo-white.png" alt="PlanGo logo" />
+        <h2 class="font-bold text-2xl md:text-3xl tracking-tight">بلان جو</h2>
+      </div>
+      <p class="mt-6 text-lg leading-relaxed opacity-90">
+        نحن نؤمن بأن الوقت هو أغلى ما يملكه الإنسان، ولذلك نسعى لتوفير أفضل الأدوات لإدارته بكفاءة
+        واحترافية.
+      </p>
+      <div class="mt-8 flex gap-3 justify-center sm:justify-start">
+        <a
+          href="#"
+          class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white hover:text-primary-600 transition-all duration-300"
+        >
+          <app-icon [iconName]="'Facebook02FreeIcons'"></app-icon>
+        </a>
+        <a
+          href="#"
+          class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white hover:text-primary-600 transition-all duration-300"
+        >
+          <app-icon [iconName]="'GithubIcon'"></app-icon>
+        </a>
+        <a
+          href="#"
+          class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white hover:text-primary-600 transition-all duration-300"
+        >
+          <app-icon [iconName]="'Linkedin02FreeIcons'"></app-icon>
+        </a>
+        <a
+          href="#"
+          class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white hover:text-primary-600 transition-all duration-300"
+        >
+          <app-icon [iconName]="'NewTwitterIcon'"></app-icon>
+        </a>
+      </div>
     </div>
-    <div class="text-center mt-10">
-        <p class="text-2xl">جميع الحقوق محفوظة لفريق بلان جو <span class="text-sm">&copy;2026</span></p>
-        <div class="flex justify-center gap-5 text-lg">
-            <span>سياسة الخصوصية</span>
-            <span>الشروط و الأحكام</span>
-        </div>
+
+    <div class="text-center sm:text-right" data-aos="fade-up" data-aos-delay="100">
+      <h3 class="pb-4 font-bold text-xl border-b border-white/20 mb-6">روابط سريعة</h3>
+      <ul class="space-y-4 text-lg">
+        <li>
+          <a
+            routerLink="/"
+            fragment="why"
+            class="opacity-80 hover:opacity-100 hover:pr-2 transition-all duration-300 cursor-pointer block"
+            >عن بلان جو</a
+          >
+        </li>
+        <li>
+          <a
+            routerLink="/"
+            fragment="features"
+            class="opacity-80 hover:opacity-100 hover:pr-2 transition-all duration-300 cursor-pointer block"
+            >المميزات</a
+          >
+        </li>
+        <li>
+          <a
+            routerLink="/"
+            fragment="start"
+            class="opacity-80 hover:opacity-100 hover:pr-2 transition-all duration-300 cursor-pointer block"
+            >كيف يعمل</a
+          >
+        </li>
+        <li>
+          <a
+            routerLink="/"
+            fragment="subscribtion"
+            class="opacity-80 hover:opacity-100 hover:pr-2 transition-all duration-300 cursor-pointer block"
+            >الأسعار</a
+          >
+        </li>
+        <li>
+          <a
+            routerLink="/"
+            fragment="team"
+            class="opacity-80 hover:opacity-100 hover:pr-2 transition-all duration-300 cursor-pointer block"
+            >الفريق</a
+          >
+        </li>
+      </ul>
     </div>
+
+    <div class="text-center sm:text-right" data-aos="fade-up" data-aos-delay="200">
+      <h3 class="pb-4 font-bold text-xl border-b border-white/20 mb-6">صفحات أساسية</h3>
+      <ul class="space-y-4 text-lg">
+        <li>
+          <a
+            routerLink="/dashboard"
+            class="opacity-80 hover:opacity-100 hover:pr-2 transition-all duration-300 cursor-pointer block"
+            >لوحة التحكم</a
+          >
+        </li>
+        <li>
+          <a
+            class="opacity-80 hover:opacity-100 hover:pr-2 transition-all duration-300 cursor-pointer block"
+            >المواعيد</a
+          >
+        </li>
+        <li>
+          <a
+            class="opacity-80 hover:opacity-100 hover:pr-2 transition-all duration-300 cursor-pointer block"
+            >التقويم</a
+          >
+        </li>
+        <li>
+          <a
+            class="opacity-80 hover:opacity-100 hover:pr-2 transition-all duration-300 cursor-pointer block"
+            >الخريطة</a
+          >
+        </li>
+        <li>
+          <a
+            class="opacity-80 hover:opacity-100 hover:pr-2 transition-all duration-300 cursor-pointer block"
+            >الفعاليات</a
+          >
+        </li>
+      </ul>
+    </div>
+
+    <div class="text-center sm:text-right" data-aos="fade-up" data-aos-delay="300">
+      <h3 class="pb-4 font-bold text-xl border-b border-white/20 mb-6">تواصل معنا</h3>
+      <ul class="space-y-4 text-lg">
+        <li>
+          <a
+            class="opacity-80 hover:opacity-100 hover:pr-2 transition-all duration-300 cursor-pointer block"
+            >تواصل مع الدعم</a
+          >
+        </li>
+        <li>
+          <a
+            class="opacity-80 hover:opacity-100 hover:pr-2 transition-all duration-300 cursor-pointer block"
+            >الأسئلة الشائعة</a
+          >
+        </li>
+        <li>
+          <a
+            class="opacity-80 hover:opacity-100 hover:pr-2 transition-all duration-300 cursor-pointer block"
+            >ساعدنا في التطوير</a
+          >
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="border-t border-white/10 mt-16 pt-8 text-center">
+    <p class="text-lg opacity-90 mb-4">
+      جميع الحقوق محفوظة لفريق <span class="font-bold">بلان جو</span> &copy; 2026
+    </p>
+    <div class="flex justify-center gap-8 text-sm opacity-70">
+      <a href="#" class="hover:underline">سياسة الخصوصية</a>
+      <a href="#" class="hover:underline">الشروط والأحكام</a>
+    </div>
+  </div>
 </section>

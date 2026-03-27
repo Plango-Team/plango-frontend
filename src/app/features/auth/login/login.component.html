@@ -1,0 +1,128 @@
+<div
+  class="min-h-screen flex items-center justify-center p-4 bg-(--bg-color) transition-colors duration-300"
+  dir="rtl"
+>
+  <div
+    class="w-full max-w-3xl rounded-2xl p-8 md:p-16 relative min-h-[600px] flex flex-col justify-center items-center"
+  >
+    <app-icon
+      routerLink="/"
+      class="absolute top-8 right-8 text-(--muted-fg) hover:text-primary-500 transition-colors cursor-pointer"
+      aria-label="إغلاق"
+      [iconName]="'ArrowRight01Icon'"
+      [iconSize]="40"
+      [iconColor]="themeService.isDark() ? '#d1a294' : '#99a1af'"
+    ></app-icon>
+
+    <div class="text-center mb-12">
+      <h1 class="text-4xl md:text-5xl font-extrabold text-(--fg-color) mb-4">مرحباً بعودتك</h1>
+      <p class="text-lg md:text-xl text-(--muted-fg) font-medium italic">
+        خطوات قليلة وتسيطر على يومك!
+      </p>
+    </div>
+
+    @if (authStore.error()) {
+      <div
+        class="w-full max-w-md mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-center font-medium animate-shake"
+      >
+        {{ authStore.error() }}
+      </div>
+    }
+
+    <form [formRoot]="loginForm" class="w-full max-w-md mx-auto">
+      <div class="mb-5">
+        <label for="email" class="sr-only">البريد الإلكتروني</label>
+        <input
+          type="email"
+          id="email"
+          [formField]="loginForm.email"
+          class="bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-lg rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 block w-full px-4 py-4 placeholder:text-(--muted-fg) outline-none transition-all disabled:opacity-50"
+          placeholder="البريد الإلكتروني"
+        />
+
+        @if (loginForm.email().errors() && loginForm.email().touched()) {
+          <div
+            class="text-primary-500 text-sm mt-2 font-medium text-right animate-in fade-in slide-in-from-top-1"
+          >
+            @for (error of loginForm.email().errors(); track error) {
+              @if (error.kind === 'required') {
+                <p>يرجى إدخال البريد الإلكتروني للبدء.</p>
+              }
+              @if (error.kind === 'email') {
+                <p>تنسيق البريد الإلكتروني غير صحيح.</p>
+              }
+            }
+          </div>
+        }
+      </div>
+
+      <div class="mb-8">
+        <label for="password" class="sr-only">كلمة المرور</label>
+        <input
+          type="password"
+          id="password"
+          [formField]="loginForm.password"
+          class="bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-lg rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 block w-full px-4 py-4 placeholder:text-(--muted-fg) outline-none transition-all disabled:opacity-50"
+          placeholder="كلمة المرور"
+        />
+
+        @if (loginForm.password().errors() && loginForm.password().touched()) {
+          <div
+            class="text-primary-500 text-sm mt-2 font-medium text-right animate-in fade-in slide-in-from-top-1"
+          >
+            @for (error of loginForm.password().errors(); track error) {
+              @if (error.kind === 'required') {
+                <p>يرجى إدخال كلمة المرور.</p>
+              }
+              @if (error.kind === 'minLength') {
+                <p>كلمة المرور قصيرة جداً.</p>
+              }
+            }
+          </div>
+        }
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="!loginForm().valid() || authStore.isLoading()"
+        class="text-white bg-primary-500 hover:bg-primary-600 focus:ring-4 focus:ring-primary-200 font-bold rounded-xl text-xl w-full px-5 py-4 flex justify-center items-center gap-3 transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-primary-500/20 active:scale-[0.98]"
+      >
+        @if (authStore.isLoading()) {
+          <svg class="animate-spin h-6 w-6 text-white" viewBox="0 0 24 24">
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+              fill="none"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          <span>جاري الدخول...</span>
+        } @else {
+          <span>تسجيل دخول</span>
+        }
+      </button>
+
+      <div class="mt-10 text-center space-y-3">
+        <a
+          href="#"
+          class="block text-(--muted-fg) font-medium hover:text-primary-500 transition-colors"
+          >نسيت كلمة المرور؟</a
+        >
+        <p class="text-(--muted-fg) font-medium">
+          ليس لديك حساب؟
+          <a routerLink="/auth/signup" class="text-primary-500 font-bold hover:underline"
+            >إنشاء حساب</a
+          >
+        </p>
+      </div>
+    </form>
+  </div>
+</div>

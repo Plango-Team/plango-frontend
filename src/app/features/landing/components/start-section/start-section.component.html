@@ -1,52 +1,136 @@
-<section class="py-14 px-20 bg-[#D32E180A]">
-    <div class="container grid grid-cols-1 md:grid-cols-2 mx-auto items-center">
-     <div class="flex flex-col gap-5">
-        <h2 class="text-6xl  font-bold my-0">
-        <p>ابدأ رحلتك نحو</p>
-        <p>تنظيم أفضل</p>
+<section
+  id="start"
+  class="relative w-full min-h-[calc(100vh-80px)] flex items-center py-20 bg-primary-500/[0.03] overflow-hidden"
+  dir="rtl"
+>
+  <div class="container mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+    <div class="flex flex-col gap-10 order-2 lg:order-1">
+      <div class="mb-4" data-aos="fade-left">
+        <h2 class="text-4xl md:text-5xl lg:text-6xl text-(--fg-color) font-extrabold leading-tight">
+          ابدأ رحلتك نحو <br />
+          <span class="text-primary-500">تنظيم أفضل</span>
         </h2>
-        <div class="flex items-center gap-5 relative">
-            <app-icon class="p-4 pb-1.5 rounded-2xl shadow-(--shadow-main) bg-(--card-bg)" [iconName]="'UserAdd01FreeIcons'" [iconSize]="30" [iconColor]="'#d32e18'"></app-icon>
-            <div class="absolute inline-flex items-center justify-center w-6 h-6 text-sm font-bold text-(--bg-color) bg-primary-600 border-2 border-transparent rounded-full -top-2 -inset-s-2">1</div>
-            <div>
-                <p class="text-(--fg-color) font-semibold text-3xl">أنشئ حسابك</p>
-                <span class="text-(--muted-fg) text-[20px]">سجل حسابك في ثوانٍ معدودة و ابدأ في استكشاف الإمكانيات .</span>
+      </div>
+
+      <div class="flex flex-col gap-8 md:gap-10">
+        <div class="flex items-center gap-6 relative group" data-aos="fade-up" data-aos-delay="100">
+          <div class="relative">
+            <app-icon
+              class="flex p-4 bg-(--card-bg) rounded-2xl shadow-(--shadow-main) border border-primary-500/10"
+              [iconName]="'UserAdd01FreeIcons'"
+              [iconSize]="32"
+              [iconColor]="'#d32e18'"
+            ></app-icon>
+            <div
+              class="absolute -top-3 -right-3 w-7 h-7 flex items-center justify-center bg-primary-600 text-(--bg-color) text-sm font-bold rounded-full shadow-lg border-2 border-(--bg-color)"
+            >
+              1
             </div>
+          </div>
+          <div>
+            <h3 class="text-(--fg-color) font-bold text-2xl md:text-3xl">أنشئ حسابك</h3>
+            <p class="text-(--muted-fg) text-lg md:text-xl max-w-sm">
+              سجل حسابك في ثوانٍ معدودة وابدأ في استكشاف الإمكانيات.
+            </p>
+          </div>
         </div>
-        <div class="flex items-center gap-5 relative">
-            <app-icon class="p-4 pb-1.5 rounded-2xl shadow-(--shadow-main) bg-(--card-bg)" [iconName]="'PlusMinusSquare01Icon'" [iconSize]="30" [iconColor]="'#d32e18'"></app-icon>
-            <div class="absolute inline-flex items-center justify-center w-6 h-6 text-sm font-bold text-(--bg-color) bg-primary-600 border-2 border-transparent rounded-full -top-2 -inset-s-2">2</div>
-            <div>
-                <p class="text-(--fg-color) font-semibold text-3xl">أضف مواعيدك</p>
-                <span class="text-(--muted-fg) text-[20px]">حدد مواعيدك، مهامك، و مواقعك الجغرافية بسهولة .</span>
+
+        <div class="flex items-center gap-6 relative group" data-aos="fade-up" data-aos-delay="200">
+          <div class="relative">
+            <app-icon
+              class="flex p-4 bg-(--card-bg) rounded-2xl shadow-(--shadow-main) border border-primary-500/10"
+              [iconName]="'PlusMinusSquare01Icon'"
+              [iconSize]="32"
+              [iconColor]="'#d32e18'"
+            ></app-icon>
+            <div
+              class="absolute -top-3 -right-3 w-7 h-7 flex items-center justify-center bg-primary-600 text-(--bg-color) text-sm font-bold rounded-full shadow-lg border-2 border-(--bg-color)"
+            >
+              2
             </div>
+          </div>
+          <div>
+            <h3 class="text-(--fg-color) font-bold text-2xl md:text-3xl">أضف مواعيدك</h3>
+            <p class="text-(--muted-fg) text-lg md:text-xl max-w-sm">
+              حدد مواعيدك، مهامك، ومواقعك الجغرافية بكل سهولة.
+            </p>
+          </div>
         </div>
-        <div class="flex items-center gap-5 relative">
-            <app-icon class="p-4 pb-1.5 rounded-2xl shadow-(--shadow-main) bg-(--card-bg)" [iconName]="'AlarmClockFreeIcons'" [iconSize]="30" [iconColor]="'#d32e18'"></app-icon>
-            <div class="absolute inline-flex items-center justify-center w-6 h-6 text-sm font-bold text-(--bg-color) bg-primary-600 border-2 border-transparent rounded-full -top-2 -inset-s-2">3</div>
-            <div>
-                <p class="text-(--fg-color) font-semibold text-3xl">احصل على تنبيهات</p>
-                <span class="text-(--muted-fg) text-[20px]">سنقوم بتذكيرك قبل الموعد ب 30 دقيقة لنضمن جهوزيتك .</span>
+
+        <div class="flex items-center gap-6 relative group" data-aos="fade-up" data-aos-delay="300">
+          <div class="relative">
+            <app-icon
+              class="flex p-4 bg-(--card-bg) rounded-2xl shadow-(--shadow-main) border border-primary-500/10"
+              [iconName]="'AlarmClockFreeIcons'"
+              [iconSize]="32"
+              [iconColor]="'#d32e18'"
+            ></app-icon>
+            <div
+              class="absolute -top-3 -right-3 w-7 h-7 flex items-center justify-center bg-primary-600 text-(--bg-color) text-sm font-bold rounded-full shadow-lg border-2 border-(--bg-color)"
+            >
+              3
             </div>
+          </div>
+          <div>
+            <h3 class="text-(--fg-color) font-bold text-2xl md:text-3xl">احصل على تنبيهات</h3>
+            <p class="text-(--muted-fg) text-lg md:text-xl max-w-sm">
+              سنقوم بتذكيرك قبل الموعد بـ 30 دقيقة لنضمن جهوزيتك.
+            </p>
+          </div>
         </div>
-        <div class="flex items-center gap-5 relative">
-            <app-icon class="p-4 pb-1.5 rounded-2xl shadow-(--shadow-main) bg-(--card-bg)" [iconName]="'Flag02FreeIcons'" [iconSize]="30" [iconColor]="'#d32e18'"></app-icon>
-            <div class="absolute inline-flex items-center justify-center w-6 h-6 text-sm font-bold text-(--bg-color) bg-primary-600 border-2 border-transparent rounded-full -top-2 -inset-s-2">4</div>
-            <div>
-                <p class="text-(--fg-color) font-semibold text-3xl">وصلت في الموعد</p>
-                <span class="text-(--muted-fg) text-[20px]">استخدم الخريطة للوصول لهدفك و كن دائماً الشخص المنظم .</span>
+
+        <div class="flex items-center gap-6 relative group" data-aos="fade-up" data-aos-delay="400">
+          <div class="relative">
+            <app-icon
+              class="flex p-4 bg-(--card-bg) rounded-2xl shadow-(--shadow-main) border border-primary-500/10"
+              [iconName]="'Flag02FreeIcons'"
+              [iconSize]="32"
+              [iconColor]="'#d32e18'"
+            ></app-icon>
+            <div
+              class="absolute -top-3 -right-3 w-7 h-7 flex items-center justify-center bg-primary-600 text-(--bg-color) text-sm font-bold rounded-full shadow-lg border-2 border-(--bg-color)"
+            >
+              4
             </div>
+          </div>
+          <div>
+            <h3 class="text-(--fg-color) font-bold text-2xl md:text-3xl">وصلت في الموعد</h3>
+            <p class="text-(--muted-fg) text-lg md:text-xl max-w-sm">
+              استخدم الخريطة للوصول لهدفك وكن دائماً الشخص المنظم.
+            </p>
+          </div>
         </div>
-     </div>
-     <div class="flex justify-center items-center">
-        <div class="relative h-96 w-96 rounded-full border-12 border-primary-500 bg-(--bg-color) flex flex-col justify-center items-center 
-        left-circle right-circle" data-aos="zoom-in" data-aos-delay="100">
-            <div class="small-circle p-2.5 pb-0 text-center absolute top-[25%] bg-[#D32E181C] rounded-full">               
-               <app-icon [iconName]="'Flag02FreeIcons'" [iconSize]="50" [iconColor]="'#d32e18'"></app-icon>
-            </div>
-            <p class="absolute top-[50%] font-bold text-(--fg-color) text-3xl">تهانينا !</p>
-            <p class="absolute top-[63%] text-lg font-semibold text-(--muted-fg)">لقد وصلت في الموعد المحدد تماماً</p>
-        </div>
+      </div>
     </div>
+
+    <div class="flex justify-center items-center order-1 lg:order-2">
+      <div
+        class="relative w-72 h-72 md:w-[450px] md:h-[450px] rounded-full border-[10px] md:border-[16px] border-primary-500 bg-(--bg-color) flex flex-col justify-center items-center shadow-2xl transition-transform hover:scale-105 duration-700"
+        data-aos="zoom-in"
+      >
+        <div
+          class="absolute inset-0 rounded-full shadow-[0_0_60px_rgba(211,46,24,0.15)] animate-pulse"
+        ></div>
+
+        <div class="mb-6 p-4 md:p-6 bg-primary-500/10 rounded-full animate-bounce">
+          <app-icon
+            [iconName]="'Flag02FreeIcons'"
+            [iconSize]="60"
+            [iconColor]="'#d32e18'"
+          ></app-icon>
+        </div>
+
+        <h4 class="font-extrabold text-(--fg-color) text-3xl md:text-5xl mb-2">تهانينا!</h4>
+        <p class="text-sm md:text-xl font-bold text-(--muted-fg) px-8 text-center leading-relaxed">
+          لقد وصلت في الموعد <br class="hidden md:block" />
+          المحدد تماماً
+        </p>
+
+        <div class="absolute -top-4 -left-4 w-8 h-8 bg-accent-500 rounded-full animate-ping"></div>
+        <div
+          class="absolute bottom-10 -right-2 w-6 h-6 bg-primary-300 rounded-full opacity-50"
+        ></div>
+      </div>
     </div>
+  </div>
 </section>
