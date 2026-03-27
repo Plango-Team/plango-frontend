@@ -1,77 +1,127 @@
-<section class="px-20 pt-14 min-h-screen">
-    <h2 class="text-7xl text-(--fg-color) font-bold text-center my-0">اشترك لمزيد من الميزات !</h2>
-    <div class="container grid grid-cols-1 md:grid-cols-3 mx-auto items-center gap-4 mt-16">
-        <div class="border bg-(--card-bg) border-(--border-color) py-3 px-5 h-72 rounded-2xl">
-            <p class="text-(--fg-color) font-bold text-3xl">مجاني</p>
-            <p class="text-(--fg-color) border-b border-(--border-color) py-2">0 ج</p>
-            <div class="flex flex-col justify-between h-40 mt-5">
-                <div>
-                    <div class="flex items-center gap-2">
-                    <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
-                    <span class="text-xl text-(--muted-fg)">يوجد إعلانات</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                    <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
-                    <span class="text-xl text-(--muted-fg)">عدد محدود من المواعيد</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                    <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
-                    <span class="text-xl text-(--muted-fg)">متابعة على الخريطة</span>
-                    </div>
-                </div>
-                <button class="btn-main-red w-full">اشتراك</button>
-            </div>
-        </div>
-        <div class="relative bg-(--card-bg) pulse border-2 border-primary-500 py-3 px-5 h-80 rounded-2xl"> 
-            <div class="absolute inline-flex items-center justify-center w-16 h-6 text-sm font-bold text-(--bg-color) bg-primary-500 border-2 border-transparent rounded-2xl top-5 inset-e-14">الأكثر شهرة</div>
-            <p class="text-(--fg-color) font-bold text-3xl">مميز</p>
-            <p class="text-(--fg-color) border-b border-(--border-color) py-2">200 ج</p>
-            <div class="flex flex-col justify-between h-48 mt-5">
-                <div>
-                    <div class="flex items-center gap-2">
-                    <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
-                    <span class="text-xl text-(--muted-fg)">بدون إعلانات</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                    <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
-                    <span class="text-xl text-(--muted-fg)">إضافة مواعيد بلا حدود</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                    <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
-                    <span class="text-xl text-(--muted-fg)">تنبؤ بوقت الخروج</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                    <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
-                    <span class="text-xl text-(--muted-fg)">تقارير شهرية بمواعيدك</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                    <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
-                    <span class="text-xl text-(--muted-fg)">دعوة الأصدقاء</span>
-                    </div>
-                </div>
-                <button class="btn-main-red w-full">اشتراك</button>
-            </div>
-        </div>
-        <div class="border bg-(--card-bg) border-(--border-color) py-3 px-5 h-72 rounded-2xl">
-            <p class="text-(--fg-color) font-bold text-3xl">عمل</p>
-            <p class="text-(--fg-color) border-b border-(--border-color) py-2">500 ج</p>
-            <div class="flex flex-col justify-between h-40 mt-5">
-                <div>
-                    <div class="flex items-center gap-2">
-                    <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
-                    <span class="text-xl text-(--muted-fg)">جميع ميزات "المميز"</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                    <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
-                    <span class="text-xl text-(--muted-fg)">إدارة و تنظيم الفعاليات</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                    <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
-                    <span class="text-xl text-(--muted-fg)">التحكم في قائمة المدعويين للفعاليات</span>
-                    </div>
-                </div>
-                <button class="btn-main-red w-full">اشتراك</button>
-            </div>
-        </div>
+<section
+  id="subscribtion"
+  class="relative w-full min-h-[calc(100vh-80px)] flex items-center py-20 bg-(--bg-color) overflow-hidden"
+  dir="rtl"
+>
+  <div class="container mx-auto px-6 md:px-12">
+    <div class="text-center mb-16" data-aos="fade-down">
+      <h2 class="text-4xl md:text-5xl lg:text-6xl text-(--fg-color) font-extrabold mb-4">
+        اشترك لمزيد من <span class="text-primary-500">الميزات!</span>
+      </h2>
+      <p class="text-(--muted-fg) text-lg md:text-xl font-medium">
+        اختر الخطة المناسبة لاحتياجاتك وابدأ التنظيم اليوم.
+      </p>
     </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10 items-stretch max-w-6xl mx-auto">
+      <div
+        class="flex flex-col p-8 rounded-3xl bg-(--card-bg) border border-(--border-color) shadow-sm transition-all duration-300 hover:shadow-xl"
+        data-aos="fade-up"
+        data-aos-delay="100"
+      >
+        <h3 class="text-(--fg-color) font-bold text-2xl mb-2">مجاني</h3>
+        <div class="flex items-baseline gap-1 border-b border-(--border-color) pb-6 mb-6">
+          <span class="text-4xl font-extrabold text-(--fg-color)">0</span>
+          <span class="text-(--muted-fg) font-bold">ج.م/شهرياً</span>
+        </div>
+
+        <ul class="flex-grow space-y-4 mb-8">
+          <li class="flex items-center gap-3">
+            <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
+            <span class="text-lg text-(--muted-fg)">يوجد إعلانات</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
+            <span class="text-lg text-(--muted-fg)">عدد محدود من المواعيد</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
+            <span class="text-lg text-(--muted-fg)">متابعة على الخريطة</span>
+          </li>
+        </ul>
+
+        <button
+          class="btn-main-white w-full border border-primary-500 !rounded-xl transition-transform active:scale-95"
+        >
+          ابدأ الآن
+        </button>
+      </div>
+
+      <div
+        class="relative flex flex-col p-8 rounded-3xl bg-(--card-bg) border-2 border-primary-500 shadow-2xl scale-105 z-10"
+        data-aos="zoom-in"
+        data-aos-delay="200"
+      >
+        <div
+          class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg"
+        >
+          الأكثر شهرة
+        </div>
+
+        <h3 class="text-(--fg-color) font-bold text-2xl mb-2">مميز</h3>
+        <div class="flex items-baseline gap-1 border-b border-(--border-color) pb-6 mb-6">
+          <span class="text-4xl font-extrabold text-primary-500">200</span>
+          <span class="text-(--muted-fg) font-bold">ج.م/شهرياً</span>
+        </div>
+
+        <ul class="flex-grow space-y-4 mb-8">
+          <li class="flex items-center gap-3">
+            <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
+            <span class="text-lg text-(--fg-color) font-semibold">بدون إعلانات</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
+            <span class="text-lg text-(--fg-color) font-semibold">إضافة مواعيد بلا حدود</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
+            <span class="text-lg text-(--fg-color) font-semibold">تنبؤ بوقت الخروج</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
+            <span class="text-lg text-(--fg-color) font-semibold">تقارير شهرية ذكية</span>
+          </li>
+        </ul>
+
+        <button
+          class="btn-main-red w-full !rounded-xl shadow-lg shadow-primary-500/30 transition-transform active:scale-95"
+        >
+          اشترك الآن
+        </button>
+      </div>
+
+      <div
+        class="flex flex-col p-8 rounded-3xl bg-(--card-bg) border border-(--border-color) shadow-sm transition-all duration-300 hover:shadow-xl"
+        data-aos="fade-up"
+        data-aos-delay="300"
+      >
+        <h3 class="text-(--fg-color) font-bold text-2xl mb-2">عمل</h3>
+        <div class="flex items-baseline gap-1 border-b border-(--border-color) pb-6 mb-6">
+          <span class="text-4xl font-extrabold text-(--fg-color)">500</span>
+          <span class="text-(--muted-fg) font-bold">ج.م/شهرياً</span>
+        </div>
+
+        <ul class="flex-grow space-y-4 mb-8">
+          <li class="flex items-center gap-3">
+            <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
+            <span class="text-lg text-(--muted-fg)">جميع ميزات "المميز"</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
+            <span class="text-lg text-(--muted-fg)">إدارة و تنظيم الفعاليات</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <app-icon [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
+            <span class="text-lg text-(--muted-fg)">التحكم في قائمة المدعوين</span>
+          </li>
+        </ul>
+
+        <button
+          class="btn-main-white w-full border border-primary-500 !rounded-xl transition-transform active:scale-95"
+        >
+          تواصل معنا
+        </button>
+      </div>
+    </div>
+  </div>
 </section>

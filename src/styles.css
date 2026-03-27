@@ -1,10 +1,8 @@
-/* 1. استدعاء Tailwind v4 */
-@import "flowbite/src/themes/default"; /* استدعاء flowbite */
+/* 1. استدعاء Tailwind v4 و Flowbite */
+@import 'tailwindcss';
+@import 'aos/dist/aos.css';
 @plugin "flowbite/plugin";
 @source "../node_modules/flowbite";
-@import 'tailwindcss';
-@import "aos/dist/aos.css";
-@custom-variant dark (&:is(.dark *));
 
 /* 2. تعريف الخطوط (الـ Fonts) */
 @font-face {
@@ -29,7 +27,6 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
-  /* ده بيخلي الخط ده يشتغل بس مع الحروف العربية */
   unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
 }
 
@@ -42,102 +39,151 @@
   unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
 }
 
-/* 3. تعريف الـ Theme (بديل tailwind.config.js) */
+/* 3. تعريف الـ Theme (Tailwind v4 Config) */
 @theme {
-  /* WebsiteColors (Primary / Red) */
+  /* Website Colors (Plan Go Primary Red) */
   --color-primary-50: #fceae8;
   --color-primary-100: #fad6d1;
   --color-primary-200: #f5ada3;
   --color-primary-300: #ef8476;
   --color-primary-400: #ea5b48;
-  --color-primary-500: #d32e18; /* Buttons-color */
+  --color-primary-500: #d32e18; /* Main Brand Color */
   --color-primary-600: #b72815;
   --color-primary-700: #891e10;
-  --color-primary-800: #5c140a;
-  --color-primary-900: #2e0a05;
+  --shadow-main: 0 4px 15px 0 var(--main-shadow-color);
 
-  /* Others (Accent / Orange) */
-  --color-accent-50: #fef4e7;
-  --color-accent-100: #fce9cf;
-  --color-accent-200: #f9d49f;
-  --color-accent-300: #f6be6f;
-  --color-accent-400: #f4a83e;
-  --color-accent-500: #f29c24;
-  --color-accent-600: #c1750b;
-  --color-accent-700: #905809;
-  --color-accent-800: #603b06;
-  --color-accent-900: #301d03;
-  --color-accent-950: #180f01;
-
-  /* Background (Neutral / Beige-Brown) */
-  --color-neutral-50: #f7f0ed;
-  --color-neutral-100: #f0e0db;
-  --color-neutral-200: #e0c1b8;
-  --color-neutral-300: #d1a294;
-  --color-neutral-400: #c18471;
-  --color-neutral-500: #e8d1ca;
-  --color-neutral-600: #8e513e;
-  --color-neutral-700: #6b3c2e;
-  --color-neutral-800: #47281f;
-  --color-neutral-900: #24140f;
-  --color-neutral-950: #120a08;
-
-  /* ربط ألوان الـ System المتغيرة (Light/Dark) */
+  /* ربط المتغيرات الديناميكية */
   --color-background: var(--bg-color);
   --color-foreground: var(--fg-color);
-  --color-sidebar: var(--sidebar-bg); /* لون السايدبار */
-  --color-card: var(--card-bg); /* لون الكروت */
-  --color-muted: var(--muted-fg); /* لون النصوص الفرعية (باهتة) */
-  --color-border: var(--border-color); /* لون الفواصل والحدود */
-  --color-input: var(--input-bg); /* لون خلفية شريط البحث */
-  --shadow-main : 0 0 5px 5px var(--main-shadow-color);
+  --color-card: var(--card-bg);
+  --color-border: var(--border-color);
+  --color-input: var(--input-bg);
+  --color-muted: var(--muted-fg);
 
   /* الخطوط */
   --font-plango: 'Myriad Arabic', 'Myriad Pro', sans-serif;
-  --font-cairo: 'Cairo', sans-serif;
+
+  /* أنيميشن مخصص */
+  --animate-wiggle: wiggle 3s ease-in-out infinite;
+  --animate-bounce-slow: bounce 3s infinite;
+
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(-3deg);
+    }
+    50% {
+      transform: rotate(3deg);
+    }
+  }
 }
 
-/* 4. التعامل مع الـ Light والـ Dark Mode */
+/* 4. إعدادات الـ Base والـ Dark Mode */
 @layer base {
   :root {
     --bg-color: #ffffff;
-    --sidebar-bg: #ffffff;
-    --card-bg: #ffffff;
-
+    --card-bg: #fdfaf9;
     --fg-color: #170503;
     --muted-fg: #8e513e;
-
     --border-color: #e0c1b8;
-    --input-bg: #f0e0db;
-    --main-shadow-color : #fad6d1 ;
+    --input-bg: #f7f0ed;
+    --main-shadow-color: rgba(211, 46, 24, 0.1);
   }
 
   .dark {
     --bg-color: #120a08;
-    --sidebar-bg: #2e0a05;
-    --card-bg: #24140f;
-
+    --card-bg: #1c1412;
     --fg-color: #f7f0ed;
     --muted-fg: #d1a294;
-    --border-color: #47281f;
-    --input-bg: #2e0a05;
-    --main-shadow-color : #2e0a05 ;
+    --border-color: #3f2f2c;
+    --input-bg: #24140f;
+    --main-shadow-color: rgba(0, 0, 0, 0.4);
   }
 
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
+    background-color: var(--bg-color);
+    color: var(--fg-color);
     font-family: var(--font-plango);
-    transition-property: color, background-color;
-    transition-duration: 300ms;
+    transition:
+      background-color 0.5s ease,
+      color 0.5s ease;
     -webkit-font-smoothing: antialiased;
   }
 }
+
+/* 5. المكونات (Components Layer) */
 @layer components {
-    .btn-main-red{
-      @apply text-neutral-50 cursor-pointer bg-primary-500 hover:bg-(--bg-color) hover:text-primary-500 box-border font-bold leading-5 rounded-3xl text-xl px-3 py-2 focus:outline-none transition-all duration-700 w-40
-    } 
-    .btn-main-white{
-      @apply text-primary-500 cursor-pointer bg-(--bg-color) hover:bg-primary-500 hover:text-neutral-50 box-border shadow-(--shadow-main) font-bold leading-5 rounded-3xl text-xl px-3 py-2 focus:outline-none transition-all duration-700 w-40
-    }
+  /* الزراير الرئيسية */
+  .btn-main-red {
+    @apply relative flex items-center justify-center bg-primary-500 text-white font-bold rounded-2xl px-6 py-3 transition-all duration-300 hover:bg-primary-600 hover:-translate-y-1 active:scale-95 shadow-lg shadow-primary-500/20 cursor-pointer overflow-hidden;
+  }
+
+  .btn-main-white {
+    @apply relative flex items-center justify-center bg-(--bg-color) text-primary-500 border-2 border-primary-500 font-bold rounded-2xl px-6 py-3 transition-all duration-300 hover:bg-primary-500 hover:text-white hover:-translate-y-1 active:scale-95 cursor-pointer;
+  }
+
+  /* لينكات النافبار */
+  .nav-link {
+    @apply relative font-bold text-xl px-2 py-1 text-(--fg-color) opacity-80 transition-all duration-300 cursor-pointer hover:opacity-100 hover:text-primary-500;
+  }
+
+  .nav-link.active {
+    @apply opacity-100 text-primary-500;
+  }
+
+
+
+  .nav-link.active::after {
+    @apply w-full;
+  }
+
+  /* ستايل المدخلات (Auth Inputs) */
+  .auth-input {
+    @apply w-full p-4 bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-lg rounded-2xl outline-none transition-all duration-300 placeholder:text-(--muted-fg) focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500;
+  }
+
+  /* إخفاء سهم الـ Select الافتراضي */
+  select.appearance-none {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
 }
+
+/* 6. تحسينات عامة */
+::selection {
+  @apply bg-primary-500 text-white;
+}
+
+/* سكرول بار شيك للدارك مود */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary-500/30 rounded-full hover:bg-primary-500/60 transition-colors;
+}
+/* إلغاء السهم الافتراضي تماماً */
+select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: none !important;
+}
+
+/* إلغاء اللون الأزرق عند الوقوف (Hover/Focus) في المدخلات */
+.auth-input:focus,
+.auth-input:active,
+button:focus {
+  outline: none !important;
+  /* لو لسه بيظهر أزرق، ده بيأكد إن الريتنج يبقى أحمر */
+  --tw-ring-color: var(--color-primary-500) !important;
+}
+
+/* ملاحظة: اللون الأزرق اللي بيظهر "داخل" القائمة لما تفتحها (Dropdown List) 
+هو للأسف جزء من نظام التشغيل (Windows/Mac) وصعب تغييره بـ CSS عادي، 
+إلا لو عملت Custom Dropdown باستخدام <ul> و <li> */

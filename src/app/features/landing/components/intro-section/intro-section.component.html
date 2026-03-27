@@ -1,27 +1,75 @@
-<section class="grid grid-cols-1 md:grid-cols-2 container mx-auto items-center min-h-screen">
-  <div class="flex flex-col gap-10">
-    <h1 class="flex flex-col text-7xl text-(--fg-color) font-bold leading-tight gap-2">
-      <span>خطّط بذكاء ،</span>
-      <span>و وفر مجهودك</span>
-      <span><span class="text-primary-500">و كن في الموعد </span>دائماً .</span>
-    </h1> 
-    <div>
-      <p class="text-(--muted-fg) font-medium mb-5 text-[20px]">
-      إتقان المواعيد النهائية (Deadlines) ، التحكم الكامل في جداولك اليومية ، إدارة وقت خروجك و تجمعاتك .
-      </p>
-      <div class="flex flex-col items-start gap-4">
-        <button class="btn-main-red rounded-md">ابدأ تجربتك المجانية</button>
-        <button class="btn-main-white rounded-md hover:scale-105">اكتشف المميزات</button>
+<section
+  class="relative w-full h-[calc(100vh-80px)] flex items-center overflow-hidden bg-(--bg-color) pt-30"
+  dir="rtl"
+>
+  <div class="container mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+    <div
+      class="flex flex-col gap-6 md:gap-8 order-2 lg:order-1 text-center lg:text-right"
+      data-aos="fade-left"
+    >
+      <h1
+        class="text-5xl md:text-6xl lg:text-7xl text-(--fg-color) font-extrabold leading-[1.1] tracking-tight"
+      >
+        <span class="block mb-2">خطّط بذكاء،</span>
+        <span class="block text-primary-500 mb-2">ووفّر مجهودك</span>
+        <span class="block text-(--fg-color)"
+          >وكن في الموعد <span class="text-primary-500">دائماً.</span></span
+        >
+      </h1>
+
+      <div class="max-w-xl mx-auto lg:mx-0">
+        <p class="text-(--muted-fg) font-medium mb-8 md:mb-10 text-lg md:text-xl leading-relaxed">
+          إتقان المواعيد النهائية (Deadlines)، التحكم الكامل في جداولك اليومية، وإدارة وقتك وتجمعاتك
+          بكل سهولة مع
+          <span class="text-primary-600 font-bold">Plan Go</span>.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+          <button
+            class="btn-main-red w-full sm:w-auto !rounded-xl shadow-lg shadow-primary-500/20 active:scale-95 transition-all duration-300"
+          >
+            ابدأ تجربتك المجانية
+          </button>
+          <button
+            class="btn-main-white w-full sm:w-auto !rounded-xl border border-(--border-color) hover:bg-primary-50 active:scale-95 transition-all duration-300"
+          >
+            اكتشف المميزات
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="relative">
-    <img src="/images/meeting.png" alt="Meeting" class="w-full p-12 h-auto animate-wiggle" [style.animation-play-state]="isTop ? 'running' : 'paused'">
-    <div class="absolute bottom-14 right-16 bg-(--card-bg) px-6 rounded-lg shadow-lg flex items-center justify-between gap-4">
-      <app-icon class="drop-shadow-lg drop-shadow-green-500 pt-2" [iconName]="'CheckCircle'" [iconSize]="20" [iconColor]="'green'"></app-icon>
-      <div class="flex flex-col justify-center">
-        <span class="font-bold text-(--muted-fg)">موعد قادم :</span>
-        <span class="mb-1 font-bold text-xl text-(--fg-color)">اجتماع مع الفريق</span>
+
+    <div class="relative order-1 lg:order-2 flex justify-center items-center" data-aos="zoom-in">
+      <div
+        class="absolute inset-0 bg-primary-500/10 blur-[100px] md:blur-[140px] rounded-full scale-75"
+      ></div>
+
+      <img
+        src="/images/meeting.png"
+        alt="Plan Go Meeting"
+        class="relative w-full max-w-[450px] lg:max-w-full h-auto drop-shadow-2xl animate-wiggle"
+        [style.animation-play-state]="isTop ? 'running' : 'paused'"
+      />
+
+      <div
+        class="absolute -bottom-2 lg:bottom-10 -right-2 lg:-right-8 bg-(--card-bg)/90 backdrop-blur-md p-4 md:p-5 rounded-2xl shadow-2xl border border-(--border-color) flex items-center gap-4 animate-bounce-slow"
+      >
+        <div
+          class="w-10 h-10 md:w-12 md:h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center"
+        >
+          <app-icon
+            [iconName]="'Tick01FreeIcons'"
+            [iconSize]="24"
+            class="text-green-600"
+          ></app-icon>
+        </div>
+
+        <div class="flex flex-col">
+          <span class="text-[10px] md:text-xs font-bold text-primary-500 uppercase tracking-wider"
+            >موعد قادم :</span
+          >
+          <span class="font-bold text-base md:text-lg text-(--fg-color)">اجتماع مع الفريق</span>
+        </div>
       </div>
     </div>
   </div>
