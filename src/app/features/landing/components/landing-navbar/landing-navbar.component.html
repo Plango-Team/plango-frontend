@@ -1,29 +1,71 @@
+<!-- Navbar -->
 <nav
-  class="bg-(--card-bg)/80 backdrop-blur-md px-4 md:px-12 fixed w-full z-30 top-0 inset-x-0 border-b border-(--border-color) transition-all duration-300"
+  class="backdrop-blur-md px-4 md:px-8 lg:px-12 fixed w-full z-40 top-0 inset-x-0 border-b transition-all duration-500"
+  [class]="isScrolled() ? 'bg-(--card-bg)/95 border-(--border-color) shadow-lg shadow-black/5' : 'bg-(--card-bg)/80 border-transparent'"
 >
-  <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between h-20">
-    <div class="flex items-center order-1 md:w-1/4 justify-start">
-      <a routerLink="/" (click)="closeMenu()" class="flex items-center">
+  <div class="max-w-7xl mx-auto flex items-center justify-between h-16 md:h-20">
+
+    <!-- ═══ Logo ═══ -->
+    <div class="flex items-center shrink-0">
+      <a routerLink="/" (click)="closeMenu()" class="flex items-center group">
         <img
           src="/images/PlanGoLogo.png"
-          class="dark:hidden h-10 md:h-12 w-auto object-contain"
+          class="dark:hidden h-9 md:h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
           alt="PlanGo Logo"
         />
         <img
           src="/images/PlanGoLogo-darkMode.png"
-          class="hidden dark:block h-10 md:h-12 w-auto object-contain"
+          class="hidden dark:block h-9 md:h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
           alt="PlanGo Logo"
         />
       </a>
     </div>
 
-    <div class="flex items-center gap-2 md:gap-4 order-2 md:order-3 md:w-1/4 justify-end">
+    <!-- ═══ Desktop Navigation Links (hidden on mobile) ═══ -->
+    <div class="hidden md:flex items-center gap-6 lg:gap-10">
+      <a
+        routerLink="/"
+        fragment="why"
+        [class.active]="activeFragment() === 'why'"
+        class="nav-link"
+      >عن بلان جو</a>
+      <a
+        routerLink="/"
+        fragment="features"
+        [class.active]="activeFragment() === 'features'"
+        class="nav-link"
+      >المميزات</a>
+      <a
+        routerLink="/"
+        fragment="start"
+        [class.active]="activeFragment() === 'start'"
+        class="nav-link"
+      >كيف يعمل</a>
+      <a
+        routerLink="/"
+        fragment="subscribtion"
+        [class.active]="activeFragment() === 'subscribtion'"
+        class="nav-link"
+      >الأسعار</a>
+      <a
+        routerLink="/"
+        fragment="team"
+        [class.active]="activeFragment() === 'team'"
+        class="nav-link"
+      >الفريق</a>
+    </div>
+
+    <!-- ═══ Right Actions ═══ -->
+    <div class="flex items-center gap-2 md:gap-3">
+
+      <!-- Theme Toggle -->
       <button
         (click)="toggleTheme()"
-        class="p-2 text-(--fg-color) hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-full transition-all cursor-pointer group"
+        class="p-2 md:p-2.5 text-(--fg-color) hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-xl transition-all cursor-pointer group"
+        aria-label="تبديل الثيم"
       >
         <svg
-          class="hidden dark:block w-6 h-6 transition-transform group-hover:rotate-45"
+          class="hidden dark:block w-5 h-5 transition-transform duration-500 group-hover:rotate-180"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="none"
@@ -33,12 +75,10 @@
           stroke-linejoin="round"
         >
           <circle cx="12" cy="12" r="4" />
-          <path
-            d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
-          />
+          <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
         </svg>
         <svg
-          class="block dark:hidden w-6 h-6 transition-transform group-hover:-rotate-12"
+          class="block dark:hidden w-5 h-5 transition-transform duration-500 group-hover:-rotate-12"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="none"
@@ -51,176 +91,191 @@
         </svg>
       </button>
 
-      @if (!authStore.user()) {
-        <button
-          type="button"
+      <!-- Desktop: Guest CTA -->
+      @if (!store.isAuthenticated()) {
+        <a
           routerLink="/auth/login"
-          class="btn-main-red hidden sm:flex items-center justify-center scale-90 md:scale-100"
+          class="btn-main-red hidden md:flex items-center justify-center text-sm lg:text-base px-5 py-2.5"
         >
           ابدأ الآن
-        </button>
+        </a>
       } @else {
-        <div class="relative group">
-          <div
+        <!-- Desktop: User Profile Dropdown -->
+        <div class="relative hidden md:block">
+          <button
+            (click)="toggleDropdown(); $event.stopPropagation()"
             class="flex items-center gap-3 bg-(--input-bg) p-1.5 pr-4 rounded-full border border-(--border-color) hover:border-primary-500/50 transition-all cursor-pointer"
           >
-            <div class="flex flex-col items-end hidden md:flex">
+            <div class="flex flex-col items-end">
               <span class="text-sm font-bold text-(--fg-color) leading-none">{{
-                authStore.user()?.firstName
+                store.user()?.firstName
               }}</span>
               <span class="text-[10px] text-(--muted-fg) font-medium italic">مخطط ذكي</span>
             </div>
             <div
-              class="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white font-bold border-2 border-(--card-bg) shadow-sm"
+              class="w-9 h-9 rounded-full bg-primary-500 flex items-center justify-center text-white font-bold text-sm border-2 border-(--card-bg) shadow-sm"
             >
-              {{ authStore.user()?.firstName?.charAt(0) }}
+              {{ store.user()?.firstName?.charAt(0) }}
             </div>
-          </div>
+          </button>
 
-          <div
-            class="absolute top-full left-0 w-48 pt-2 hidden group-hover:block z-50 animate-in fade-in slide-in-from-top-1"
-          >
-            <div
-              class="bg-(--card-bg) border border-(--border-color) rounded-xl shadow-xl py-2 overflow-hidden"
-            >
-              <a
-                routerLink="/dashboard"
-                (click)="closeMenu()"
-                class="block px-4 py-2 text-sm text-(--fg-color) hover:bg-primary-500 hover:text-white transition-colors duration-200"
+          @if (isDropdownOpen()) {
+            <div class="absolute top-full left-0 w-52 pt-2 z-50 animate-slide-down">
+              <div
+                class="bg-(--card-bg) border border-(--border-color) rounded-2xl shadow-2xl py-2 overflow-hidden"
               >
-                لوحة التحكم
-              </a>
+                <!-- User Info Header -->
+                <div class="px-4 py-3 border-b border-(--border-color)">
+                  <p class="font-bold text-(--fg-color) text-sm">{{ store.user()?.firstName }} {{ store.user()?.lastName }}</p>
+                  <p class="text-xs text-(--muted-fg) truncate">{{ store.user()?.email }}</p>
+                </div>
 
-              <a
-                routerLink="/profile"
-                (click)="closeMenu()"
-                class="block px-4 py-2 text-sm text-(--fg-color) hover:bg-primary-500 hover:text-white transition-colors duration-200"
-              >
-                الملف الشخصي
-              </a>
+                <a
+                  routerLink="/user"
+                  (click)="closeDropdown()"
+                  class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-(--fg-color) hover:bg-primary-500/10 hover:text-primary-500 transition-colors duration-200"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                  لوحة التحكم
+                </a>
 
-              <hr class="my-1 border-(--border-color)" />
+                <hr class="border-(--border-color)" />
 
-              <button
-                (click)="logout()"
-                class="w-full text-right px-4 py-2 text-sm text-red-500 hover:bg-red-500 hover:text-white transition-colors duration-200 cursor-pointer"
-              >
-                تسجيل الخروج
-              </button>
+                <button
+                  (click)="logout()"
+                  class="w-full flex items-center gap-3 text-right px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors duration-200 cursor-pointer"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  تسجيل الخروج
+                </button>
+              </div>
             </div>
-          </div>
+          }
         </div>
       }
 
+      <!-- ═══ Mobile Menu Toggle ═══ -->
       <button
-        (click)="toggleMenu()"
+        (click)="toggleMenu(); $event.stopPropagation()"
         type="button"
-        class="inline-flex items-center p-2 text-(--fg-color) rounded-lg md:hidden hover:bg-primary-50"
+        class="inline-flex items-center justify-center w-10 h-10 text-(--fg-color) rounded-xl md:hidden hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all active:scale-90"
+        aria-label="القائمة"
       >
-        <svg
-          class="w-7 h-7"
-          [class.hidden]="isMenuOpen()"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 6h16M4 12h16m-7 6h7"
-          />
-        </svg>
-        <svg
-          class="w-7 h-7"
-          [class.hidden]="!isMenuOpen()"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
+        @if (!isMenuOpen()) {
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+          </svg>
+        } @else {
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        }
       </button>
-    </div>
-
-    <div
-      [class.hidden]="!isMenuOpen()"
-      class="w-full md:flex md:items-center md:justify-center md:order-2 md:flex-1 transition-all duration-300"
-    >
-      <ul
-        class="flex flex-col md:flex-row items-center gap-6 md:gap-10 mt-4 md:mt-0 p-6 md:p-0 bg-(--card-bg) md:bg-transparent rounded-2xl md:rounded-none border border-(--border-color) md:border-0 shadow-xl md:shadow-none"
-      >
-        <li>
-          <a
-            routerLink="/"
-            fragment="why"
-            (click)="closeMenu()"
-            [class.active]="activeFragment() === 'why'"
-            class="nav-link"
-            >عن بلان جو</a
-          >
-        </li>
-        <li>
-          <a
-            routerLink="/"
-            fragment="features"
-            (click)="closeMenu()"
-            [class.active]="activeFragment() === 'features'"
-            class="nav-link"
-            >المميزات</a
-          >
-        </li>
-        <li>
-          <a
-            routerLink="/"
-            fragment="start"
-            (click)="closeMenu()"
-            [class.active]="activeFragment() === 'start'"
-            class="nav-link"
-            >كيف يعمل</a
-          >
-        </li>
-        <li>
-          <a
-            routerLink="/"
-            fragment="subscribtion"
-            (click)="closeMenu()"
-            [class.active]="activeFragment() === 'subscribtion'"
-            class="nav-link"
-            >الأسعار</a
-          >
-        </li>
-        <li>
-          <a
-            routerLink="/"
-            fragment="team"
-            (click)="closeMenu()"
-            [class.active]="activeFragment() === 'team'"
-            class="nav-link"
-            >الفريق</a
-          >
-        </li>
-
-        <li class="md:hidden w-full pt-4 border-t border-(--border-color)">
-          @if (!authStore.user()) {
-            <a routerLink="/auth/login" (click)="closeMenu()" class="btn-main-red w-full"
-              >ابدأ الآن</a
-            >
-          } @else {
-            <button
-              (click)="logout()"
-              class="btn-main-red w-full bg-red-500 hover:bg-red-600 italic"
-            >
-              تسجيل الخروج
-            </button>
-          }
-        </li>
-      </ul>
     </div>
   </div>
 </nav>
+
+<!-- ═══ Mobile Menu Overlay ═══ -->
+@if (isMenuOpen()) {
+  <div
+    class="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 md:hidden animate-fade-in"
+    (click)="closeMenu()"
+  ></div>
+}
+
+<!-- ═══ Mobile Menu Panel ═══ -->
+<div
+  class="fixed top-16 inset-x-0 z-35 md:hidden transition-all duration-400 ease-out"
+  [class]="isMenuOpen() ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-4 pointer-events-none'"
+>
+  <div class="mx-4 mt-2 bg-(--card-bg)/95 backdrop-blur-xl border border-(--border-color) rounded-2xl shadow-2xl overflow-hidden">
+
+    <!-- Navigation Links -->
+    <div class="p-4 space-y-1">
+      <a
+        routerLink="/"
+        fragment="why"
+        (click)="closeMenu()"
+        [class.active]="activeFragment() === 'why'"
+        class="nav-link block py-3 px-4 rounded-xl hover:bg-primary-500/10 !text-base"
+      >عن بلان جو</a>
+
+      <a
+        routerLink="/"
+        fragment="features"
+        (click)="closeMenu()"
+        [class.active]="activeFragment() === 'features'"
+        class="nav-link block py-3 px-4 rounded-xl hover:bg-primary-500/10 !text-base"
+      >المميزات</a>
+
+      <a
+        routerLink="/"
+        fragment="start"
+        (click)="closeMenu()"
+        [class.active]="activeFragment() === 'start'"
+        class="nav-link block py-3 px-4 rounded-xl hover:bg-primary-500/10 !text-base"
+      >كيف يعمل</a>
+
+      <a
+        routerLink="/"
+        fragment="subscribtion"
+        (click)="closeMenu()"
+        [class.active]="activeFragment() === 'subscribtion'"
+        class="nav-link block py-3 px-4 rounded-xl hover:bg-primary-500/10 !text-base"
+      >الأسعار</a>
+
+      <a
+        routerLink="/"
+        fragment="team"
+        (click)="closeMenu()"
+        [class.active]="activeFragment() === 'team'"
+        class="nav-link block py-3 px-4 rounded-xl hover:bg-primary-500/10 !text-base"
+      >الفريق</a>
+    </div>
+
+    <!-- Divider -->
+    <hr class="border-(--border-color) mx-4" />
+
+    <!-- Auth Section -->
+    <div class="p-4">
+      @if (!store.isAuthenticated()) {
+        <a
+          routerLink="/auth/login"
+          (click)="closeMenu()"
+          class="btn-main-red w-full justify-center text-base"
+        >ابدأ الآن</a>
+      } @else {
+        <!-- User Info -->
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-11 h-11 rounded-full bg-primary-500 flex items-center justify-center text-white font-bold text-lg border-2 border-(--card-bg) shadow-sm">
+            {{ store.user()?.firstName?.charAt(0) }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-bold text-(--fg-color) text-base truncate">{{ store.user()?.firstName }} {{ store.user()?.lastName }}</p>
+            <p class="text-xs text-(--muted-fg) truncate">{{ store.user()?.email }}</p>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <a
+            routerLink="/user"
+            (click)="closeMenu()"
+            class="btn-main-white flex-1 justify-center !py-3 !text-sm"
+          >
+            لوحة التحكم
+          </a>
+          <button
+            (click)="logout()"
+            class="btn-main-red flex-1 justify-center !py-3 !text-sm !bg-red-500 hover:!bg-red-600"
+          >
+            تسجيل الخروج
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</div>

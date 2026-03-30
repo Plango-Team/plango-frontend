@@ -64,3 +64,60 @@ export interface IAuthResponse {
   user: IUser;
   expiresIn: number; // مدة صلاحية الـ Token
 }
+
+/**
+ * طلب تسجيل الدخول
+ */
+export interface ILoginRequest {
+  email: string;
+  password: string;
+}
+
+/**
+ * طلب إنشاء حساب جديد
+ */
+export interface ISignUpRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  city: string;
+  recurringDays: string[];
+  preferences: {
+    googleCalendarSync: boolean;
+    notifications: boolean;
+    locationTracking: boolean;
+  };
+}
+
+/**
+ * طلب نسيان كلمة المرور (إرسال OTP)
+ */
+export interface IForgotPasswordRequest {
+  email: string;
+}
+
+/**
+ * طلب التحقق من كود OTP
+ */
+export interface IVerifyOtpRequest {
+  email: string;
+  otp: string;
+}
+
+/**
+ * طلب إعادة تعيين كلمة المرور بعد التحقق
+ */
+export interface IResetPasswordRequest {
+  email: string;
+  otp: string;
+  newPassword: string;
+}
+
+/**
+ * استجابة عامة للعمليات
+ */
+export interface IMessageResponse {
+  message: string;
+}

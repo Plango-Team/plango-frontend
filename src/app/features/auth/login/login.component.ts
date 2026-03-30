@@ -1,10 +1,11 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { email, form, minLength, required, FormField, FormRoot } from '@angular/forms/signals';
 
-import {  RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ThemeService } from '../../../core/services/theme.service';
 import { authStore } from '../auth.store';
+import { ILoginRequest } from '../../../core/models/iuser';
 
 @Component({
   selector: 'app-login',
@@ -13,11 +14,11 @@ import { authStore } from '../auth.store';
   styleUrl: './login.component.css',
 })
 export class LoginComponent {
-   authStore = inject(authStore);
+  authStore = inject(authStore);
   public themeService = inject(ThemeService);
 
   private readonly STORAGE_KEY = 'plan_go_login_draft';
-  loginData = signal({
+  loginData = signal<ILoginRequest>({
     email: JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '{}').email || '',
     password: '',
   });

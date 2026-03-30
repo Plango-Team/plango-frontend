@@ -3,36 +3,37 @@
   dir="rtl"
 >
   <div
-    class="w-full max-w-3xl rounded-2xl p-8 md:p-16 relative min-h-[600px] flex flex-col justify-center items-center"
+    class="w-full max-w-3xl rounded-2xl p-6 md:p-16 relative min-h-[600px] flex flex-col justify-center items-center"
   >
     <app-icon
       (click)="currentStep() === 1 ? null : prevStep()"
       [routerLink]="currentStep() === 1 ? '/' : null"
-      class="absolute top-8 right-8 text-(--muted-fg) hover:text-primary-500 transition-colors cursor-pointer"
+      class="absolute top-6 right-6 md:top-8 md:right-8 text-(--muted-fg) hover:text-primary-500 transition-colors cursor-pointer"
       [iconName]="'ArrowRight01Icon'"
-      [iconSize]="40"
+      [iconSize]="36"
       [iconColor]="themeService.isDark() ? '#d1a294' : '#99a1af'"
     ></app-icon>
 
-    <div class="text-center mb-8">
-      <h1 class="text-4xl md:text-5xl font-extrabold text-(--fg-color) mb-4">مرحباً بك</h1>
-      <p class="text-lg md:text-xl text-(--muted-fg) font-medium italic">
+    <div class="text-center mb-6 md:mb-8">
+      <h1 class="text-3xl md:text-5xl font-extrabold text-(--fg-color) mb-3 md:mb-4">مرحباً بك</h1>
+      <p class="text-base md:text-xl text-(--muted-fg) font-medium italic">
         خطوات قليلة وتسيطر على يومك!
       </p>
     </div>
 
-    <div class="w-full max-w-xs mx-auto mb-12 relative flex items-center justify-center">
+    <!-- Progress Steps (4 steps) -->
+    <div class="w-full max-w-sm mx-auto mb-8 md:mb-12 relative flex items-center justify-center px-2">
       <div class="absolute h-0.5 bg-(--border-color) w-full top-1/2 -translate-y-1/2"></div>
       <div
         class="absolute h-0.5 bg-primary-500 transition-all duration-500 top-1/2 -translate-y-1/2 right-0"
-        [style.width.%]="(currentStep() - 1) * 50"
+        [style.width.%]="((currentStep() - 1) / (totalSteps - 1)) * 100"
       ></div>
 
       <div class="flex justify-between w-full relative z-10">
-        @for (step of [1, 2, 3]; track step) {
+        @for (step of [1, 2, 3, 4]; track step) {
           <div [class]="stepCircleClass(step)">
             @if (currentStep() > step) {
-              <app-icon [iconName]="'Tick01FreeIcons'" [iconSize]="18"></app-icon>
+              <app-icon [iconName]="'Tick01FreeIcons'" [iconSize]="16"></app-icon>
             } @else {
               {{ step }}
             }
@@ -41,49 +42,97 @@
       </div>
     </div>
 
+    <!-- Error Message -->
+    @if (store.error() || fieldError()) {
+      <div
+        class="w-full max-w-md mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-center font-medium animate-shake"
+      >
+        {{ store.error() || fieldError() }}
+      </div>
+    }
+
     <form class="w-full max-w-md mx-auto">
+      <!-- ═══ Step 1: معلومات أساسية ═══ -->
       @if (currentStep() === 1) {
-        <div class="space-y-5 animate-in fade-in slide-in-from-right duration-500 form-group">
-          <input
-            type="text"
-            placeholder="الاسم كامل"
-            class="auth-input bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-lg rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 block w-full px-4 py-4 placeholder:text-(--muted-fg) placeholder:text-right outline-none transition-all disabled:opacity-60"
-          />
-          <input
-            type="email"
-            placeholder="البريد الإلكتروني"
-            class="auth-input bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-lg rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 block w-full px-4 py-4 placeholder:text-(--muted-fg) placeholder:text-right outline-none transition-all"
-          />
-          <input
-            type="tel"
-            placeholder="رقم الهاتف"
-            class="auth-input bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-lg rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 block w-full px-4 py-4 placeholder:text-(--muted-fg) placeholder:text-right outline-none transition-all"
-          />
-          <input
-            type="password"
-            placeholder="كلمة المرور"
-            class="auth-input bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-lg rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 block w-full px-4 py-4 placeholder:text-(--muted-fg) placeholder:text-right outline-none transition-all"
-          />
+        <div class="space-y-4 md:space-y-5 animate-fade-in-up form-group">
+          <div>
+            <input
+              type="text"
+              [(ngModel)]="fullName"
+              name="fullName"
+              placeholder="الاسم كامل"
+              class="auth-input bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-base md:text-lg rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 block w-full px-4 py-3.5 md:py-4 placeholder:text-(--muted-fg) placeholder:text-right outline-none transition-all disabled:opacity-60"
+              [class.border-red-500]="step1Errors()['fullName']"
+            />
+            @if (step1Errors()['fullName']) {
+              <p class="text-primary-500 text-sm mt-2 font-medium animate-fade-in-up">{{ step1Errors()['fullName'] }}</p>
+            }
+          </div>
+
+          <div>
+            <input
+              type="email"
+              [(ngModel)]="email"
+              name="email"
+              placeholder="البريد الإلكتروني"
+              class="auth-input bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-base md:text-lg rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 block w-full px-4 py-3.5 md:py-4 placeholder:text-(--muted-fg) placeholder:text-right outline-none transition-all"
+              [class.border-red-500]="step1Errors()['email']"
+            />
+            @if (step1Errors()['email']) {
+              <p class="text-primary-500 text-sm mt-2 font-medium animate-fade-in-up">{{ step1Errors()['email'] }}</p>
+            }
+          </div>
+
+          <div>
+            <input
+              type="tel"
+              [(ngModel)]="phoneNumber"
+              name="phoneNumber"
+              placeholder="رقم الهاتف"
+              class="auth-input bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-base md:text-lg rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 block w-full px-4 py-3.5 md:py-4 placeholder:text-(--muted-fg) placeholder:text-right outline-none transition-all"
+              [class.border-red-500]="step1Errors()['phoneNumber']"
+            />
+            @if (step1Errors()['phoneNumber']) {
+              <p class="text-primary-500 text-sm mt-2 font-medium animate-fade-in-up">{{ step1Errors()['phoneNumber'] }}</p>
+            }
+          </div>
+
+          <div>
+            <input
+              type="password"
+              [(ngModel)]="password"
+              name="password"
+              placeholder="كلمة المرور"
+              class="auth-input bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-base md:text-lg rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 block w-full px-4 py-3.5 md:py-4 placeholder:text-(--muted-fg) placeholder:text-right outline-none transition-all"
+              [class.border-red-500]="step1Errors()['password']"
+            />
+            @if (step1Errors()['password']) {
+              <p class="text-primary-500 text-sm mt-2 font-medium animate-fade-in-up">{{ step1Errors()['password'] }}</p>
+            }
+          </div>
         </div>
       }
 
+      <!-- ═══ Step 2: الموقع والمواعيد ═══ -->
       @if (currentStep() === 2) {
-        <div class="space-y-8 animate-in fade-in slide-in-from-right duration-500">
+        <div class="space-y-6 md:space-y-8 animate-fade-in-up">
           <div class="relative">
-            <label class="block mb-3 font-bold text-(--fg-color) text-lg px-1 transition-colors"
+            <label class="block mb-3 font-bold text-(--fg-color) text-base md:text-lg px-1 transition-colors"
               >حدد موقعك الحالي؟</label
             >
 
             <div class="relative group">
               <select
+                [(ngModel)]="city"
+                name="city"
                 class="auth-input !appearance-none !bg-none cursor-pointer pr-4 pl-12 transition-all hover:border-primary-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none w-full text-(--fg-color)"
               >
-                <option value="" disabled selected class="bg-(--card-bg) text-(--muted-fg)">
+                <option value="" disabled class="bg-(--card-bg) text-(--muted-fg)">
                   اختر المدينة...
                 </option>
-                <option class="bg-(--card-bg) text-(--fg-color)">القاهرة</option>
-                <option class="bg-(--card-bg) text-(--fg-color)">الإسكندرية</option>
-                <option class="bg-(--card-bg) text-(--fg-color)">المنصورة</option>
+                <option value="القاهرة" class="bg-(--card-bg) text-(--fg-color)">القاهرة</option>
+                <option value="الإسكندرية" class="bg-(--card-bg) text-(--fg-color)">الإسكندرية</option>
+                <option value="المنصورة" class="bg-(--card-bg) text-(--fg-color)">المنصورة</option>
               </select>
 
               <div
@@ -104,17 +153,17 @@
           </div>
 
           <div>
-            <div class="flex items-center justify-between mb-4 px-1">
-              <label class="font-bold text-(--fg-color) text-lg transition-colors"
+            <div class="flex items-center justify-between mb-4 px-1 gap-2">
+              <label class="font-bold text-(--fg-color) text-base md:text-lg transition-colors shrink-0"
                 >حدد مواعيدك المتكررة؟</label
               >
               <span
-                class="text-[12px] md:text-sm text-primary-500 font-bold bg-primary-500/10 px-3 py-1 rounded-full"
+                class="text-[11px] md:text-sm text-primary-500 font-bold bg-primary-500/10 px-2 md:px-3 py-1 rounded-full whitespace-nowrap"
                 >يمكنك اختيار أكثر من يوم</span
               >
             </div>
 
-            <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+            <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 md:gap-3">
               @for (
                 day of [
                   { name: 'يومياً', special: false },
@@ -130,12 +179,13 @@
               ) {
                 <button
                   type="button"
+                  (click)="toggleDay(day.name)"
                   [class]="
-                    day.special
+                    isDaySelected(day.name)
                       ? 'bg-primary-500 text-white border-primary-500 shadow-lg shadow-primary-500/20'
                       : 'bg-(--input-bg) text-(--fg-color) border-(--border-color) hover:border-primary-500 hover:text-primary-500'
                   "
-                  class="py-3 px-1 rounded-2xl border-2 text-sm md:text-base font-bold transition-all active:scale-95 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+                  class="py-2.5 md:py-3 px-1 rounded-xl md:rounded-2xl border-2 text-sm md:text-base font-bold transition-all active:scale-95 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary-500/50"
                 >
                   {{ day.name }}
                 </button>
@@ -145,110 +195,205 @@
         </div>
       }
 
+      <!-- ═══ Step 3: التخصيص ═══ -->
       @if (currentStep() === 3) {
-        <div class="space-y-6 animate-in fade-in slide-in-from-right duration-500">
+        <div class="space-y-4 md:space-y-6 animate-fade-in-up">
           <div class="text-right px-1 mb-2">
-            <h3 class="text-xl font-bold text-(--fg-color)">تخصيص التجربة</h3>
+            <h3 class="text-lg md:text-xl font-bold text-(--fg-color)">تخصيص التجربة</h3>
             <p class="text-sm text-(--muted-fg)">فعل الخيارات التي تناسب نمط حياتك</p>
           </div>
 
+          <!-- Google Calendar -->
           <div
-            class="group flex items-center justify-between p-5 bg-(--input-bg) border-2 border-(--border-color) rounded-[2rem] hover:border-primary-500 transition-all duration-300 shadow-sm"
+            class="group flex items-center justify-between p-4 md:p-5 bg-(--input-bg) border-2 border-(--border-color) rounded-2xl md:rounded-[2rem] hover:border-primary-500 transition-all duration-300 shadow-sm"
           >
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3 md:gap-4">
               <div
-                class="w-12 h-12 flex items-center justify-center rounded-2xl bg-(--card-bg) border border-(--border-color) group-hover:scale-110 transition-transform"
+                class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl md:rounded-2xl bg-(--card-bg) border border-(--border-color) group-hover:scale-110 transition-transform shrink-0"
               >
                 <app-icon
                   [iconName]="'GoogleIcon'"
-                  [iconSize]="28"
+                  [iconSize]="24"
                   [iconColor]="'#d32e18'"
                 ></app-icon>
               </div>
               <div>
-                <span class="block font-extrabold text-(--fg-color) text-lg"
+                <span class="block font-extrabold text-(--fg-color) text-base md:text-lg"
                   >مزامنة تقويم جوجل</span
                 >
                 <span class="text-xs text-(--muted-fg)">ربط مواعيدك الحالية تلقائياً</span>
               </div>
             </div>
 
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" class="sr-only peer" />
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input
+                type="checkbox"
+                [checked]="googleCalendarSync()"
+                (change)="googleCalendarSync.set(!googleCalendarSync())"
+                class="sr-only peer"
+              />
               <div
-                class="w-12 h-6.5 bg-gray-300 dark:bg-gray-700 rounded-full peer peer-checked:bg-primary-500 transition-colors duration-300 after:content-[''] after:absolute after:top-[5px] after:start-[5px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5.5 rtl:peer-checked:after:-translate-x-5.5"
+                class="w-11 h-6 md:w-12 md:h-6.5 bg-gray-300 dark:bg-gray-700 rounded-full peer peer-checked:bg-primary-500 transition-colors duration-300 after:content-[''] after:absolute after:top-[3px] md:after:top-[5px] after:start-[3px] md:after:start-[5px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5 md:peer-checked:after:translate-x-5.5 rtl:peer-checked:after:-translate-x-5 rtl:md:peer-checked:after:-translate-x-5.5"
               ></div>
             </label>
           </div>
 
+          <!-- Notifications -->
           <div
-            class="group flex items-center justify-between p-5 bg-(--input-bg) border-2 border-(--border-color) rounded-[2rem] hover:border-primary-500 transition-all duration-300 shadow-sm"
+            class="group flex items-center justify-between p-4 md:p-5 bg-(--input-bg) border-2 border-(--border-color) rounded-2xl md:rounded-[2rem] hover:border-primary-500 transition-all duration-300 shadow-sm"
           >
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3 md:gap-4">
               <div
-                class="w-12 h-12 flex items-center justify-center rounded-2xl bg-(--card-bg) border border-(--border-color) group-hover:scale-110 transition-transform"
+                class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl md:rounded-2xl bg-(--card-bg) border border-(--border-color) group-hover:scale-110 transition-transform shrink-0"
               >
                 <app-icon
                   [iconName]="'Notification01FreeIcons'"
-                  [iconSize]="28"
+                  [iconSize]="24"
                   [iconColor]="'#d32e18'"
                 ></app-icon>
               </div>
               <div>
-                <span class="block font-extrabold text-(--fg-color) text-lg">تفعيل الإشعارات</span>
+                <span class="block font-extrabold text-(--fg-color) text-base md:text-lg">تفعيل الإشعارات</span>
                 <span class="text-xs text-(--muted-fg)">تذكير ذكي قبل الموعد بـ 30 دقيقة</span>
               </div>
             </div>
 
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" checked class="sr-only peer" />
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input
+                type="checkbox"
+                [checked]="notificationsEnabled()"
+                (change)="notificationsEnabled.set(!notificationsEnabled())"
+                class="sr-only peer"
+              />
               <div
-                class="w-12 h-6.5 bg-gray-300 dark:bg-gray-700 rounded-full peer peer-checked:bg-primary-500 transition-colors duration-300 after:content-[''] after:absolute after:top-[5px] after:start-[5px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5.5 rtl:peer-checked:after:-translate-x-5.5"
+                class="w-11 h-6 md:w-12 md:h-6.5 bg-gray-300 dark:bg-gray-700 rounded-full peer peer-checked:bg-primary-500 transition-colors duration-300 after:content-[''] after:absolute after:top-[3px] md:after:top-[5px] after:start-[3px] md:after:start-[5px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5 md:peer-checked:after:translate-x-5.5 rtl:peer-checked:after:-translate-x-5 rtl:md:peer-checked:after:-translate-x-5.5"
               ></div>
             </label>
           </div>
 
+          <!-- Location -->
           <div
-            class="group flex items-center justify-between p-5 bg-(--input-bg) border-2 border-(--border-color) rounded-[2rem] hover:border-primary-500 transition-all duration-300 shadow-sm"
+            class="group flex items-center justify-between p-4 md:p-5 bg-(--input-bg) border-2 border-(--border-color) rounded-2xl md:rounded-[2rem] hover:border-primary-500 transition-all duration-300 shadow-sm"
           >
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3 md:gap-4">
               <div
-                class="w-12 h-12 flex items-center justify-center rounded-2xl bg-(--card-bg) border border-(--border-color) group-hover:scale-110 transition-transform"
+                class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl md:rounded-2xl bg-(--card-bg) border border-(--border-color) group-hover:scale-110 transition-transform shrink-0"
               >
                 <app-icon
                   [iconName]="'Location01FreeIcons'"
-                  [iconSize]="28"
+                  [iconSize]="24"
                   [iconColor]="'#d32e18'"
                 ></app-icon>
               </div>
               <div>
-                <span class="block font-extrabold text-(--fg-color) text-lg">تفعيل الموقع</span>
+                <span class="block font-extrabold text-(--fg-color) text-base md:text-lg">تفعيل الموقع</span>
                 <span class="text-xs text-(--muted-fg)">حساب وقت الوصول بناءً على مكانك</span>
               </div>
             </div>
 
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" checked class="sr-only peer" />
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input
+                type="checkbox"
+                [checked]="locationTracking()"
+                (change)="locationTracking.set(!locationTracking())"
+                class="sr-only peer"
+              />
               <div
-                class="w-12 h-6.5 bg-gray-300 dark:bg-gray-700 rounded-full peer peer-checked:bg-primary-500 transition-colors duration-300 after:content-[''] after:absolute after:top-[5px] after:start-[5px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5.5 rtl:peer-checked:after:-translate-x-5.5"
+                class="w-11 h-6 md:w-12 md:h-6.5 bg-gray-300 dark:bg-gray-700 rounded-full peer peer-checked:bg-primary-500 transition-colors duration-300 after:content-[''] after:absolute after:top-[3px] md:after:top-[5px] after:start-[3px] md:after:start-[5px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5 md:peer-checked:after:translate-x-5.5 rtl:peer-checked:after:-translate-x-5 rtl:md:peer-checked:after:-translate-x-5.5"
               ></div>
             </label>
           </div>
         </div>
       }
 
-      <div class="mt-10">
+      <!-- ═══ Step 4: التحقق من OTP ═══ -->
+      @if (currentStep() === 4) {
+        <div class="animate-fade-in-up">
+          <div class="text-center mb-8 md:mb-10">
+            <div class="mb-6 flex justify-center">
+              <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary-500/10 flex items-center justify-center">
+                <app-icon [iconName]="'MailOpen01FreeIcons'" [iconSize]="36" [iconColor]="'#d32e18'"></app-icon>
+              </div>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-(--fg-color) mb-3">التحقق من بريدك</h2>
+            <p class="text-sm md:text-base text-(--muted-fg) font-medium leading-relaxed">
+              تم إرسال كود مكون من 6 أرقام إلى
+              <br />
+              <span class="text-primary-500 font-bold">{{ email }}</span>
+            </p>
+          </div>
+
+          <!-- OTP Inputs -->
+          <div class="flex justify-center gap-2 md:gap-3 mb-8" dir="ltr">
+            @for (digit of otpDigits(); track $index) {
+              <input
+                type="text"
+                maxlength="1"
+                inputmode="numeric"
+                class="otp-digit"
+                [value]="digit"
+                (input)="onOtpInput($event, $index)"
+                (keydown)="onOtpKeyDown($event, $index)"
+                (paste)="onOtpPaste($event)"
+                autocomplete="one-time-code"
+              />
+            }
+          </div>
+
+          <div class="text-center mb-6">
+            <p class="text-(--muted-fg) text-sm font-medium">
+              لم يصلك الكود؟
+              <button
+                type="button"
+                (click)="resendOtp()"
+                [disabled]="store.isLoading()"
+                class="text-primary-500 font-bold hover:underline transition-all disabled:opacity-50 cursor-pointer"
+              >
+                إعادة الإرسال
+              </button>
+            </p>
+
+          </div>
+        </div>
+      }
+
+      <!-- ═══ Submit / Next Button ═══ -->
+      <div class="mt-8 md:mt-10">
         <button
           type="button"
-          (click)="currentStep() === 3 ? null : nextStep()"
-          class="text-white bg-primary-500 hover:bg-primary-600 font-bold rounded-xl text-xl w-full px-5 py-4 shadow-lg shadow-primary-500/20 active:scale-[0.98] transition-all"
+          (click)="currentStep() === 4 ? verifyAndSignUp() : nextStep()"
+          [disabled]="store.isLoading()"
+          class="text-white bg-primary-500 hover:bg-primary-600 font-bold rounded-xl text-lg md:text-xl w-full px-5 py-3.5 md:py-4 shadow-lg shadow-primary-500/20 active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
         >
-          {{ currentStep() === 3 ? 'إنشاء حساب' : 'التالي' }}
+          @if (store.isLoading()) {
+            <svg class="animate-spin h-5 w-5 md:h-6 md:w-6 text-white" viewBox="0 0 24 24">
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+                fill="none"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            <span>{{ currentStep() === 4 ? 'جاري التحقق...' : 'جاري التحميل...' }}</span>
+          } @else {
+            @switch (currentStep()) {
+              @case (4) { <span>تأكيد وإنشاء الحساب</span> }
+              @default { <span>التالي</span> }
+            }
+          }
         </button>
 
         @if (currentStep() === 1) {
-          <div class="mt-8 text-center">
-            <p class="text-(--muted-fg) font-medium text-base">
+          <div class="mt-6 md:mt-8 text-center">
+            <p class="text-(--muted-fg) font-medium text-sm md:text-base">
               لديك حساب بالفعل؟
               <a
                 routerLink="/auth/login"

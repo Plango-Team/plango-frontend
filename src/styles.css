@@ -184,6 +184,105 @@ button:focus {
   --tw-ring-color: var(--color-primary-500) !important;
 }
 
-/* ملاحظة: اللون الأزرق اللي بيظهر "داخل" القائمة لما تفتحها (Dropdown List) 
-هو للأسف جزء من نظام التشغيل (Windows/Mac) وصعب تغييره بـ CSS عادي، 
-إلا لو عملت Custom Dropdown باستخدام <ul> و <li> */
+
+
+/* 7. أنيميشنات إضافية */
+@keyframes loading-bar {
+  0% {
+    transform: translateX(100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-4px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(211, 46, 24, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(211, 46, 24, 0);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-loading-bar {
+  animation: loading-bar 1.5s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(211, 46, 24, 0.08) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out forwards;
+}
+
+/* OTP Input Styling */
+.otp-digit {
+  @apply w-12 h-14 md:w-14 md:h-16 text-center text-2xl font-bold bg-(--input-bg) border-2 border-(--border-color) text-(--fg-color) rounded-xl outline-none transition-all duration-300 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500;
+}
+
+.otp-digit:focus {
+  transform: scale(1.05);
+}
+

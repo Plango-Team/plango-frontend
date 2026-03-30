@@ -6,11 +6,19 @@ import {
   withMethods,
   withState,
 } from '@ngrx/signals';
-import { IAuthResponse, IUser } from '../../core/models/iuser';
+import {
+  IAuthResponse,
+  IUser,
+  ILoginRequest,
+  ISignUpRequest,
+  IForgotPasswordRequest,
+  IVerifyOtpRequest,
+  IResetPasswordRequest,
+} from '../../core/models/iuser';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { catchError, of, pipe, switchMap, tap } from 'rxjs';
 import { AuthService } from '../../core/services/auth/auth.service';
-import { inject } from '@angular/core';
+import { computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 
 export type AuthState = {
@@ -18,6 +26,7 @@ export type AuthState = {
   token: string | null;
   isLoading: boolean;
   error: string | null;
+  successMessage: string | null;
 };
 
 export const authStore = signalStore(
@@ -29,61 +38,212 @@ export const authStore = signalStore(
     token: null,
     isLoading: false,
     error: null,
+    successMessage: null,
   } as AuthState),
-  withComputed(({}) => ({})),
-  withMethods((authStore, authService = inject(AuthService), router = inject(Router)) => ({
-    login: rxMethod<any>(
+  withComputed((store) => ({
+    isAuthenticated: computed(() => !!store.user()),
+  })),
+  withMethods((store, authService = inject(AuthService), router = inject(Router)) => ({
+    // ─────── تسجيل الدخول ───────
+    login: rxMethod<ILoginRequest>(
       pipe(
-        tap(() => patchState(authStore, { isLoading: true, error: null })),
+        tap(() => patchState(store, { isLoading: true, error: null, successMessage: null })),
         switchMap((credentials) =>
           authService.login(credentials).pipe(
             tap({
               next: (response) => {
-                patchState(authStore, {
+                patchState(store, {
                   user: response.user,
                   token: response.token,
                   isLoading: false,
                 });
                 localStorage.setItem('token', response.token);
-                router.navigate(['/']); // التوجيه للداشبورد
+                router.navigate(['/']);
               },
               error: (err) => {
-                // هنا بنخزن رسالة الخطأ اللي جاية من السيرفر أو الموك
-                patchState(authStore, {
+                patchState(store, {
                   isLoading: false,
                   error: err.message || 'حدث خطأ أثناء تسجيل الدخول',
                 });
               },
             }),
+            catchError(() => of(null)),
           ),
         ),
       ),
     ),
+
+    // ─────── إنشاء حساب ───────
+    signUp: rxMethod<ISignUpRequest>(
+      pipe(
+        tap(() => patchState(store, { isLoading: true, error: null, successMessage: null })),
+        switchMap((userData) =>
+          authService.signUp(userData).pipe(
+            tap({
+              next: (response) => {
+                patchState(store, {
+                  user: response.user,
+                  token: response.token,
+                  isLoading: false,
+                  successMessage: 'تم إنشاء حسابك بنجاح!',
+                });
+                localStorage.setItem('token', response.token);
+                router.navigate(['/']);
+              },
+              error: (err) => {
+                patchState(store, {
+                  isLoading: false,
+                  error: err.message || 'حدث خطأ أثناء إنشاء الحساب',
+                });
+              },
+            }),
+            catchError(() => of(null)),
+          ),
+        ),
+      ),
+    ),
+
+    // ─────── إرسال OTP لنسيان كلمة المرور ───────
+    forgotPassword: rxMethod<IForgotPasswordRequest>(
+      pipe(
+        tap(() => patchState(store, { isLoading: true, error: null, successMessage: null })),
+        switchMap((data) =>
+          authService.forgotPassword(data).pipe(
+            tap({
+              next: (response) => {
+                patchState(store, {
+                  isLoading: false,
+                  successMessage: response.message,
+                });
+              },
+              error: (err) => {
+                patchState(store, {
+                  isLoading: false,
+                  error: err.message || 'حدث خطأ أثناء إرسال كود التحقق',
+                });
+              },
+            }),
+            catchError(() => of(null)),
+          ),
+        ),
+      ),
+    ),
+
+    // ─────── إرسال OTP للتسجيل ───────
+    sendSignUpOtp: rxMethod<string>(
+      pipe(
+        tap(() => patchState(store, { isLoading: true, error: null, successMessage: null })),
+        switchMap((email) =>
+          authService.sendSignUpOtp(email).pipe(
+            tap({
+              next: (response) => {
+                patchState(store, {
+                  isLoading: false,
+                  successMessage: response.message,
+                });
+              },
+              error: (err) => {
+                patchState(store, {
+                  isLoading: false,
+                  error: err.message || 'حدث خطأ أثناء إرسال كود التحقق',
+                });
+              },
+            }),
+            catchError(() => of(null)),
+          ),
+        ),
+      ),
+    ),
+
+    // ─────── التحقق من OTP ───────
+    verifyOtp: rxMethod<IVerifyOtpRequest>(
+      pipe(
+        tap(() => patchState(store, { isLoading: true, error: null, successMessage: null })),
+        switchMap((data) =>
+          authService.verifyOtp(data).pipe(
+            tap({
+              next: (response) => {
+                patchState(store, {
+                  isLoading: false,
+                  successMessage: response.message,
+                });
+              },
+              error: (err) => {
+                patchState(store, {
+                  isLoading: false,
+                  error: err.message || 'كود التحقق غير صحيح',
+                });
+              },
+            }),
+            catchError(() => of(null)),
+          ),
+        ),
+      ),
+    ),
+
+    // ─────── إعادة تعيين كلمة المرور ───────
+    resetPassword: rxMethod<IResetPasswordRequest>(
+      pipe(
+        tap(() => patchState(store, { isLoading: true, error: null, successMessage: null })),
+        switchMap((data) =>
+          authService.resetPassword(data).pipe(
+            tap({
+              next: (response) => {
+                patchState(store, {
+                  isLoading: false,
+                  successMessage: response.message,
+                });
+                // التوجيه لصفحة تسجيل الدخول بعد 2 ثانية
+                setTimeout(() => router.navigate(['/auth/login']), 2000);
+              },
+              error: (err) => {
+                patchState(store, {
+                  isLoading: false,
+                  error: err.message || 'حدث خطأ أثناء تغيير كلمة المرور',
+                });
+              },
+            }),
+            catchError(() => of(null)),
+          ),
+        ),
+      ),
+    ),
+
+    // ─────── تسجيل الخروج ───────
     logOut: signalMethod<void>(() => {
       localStorage.removeItem('token');
-      patchState(authStore, { user: null, token: null });
+      patchState(store, { user: null, token: null, successMessage: null, error: null });
     }),
+
+    // ─────── مسح الرسائل ───────
+    clearError: signalMethod<void>(() => {
+      patchState(store, { error: null });
+    }),
+
+    clearSuccess: signalMethod<void>(() => {
+      patchState(store, { successMessage: null });
+    }),
+
+    // ─────── تهيئة المصادقة عند تحميل التطبيق ───────
     initAuth: rxMethod<void>(
       pipe(
-        tap(() => patchState(authStore, { isLoading: true })),
+        tap(() => patchState(store, { isLoading: true })),
         switchMap(() => {
           const token = localStorage.getItem('token');
 
           if (!token) {
-            patchState(authStore, { isLoading: false, user: null });
+            patchState(store, { isLoading: false, user: null });
             return of(null);
           }
 
-          // بننادي السيرفر يتأكد من التوكن ويرجع اليوزر
           return authService.getCurrentUser().pipe(
             tap({
               next: (user) => {
-                patchState(authStore, { user, token, isLoading: false });
+                patchState(store, { user, token, isLoading: false });
               },
               error: () => {
-                // لو التوكن expired أو السيرفر رفضها
                 localStorage.removeItem('token');
-                patchState(authStore, { user: null, token: null, isLoading: false });
+                patchState(store, { user: null, token: null, isLoading: false });
                 router.navigate(['/auth/login']);
               },
             }),

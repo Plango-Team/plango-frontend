@@ -27,6 +27,31 @@
         "preferredTransport": "car",
         "defaultBufferTime": 15
       }
+    },
+    {
+      "email": "nader@na.n",
+      "password": "123456",
+      "firstName": "Nader",
+      "lastName": "Mohamed",
+      "userName": "nader_mohamed",
+      "phoneNumber": "01022175316",
+      "role": "admin",
+      "status": "active",
+      "createdAt": "2026-03-30T19:34:27.003Z",
+      "updatedAt": "2026-03-30T19:34:27.003Z",
+      "preferences": {
+        "theme": "dark",
+        "language": "ar",
+        "preferredTransport": "car",
+        "defaultBufferTime": 15,
+        "notifications": {
+          "email": true,
+          "push": true,
+          "departureAlerts": true
+        }
+      },
+      "id": "zjReWoRSe7g"
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }
