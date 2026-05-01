@@ -21,7 +21,7 @@ import { AuthService } from '../../core/services/auth/auth.service';
 import { computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 
-export type AuthState = { 
+export type AuthState = {
   user: IUser | null;
   token: string | null;
   isLoading: boolean;

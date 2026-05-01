@@ -1,10 +1,693 @@
-<div class="bg-(--bg-color) text-(--fg-color) overflow-hidden">
-  <app-landing-navbar></app-landing-navbar>
-  <app-intro-section></app-intro-section>
-  <app-why-plan-go-section id="why"></app-why-plan-go-section>
-  <app-features-section id="features"></app-features-section>
-  <app-start-section id="start"></app-start-section>
-  <app-subscribtion-section id="subscribtion"></app-subscribtion-section>
-  <app-team-section id="team"></app-team-section>
-  <app-landing-footer></app-landing-footer>
+<div class="min-h-screen bg-ink text-ink-foreground">
+  <app-landing-navbar [links]="navLinks" class="sticky top-0 z-50"></app-landing-navbar>
+
+  <main>
+    <section id="home" class="relative overflow-hidden px-4 pb-20 pt-16 md:pt-20">
+      <div class="absolute inset-0 -z-10 bg-grid opacity-[0.07] mask-fade-b"></div>
+      <div
+        class="absolute left-1/2 top-32 -z-10 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-brand/10 blur-3xl"
+      ></div>
+
+      <div class="mx-auto max-w-6xl">
+        <div class="mx-auto max-w-4xl text-center" data-aos="fade-up">
+          <a
+            href="#features"
+            class="inline-flex items-center gap-2 rounded-full border border-ink-border bg-ink-2 px-3 py-1 text-xs text-ink-muted hover:bg-ink-3"
+          >
+            <span class="rounded-full bg-brand/15 px-2 py-0.5 text-[10px] font-medium text-brand"
+              >جديد</span
+            >
+            محرك المغادرة الذكي يدعم تنبيهات الطقس
+          </a>
+          <h1
+            class="font-display mt-6 text-balance text-5xl leading-[1.05] tracking-tight md:text-7xl relative w-fit mx-auto"
+          >
+            نورتنا في <span>بلان جو</span>
+            <span
+              class="absolute text-xs bg-primary-pink py-2 px-2 rounded-full text-bg-main transform -rotate-25 -left-8 top-4"
+              >صُنع بكل حب</span
+            >
+          </h1>
+          <h1
+            class="font-display mt-6 text-balance text-5xl leading-[1.20] tracking-tight md:text-7xl"
+          >
+            خطّط بذكاء، ووفّر مجهودك
+            <br />
+            <span class="text-accent-500">وكن في الموعد </span>
+            <span class="relative inline-block text-accent-500">
+              دائماً
+              <svg
+                class="absolute -bottom-2 right-0 w-full"
+                height="10"
+                viewBox="0 0 200 10"
+                fill="none"
+              >
+                <path
+                  d="M2 7 Q 50 1 100 5 T 198 4"
+                  stroke="#D32E18"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
+            .
+          </h1>
+
+          <p
+            class="mx-auto mt-6 max-w-xl text-balance text-base leading-relaxed text-ink-muted md:text-lg"
+          >
+            PlanGo منصة عربية ذكية تحوّل التخطيط من عبء إلى عادة طبيعية، تتبع حركة المرور والطقس
+            وعاداتك لتخبرك بالوقت الأمثل للمغادرة قبل أن تتأخر.
+          </p>
+
+          <div class="mt-8 flex flex-wrap items-center justify-center gap-2">
+            <a routerLink="/auth/signup" class="btn-landing-primary"> ابدأ تجربتك المجانية </a>
+            <a href="#features" class="btn-landing-secondary"> اكتشف المميزات </a>
+          </div>
+
+          <div
+            class="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-ink-muted"
+          >
+            @for (badge of heroBadges; track badge.label) {
+              <span class="inline-flex items-center gap-1.5">
+                <svg
+                  class="h-3.5 w-3.5 text-success"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M20 7L10.5 16.5L4 10"></path>
+                </svg>
+                {{ badge.label }}
+              </span>
+            }
+          </div>
+        </div>
+
+        <div class="mt-16" data-aos="fade-up" data-aos-delay="120">
+          <app-landing-hero-mockup></app-landing-hero-mockup>
+        </div>
+      </div>
+    </section>
+
+    <section class="border-y border-ink-border bg-ink-2/40 py-10">
+      <div class="mx-auto max-w-6xl px-4">
+        <p class="text-center text-xs uppercase tracking-widest text-ink-muted">
+          موثوق به من فرق ومؤسسات عبر المنطقة
+        </p>
+        <div class="mt-6 flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-70">
+          @for (brand of trustedBrands; track brand) {
+            <span class="font-display text-lg tracking-tight text-ink-foreground/80">{{
+              brand
+            }}</span>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="px-4 py-24">
+      <div class="mx-auto max-w-6xl">
+        <header class="mx-auto max-w-2xl text-center">
+          <div
+            class="inline-flex items-center gap-1.5 rounded-full bg-primary-pink text-ink font-semibold px-3 py-1 text-[11px] uppercase tracking-widest"
+          >
+            المميزات
+          </div>
+          <h2
+            class="font-display mt-4 text-balance text-4xl tracking-tight text-accent-500 md:text-5xl"
+          >
+            كل ما تحتاجه لتنظيم يومك
+          </h2>
+          <p class="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-ink-muted md:text-base">
+            من تنبيهات قبل الوصول إلى الخريطة الذكية والمسار الفوري، منصة واحدة لكل لحظة في يومك.
+          </p>
+        </header>
+
+        <div class="mt-12 grid gap-3 lg:grid-cols-12">
+          <article
+            class="relative overflow-hidden rounded-2xl border border-ink-border bg-ink-2 p-6 lg:col-span-7"
+          >
+            <span
+              class="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-full border border-ink-border bg-ink text-[10px] text-ink-muted"
+              >01</span
+            >
+            <h3 class="font-display text-xl tracking-tight text-ink-foreground">
+              إدارة المواعيد بذكاء استثنائي
+            </h3>
+            <p class="mt-2 text-sm leading-relaxed text-ink-muted">
+              أنشئ، عدل، ووحّد كل مواعيدك. النظام يحسب لك وقت التنقّل ويذكّرك قبل المغادرة بالوقت
+              المثالي.
+            </p>
+
+            <div class="mt-6 rounded-xl border border-ink-border bg-ink p-4">
+              <div class="flex items-center justify-between text-[11px] text-ink-muted">
+                <span>الأحد ١٦ يناير</span>
+                <span>{{ scheduleItems.length }} تنبيهات</span>
+              </div>
+              <div class="mt-3 space-y-2">
+                @for (item of scheduleItems; track item.time) {
+                  <div class="flex items-center gap-3 rounded-lg bg-ink-2 px-3 py-2">
+                    <span class="font-mono text-[11px] tabular-nums text-ink-muted">{{
+                      item.time
+                    }}</span>
+                    <div
+                      class="h-6 w-0.5 rounded-full"
+                      [class.bg-brand]="item.highlighted"
+                      [class.bg-ink-muted/40]="!item.highlighted"
+                    ></div>
+                    <span class="text-xs text-ink-foreground">{{ item.title }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </article>
+
+          <article
+            class="relative overflow-hidden rounded-2xl border border-ink-border bg-ink-2 p-6 lg:col-span-5"
+          >
+            <span
+              class="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-full border border-ink-border bg-ink text-[10px] text-ink-muted"
+              >02</span
+            >
+            <h3 class="font-display text-xl tracking-tight text-ink-foreground">التقويم الموحّد</h3>
+            <p class="mt-2 text-sm leading-relaxed text-ink-muted">
+              عرض يومي وأسبوعي وشهري مع كتل تنقل واضحة قبل كل موعد.
+            </p>
+            <div class="mt-6 rounded-xl border border-ink-border bg-ink p-3">
+              <div class="grid grid-cols-7 gap-1 text-center text-[10px] text-ink-muted">
+                @for (dayName of calendarWeekDays; track dayName) {
+                  <div class="py-1">{{ dayName }}</div>
+                }
+                @for (day of calendarDays; track day.day) {
+                  <div
+                    class="aspect-square grid place-items-center rounded"
+                    [class.bg-brand]="day.active"
+                    [class.text-white]="day.active"
+                    [class.bg-ink-3]="!day.active && day.hasEvent"
+                    [class.text-ink-foreground]="!day.active && day.hasEvent"
+                    [class.bg-ink-2]="!day.active && !day.hasEvent"
+                    [class.text-ink-muted]="!day.active && !day.hasEvent"
+                  >
+                    {{ day.day }}
+                  </div>
+                }
+              </div>
+            </div>
+          </article>
+
+          <article
+            class="relative overflow-hidden rounded-2xl border border-ink-border bg-ink-2 p-6 lg:col-span-5"
+          >
+            <span
+              class="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-full border border-ink-border bg-ink text-[10px] text-ink-muted"
+              >03</span
+            >
+            <h3 class="font-display text-xl tracking-tight text-ink-foreground">
+              تتبع المسار الفوري
+            </h3>
+            <p class="mt-2 text-sm leading-relaxed text-ink-muted">
+              تكامل مع الخرائط لحساب أسرع مسار في الوقت الفعلي، مع تحديث ديناميكي عند تغيّر الحركة.
+            </p>
+
+            <div
+              class="relative mt-6 h-44 overflow-hidden rounded-xl border border-ink-border bg-ink"
+            >
+              <img
+                src="/images/Map.png"
+                alt=""
+                class="h-full w-full object-cover opacity-25"
+                loading="lazy"
+              />
+              <svg class="absolute inset-0 h-full w-full" viewBox="0 0 400 180" fill="none">
+                <path
+                  d="M0 90 Q150 30 250 100 T400 70"
+                  stroke="hsl(var(--ink-border))"
+                  stroke-width="20"
+                />
+                <path
+                  d="M0 90 Q150 30 250 100 T400 70"
+                  stroke="hsl(var(--brand))"
+                  stroke-width="2.5"
+                  stroke-dasharray="5 4"
+                />
+                <circle cx="20" cy="90" r="6" fill="hsl(var(--ink-foreground))" />
+                <circle cx="380" cy="76" r="7" fill="hsl(var(--brand))" />
+              </svg>
+              <div
+                class="absolute bottom-3 right-3 rounded-lg bg-ink/90 px-2.5 py-1.5 backdrop-blur"
+              >
+                <div class="text-[10px] text-ink-muted">المسار الأسرع</div>
+                <div class="text-xs font-medium text-ink-foreground">12 دقيقة</div>
+              </div>
+            </div>
+          </article>
+
+          <article
+            class="relative overflow-hidden rounded-2xl border border-ink-border bg-ink-2 p-6 lg:col-span-7"
+          >
+            <span
+              class="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-full border border-ink-border bg-ink text-[10px] text-ink-muted"
+              >04</span
+            >
+            <h3 class="font-display text-xl tracking-tight text-ink-foreground">
+              رحلات اجتماعية مشتركة
+            </h3>
+            <p class="mt-2 text-sm leading-relaxed text-ink-muted">
+              ادعُ فريقك لنقطة لقاء واحدة، وتابع تقدّم كل شخص حتى الوصول.
+            </p>
+
+            <div class="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              @for (friend of travelers; track friend.name) {
+                <div class="rounded-xl border border-ink-border bg-ink p-3">
+                  <div class="flex items-center gap-2">
+                    <div
+                      class="grid h-7 w-7 place-items-center rounded-full bg-ink-3 text-[11px] text-ink-foreground"
+                    >
+                      {{ friend.name[0] }}
+                    </div>
+                    <div class="flex-1">
+                      <div class="text-[11px] text-ink-foreground">{{ friend.name }}</div>
+                      <div class="text-[9px] text-ink-muted">{{ friend.status }}</div>
+                    </div>
+                  </div>
+                  <div class="mt-2 h-1 overflow-hidden rounded-full bg-ink-3">
+                    <div
+                      class="h-full rounded-full bg-brand"
+                      [style.width.%]="friend.progress"
+                    ></div>
+                  </div>
+                </div>
+              }
+            </div>
+          </article>
+
+          <article
+            class="relative overflow-hidden rounded-2xl border border-ink-border bg-ink-2 p-6 lg:col-span-12"
+          >
+            <span
+              class="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-full border border-ink-border bg-ink text-[10px] text-ink-muted"
+              >05</span
+            >
+            <div class="grid gap-6 md:grid-cols-2 md:items-center">
+              <div>
+                <h3 class="font-display text-xl tracking-tight text-ink-foreground">
+                  تحليلات ذكية لإنتاجيتك
+                </h3>
+                <p class="mt-2 text-sm leading-relaxed text-ink-muted">
+                  افهم أنماط يومك عبر رؤى أسبوعية توضح الالتزام بالمواعيد والوقت المهدور في التنقل.
+                </p>
+              </div>
+
+              <div class="rounded-xl border border-ink-border bg-ink p-5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-ink-muted">الالتزام هذا الأسبوع</span>
+                  <span class="rounded-full bg-success/15 px-2 py-0.5 text-[10px] text-success"
+                    >+١٢٪</span
+                  >
+                </div>
+                <div class="mt-3 flex h-24 items-end gap-1.5">
+                  @for (bar of analyticsBars; track $index) {
+                    <div
+                      class="flex-1 rounded-t bg-gradient-to-t from-brand/20 to-brand"
+                      [style.height.%]="bar"
+                    ></div>
+                  }
+                </div>
+                <div class="mt-2 flex justify-between text-[10px] text-ink-muted">
+                  @for (dayName of calendarWeekDays; track dayName) {
+                    <span>{{ dayName }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="border-t border-ink-border px-4 py-24">
+      <div class="mx-auto max-w-6xl">
+        <header class="mx-auto max-w-2xl text-center">
+          <div
+            class="inline-flex items-center gap-1.5 rounded-full bg-primary-pink text-ink font-semibold px-3 py-1 text-[11px] uppercase tracking-widest"
+          >
+            كيف يعمل
+          </div>
+          <h2
+            class="font-display mt-4 text-balance text-4xl tracking-tight text-accent-500 md:text-5xl"
+          >
+            ابدأ رحلتك نحو تنظيم أفضل
+          </h2>
+          <p class="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-ink-muted md:text-base">
+            أربع خطوات بسيطة تفصلك عن إتقان وقتك.
+          </p>
+        </header>
+
+        <div class="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          @for (step of journeySteps; track step.id) {
+            <article
+              class="relative rounded-2xl border border-ink-border bg-ink-2 p-6"
+              data-aos="fade-up"
+            >
+              <span class="absolute right-2 top-2 font-display text-xl text-ink-muted/30">{{
+                step.id
+              }}</span>
+              <div class="grid h-10 w-10 place-items-center rounded-xl bg-brand/15 text-brand">
+                @switch (step.icon) {
+                  @case ('user') {
+                    <svg
+                      class="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z"
+                      ></path>
+                      <path d="M3 21C3 16.5817 7.02944 13 12 13C16.9706 13 21 16.5817 21 21"></path>
+                    </svg>
+                  }
+                  @case ('calendar') {
+                    <svg
+                      class="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M8 2V5"></path>
+                      <path d="M16 2V5"></path>
+                      <path d="M3 9H21"></path>
+                      <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                    </svg>
+                  }
+                  @case ('bell') {
+                    <svg
+                      class="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M18 8C18 4.68629 15.3137 2 12 2C8.68629 2 6 4.68629 6 8V11.764C6 12.7156 5.76231 13.6521 5.30893 14.488L4 17H20L18.6911 14.488C18.2377 13.6521 18 12.7156 18 11.764V8Z"
+                      ></path>
+                      <path
+                        d="M9 19C9.56329 20.1825 10.6931 21 12 21C13.3069 21 14.4367 20.1825 15 19"
+                      ></path>
+                    </svg>
+                  }
+                  @case ('target') {
+                    <svg
+                      class="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="9"></circle>
+                      <circle cx="12" cy="12" r="5"></circle>
+                      <circle cx="12" cy="12" r="2"></circle>
+                    </svg>
+                  }
+                }
+              </div>
+              <h3 class="font-display mt-4 text-lg text-ink-foreground">{{ step.title }}</h3>
+              <p class="mt-1.5 text-sm leading-relaxed text-ink-muted">{{ step.description }}</p>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="border-t border-ink-border px-4 py-24">
+      <div class="mx-auto max-w-6xl">
+        <header class="mx-auto max-w-2xl text-center">
+          <div
+            class="inline-flex items-center gap-1.5 rounded-full bg-primary-pink text-ink font-semibold px-3 py-1 text-[11px] uppercase tracking-widest"
+          >
+            الإحصائيات
+          </div>
+          <h2
+            class="font-display mt-4 text-balance text-4xl tracking-tight text-accent-500 md:text-5xl"
+          >
+            أرقام تتحدث عن التجربة
+          </h2>
+        </header>
+
+        <div
+          class="mt-12 grid gap-px overflow-hidden rounded-2xl border border-ink-border bg-ink-border md:grid-cols-3"
+        >
+          @for (stat of stats; track stat.label) {
+            <article class="bg-ink-2 p-8">
+              <div class="font-display text-5xl tracking-tight text-ink-foreground">
+                {{ stat.value }}
+              </div>
+              <div class="mt-2 text-sm font-medium text-ink-foreground">{{ stat.label }}</div>
+              <p class="mt-2 text-xs leading-relaxed text-ink-muted">{{ stat.description }}</p>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="border-t border-ink-border px-4 py-24">
+      <div class="mx-auto max-w-6xl">
+        <header class="mx-auto max-w-2xl text-center">
+          <div
+            class="inline-flex items-center gap-1.5 rounded-full bg-primary-pink text-ink font-semibold px-3 py-1 text-[11px] uppercase tracking-widest"
+          >
+            الأسعار
+          </div>
+          <h2
+            class="font-display mt-4 text-balance text-4xl tracking-tight text-accent-500 md:text-5xl"
+          >
+            اشترك حسب احتياجك
+          </h2>
+          <p class="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-ink-muted md:text-base">
+            ابدأ مجاناً ورقّ متى احتجت — بدون التزامات.
+          </p>
+        </header>
+
+        <div class="mt-12 grid gap-4 md:grid-cols-3">
+          @for (plan of pricingPlans; track plan.name) {
+            <article
+              class="relative flex flex-col rounded-2xl border p-7"
+              [class.border-brand]="plan.popular"
+              [class.bg-ink-2]="plan.popular"
+              [class.shadow-glow]="plan.popular"
+              [class.border-ink-border]="!plan.popular"
+              [class.bg-ink-2]="!plan.popular"
+            >
+              @if (plan.popular) {
+                <span
+                  class="absolute -top-3 right-7 rounded-full bg-brand px-3 py-1 text-[10px] font-medium text-white"
+                >
+                  {{ plan.tag }}
+                </span>
+              }
+
+              <div class="text-sm text-ink-muted">{{ plan.name }}</div>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span class="font-display text-5xl tracking-tight text-ink-foreground">{{
+                  plan.price
+                }}</span>
+                <span class="text-sm text-ink-muted">ج / شهر</span>
+              </div>
+
+              @if (!plan.popular) {
+                <div class="mt-1 text-xs text-ink-muted">{{ plan.tag }}</div>
+              }
+
+              <ul class="mt-6 space-y-2.5">
+                @for (feature of plan.features; track feature) {
+                  <li class="flex items-start gap-2 text-sm text-ink-foreground/90">
+                    <svg
+                      class="mt-0.5 h-4 w-4 shrink-0 text-brand"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.4"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 7L10.5 16.5L4 10"></path>
+                    </svg>
+                    {{ feature }}
+                  </li>
+                }
+              </ul>
+
+              @if (plan.popular) {
+                <a routerLink="/auth/signup" class="mt-7 btn-landing-primary w-full">
+                  {{ plan.cta }}
+                </a>
+              } @else {
+                <a routerLink="/auth/signup" class="mt-7 btn-landing-inverse w-full">
+                  {{ plan.cta }}
+                </a>
+              }
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="border-t border-ink-border px-4 py-24">
+      <div class="mx-auto max-w-3xl">
+        <header class="mx-auto max-w-2xl text-center">
+          <div
+            class="inline-flex items-center gap-1.5 rounded-full bg-primary-pink text-ink font-semibold px-3 py-1 text-[11px] uppercase tracking-widest"
+          >
+            الأسئلة الشائعة
+          </div>
+          <h2
+            class="font-display mt-4 text-balance text-4xl tracking-tight text-accent-500 md:text-5xl"
+          >
+            إجابات سريعة
+          </h2>
+        </header>
+
+        <div class="mt-10 space-y-2">
+          @for (faq of faqs; track faq.question; let i = $index) {
+            <article class="overflow-hidden rounded-xl border border-ink-border bg-ink-2">
+              <button
+                type="button"
+                class="flex w-full items-center justify-between gap-4 px-5 py-4 text-right"
+                (click)="toggleFaq(i)"
+              >
+                <span class="text-sm font-medium text-ink-foreground">{{ faq.question }}</span>
+                <svg
+                  class="h-4 w-4 text-ink-muted transition"
+                  [class.rotate-180]="isFaqOpen(i)"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M6 9L12 15L18 9"></path>
+                </svg>
+              </button>
+              @if (isFaqOpen(i)) {
+                <div class="px-5 pb-5 text-sm leading-relaxed text-ink-muted">{{ faq.answer }}</div>
+              }
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="team" class="border-t border-ink-border px-4 py-24">
+      <div class="mx-auto max-w-6xl">
+        <header class="mx-auto max-w-2xl text-center">
+          <div
+            class="inline-flex items-center gap-1.5 rounded-full bg-primary-pink text-ink font-semibold px-3 py-1 text-[11px] uppercase tracking-widest"
+          >
+            الفريق
+          </div>
+          <h2
+            class="font-display mt-4 text-balance text-4xl tracking-tight text-accent-500 md:text-5xl"
+          >
+            صُنّاع بلان جو
+          </h2>
+          <p class="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-ink-muted md:text-base">
+            الفريق الذي حوّل الفكرة إلى منتج يساعدك يومياً في الوصول على الوقت.
+          </p>
+        </header>
+
+        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          @for (creator of creators; track creator.name) {
+            <article class="rounded-2xl p-6 text-center">
+              <img
+                [src]="creator.image"
+                [alt]="creator.name"
+                class="mx-auto h-28 w-28 rounded-full border-2 border-brand/40 object-cover"
+                loading="lazy"
+              />
+              <h3 class="font-display mt-4 text-xl text-ink-foreground">{{ creator.name }}</h3>
+              <p class="mt-1 text-xs text-accent-500">{{ creator.role }}</p>
+              <p class="mt-3 text-sm leading-relaxed text-ink-muted">{{ creator.bio }}</p>
+
+              <div class="mt-4 flex justify-center gap-2">
+                @for (social of creator.socials; track social.label) {
+                  <a
+                    [href]="social.href"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-ink-border text-ink-muted transition hover:border-brand hover:text-brand"
+                    [attr.aria-label]="social.label"
+                  >
+                    <span class="sr-only">{{ social.label }}</span>
+                    <app-icon
+                      [iconName]="social.icon"
+                      [iconSize]="18"
+                      [iconColor]="'currentColor'"
+                      [iconStrokWidth]="1.9"
+                    ></app-icon>
+                  </a>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="border-t border-ink-border px-4 py-24">
+      <div class="mx-auto max-w-6xl">
+        <div
+          class="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-ink-border bg-ink-2 p-12 text-center"
+        >
+          <div
+            class="absolute -top-32 left-1/2 h-64 w-[600px] -translate-x-1/2 rounded-full bg-brand/20 blur-3xl"
+          ></div>
+          <div class="relative">
+            <svg
+              class="mx-auto h-6 w-6 text-brand"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M12 3l1.36 4.22H18l-3.64 2.64L15.72 14 12 11.36 8.28 14l1.36-4.14L6 7.22h4.64z"
+              ></path>
+            </svg>
+            <h2
+              class="font-display mt-4 text-balance text-4xl tracking-tight text-accent-500 md:text-5xl"
+            >
+              ابدأ رحلتك الآن، يومك يستحق التنظيم
+            </h2>
+            <p class="mx-auto mt-4 max-w-lg text-sm text-ink-muted md:text-base">
+              انضم لآلاف المستخدمين الذين حوّلوا فوضى يومهم إلى نظام بسيط وفعّال.
+            </p>
+            <div class="mt-7 flex flex-wrap justify-center gap-2">
+              <a routerLink="/auth/signup" class="btn-landing-primary"> ابدأ مجاناً </a>
+              <a routerLink="/auth/login" class="btn-landing-secondary"> تسجيل الدخول </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <app-landing-footer
+    [groups]="footerGroups"
+    [legalLinks]="legalLinks"
+    [copyrightText]="copyrightText"
+  ></app-landing-footer>
 </div>

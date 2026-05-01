@@ -1,409 +1,473 @@
 <div
-  class="min-h-screen flex items-center justify-center p-4 bg-(--bg-color) transition-colors duration-500"
+  class="relative min-h-screen overflow-hidden bg-ink text-ink-foreground transition-colors duration-300"
   dir="rtl"
 >
+  <!-- Background atmosphere -->
+  <div class="absolute inset-0 -z-10 bg-grid opacity-[0.07] mask-fade-b"></div>
   <div
-    class="w-full max-w-3xl rounded-2xl p-6 md:p-16 relative min-h-[600px] flex flex-col justify-center items-center"
-  >
-    <app-icon
-      (click)="currentStep() === 1 ? null : prevStep()"
-      [routerLink]="currentStep() === 1 ? '/' : null"
-      class="absolute top-6 right-6 md:top-8 md:right-8 text-(--muted-fg) hover:text-primary-500 transition-colors cursor-pointer"
-      [iconName]="'ArrowRight01Icon'"
-      [iconSize]="36"
-      [iconColor]="themeService.isDark() ? '#d1a294' : '#99a1af'"
-    ></app-icon>
+    class="absolute left-1/2 top-24 -z-10 h-[420px] w-[640px] -translate-x-1/2 rounded-full bg-brand/10 blur-3xl"
+  ></div>
 
-    <div class="text-center mb-6 md:mb-8">
-      <h1 class="text-3xl md:text-5xl font-extrabold text-(--fg-color) mb-3 md:mb-4">مرحباً بك</h1>
-      <p class="text-base md:text-xl text-(--muted-fg) font-medium italic">
-        خطوات قليلة وتسيطر على يومك!
-      </p>
-    </div>
+  <main class="relative grid place-items-center px-6 pb-16 pt-6 min-h-[calc(100vh-64px)]">
+    <div class="w-full max-w-md">
+      <!-- Progress Indicator -->
+      <div class="mb-8">
+        <div class="flex gap-2 w-full justify-center">
+          @for (step of [1, 2, 3, 4]; track step) {
+            <div
+              class="h-1.5 flex-1 rounded-full transition-colors duration-300"
+              [class.bg-brand]="currentStep() >= step"
+              [class.bg-ink-border]="currentStep() < step"
+            ></div>
+          }
+        </div>
+        <div class="mt-3 text-center text-xs text-ink-muted">
+          الخطوة {{ currentStep() }} من {{ totalSteps }}
+        </div>
+      </div>
 
-    <!-- Progress Steps (4 steps) -->
-    <div class="w-full max-w-sm mx-auto mb-8 md:mb-12 relative flex items-center justify-center px-2">
-      <div class="absolute h-0.5 bg-(--border-color) w-full top-1/2 -translate-y-1/2"></div>
       <div
-        class="absolute h-0.5 bg-primary-500 transition-all duration-500 top-1/2 -translate-y-1/2 right-0"
-        [style.width.%]="((currentStep() - 1) / (totalSteps - 1)) * 100"
-      ></div>
-
-      <div class="flex justify-between w-full relative z-10">
-        @for (step of [1, 2, 3, 4]; track step) {
-          <div [class]="stepCircleClass(step)">
-            @if (currentStep() > step) {
-              <app-icon [iconName]="'Tick01FreeIcons'" [iconSize]="16"></app-icon>
-            } @else {
-              {{ step }}
-            }
+        class="rounded-2xl border border-ink-border bg-ink-2/80 p-8 shadow-elevated backdrop-blur"
+      >
+        <!-- Error Message -->
+        @if (store.error() || fieldError()) {
+          <div
+            class="mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 p-4 text-sm font-medium text-red-600 dark:text-red-400 text-center border border-red-200 dark:border-red-800 animate-shake"
+          >
+            {{ store.error() || fieldError() }}
           </div>
         }
-      </div>
-    </div>
 
-    <!-- Error Message -->
-    @if (store.error() || fieldError()) {
-      <div
-        class="w-full max-w-md mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-center font-medium animate-shake"
-      >
-        {{ store.error() || fieldError() }}
-      </div>
-    }
+        <form class="space-y-4">
+          <!-- ═══ Step 1: معلومات أساسية ═══ -->
+          @if (currentStep() === 1) {
+            <div class="animate-fade-in-up">
+              <div class="text-center mb-7">
+                <h1 class="font-display text-3xl tracking-tight text-ink-foreground">
+                  مرحباً بك
+                </h1>
+                <p class="mt-2 text-sm text-ink-muted">
+                  لنبدأ بإنشاء حسابك الخاص
+                </p>
+              </div>
 
-    <form class="w-full max-w-md mx-auto">
-      <!-- ═══ Step 1: معلومات أساسية ═══ -->
-      @if (currentStep() === 1) {
-        <div class="space-y-4 md:space-y-5 animate-fade-in-up form-group">
-          <div>
-            <input
-              type="text"
-              [(ngModel)]="fullName"
-              name="fullName"
-              placeholder="الاسم كامل"
-              class="auth-input bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-base md:text-lg rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 block w-full px-4 py-3.5 md:py-4 placeholder:text-(--muted-fg) placeholder:text-right outline-none transition-all disabled:opacity-60"
-              [class.border-red-500]="step1Errors()['fullName']"
-            />
-            @if (step1Errors()['fullName']) {
-              <p class="text-primary-500 text-sm mt-2 font-medium animate-fade-in-up">{{ step1Errors()['fullName'] }}</p>
-            }
-          </div>
+              <div class="space-y-4">
+                <div class="space-y-1.5">
+                  <label class="text-sm font-medium text-surface-900 dark:text-ink-fg"
+                    >الاسم كامل</label
+                  >
+                  <input
+                    type="text"
+                    [(ngModel)]="fullName"
+                    name="fullName"
+                    placeholder="plan go"
+                    class="h-11 w-full rounded-lg border border-ink-border bg-ink px-3 text-ink-foreground placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:opacity-60 transition-colors"
+                    [class.border-red-500]="step1Errors()['fullName']"
+                  />
+                  @if (step1Errors()['fullName']) {
+                    <p class="text-brand text-xs mt-1">{{ step1Errors()['fullName'] }}</p>
+                  }
+                </div>
 
-          <div>
-            <input
-              type="email"
-              [(ngModel)]="email"
-              name="email"
-              placeholder="البريد الإلكتروني"
-              class="auth-input bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-base md:text-lg rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 block w-full px-4 py-3.5 md:py-4 placeholder:text-(--muted-fg) placeholder:text-right outline-none transition-all"
-              [class.border-red-500]="step1Errors()['email']"
-            />
-            @if (step1Errors()['email']) {
-              <p class="text-primary-500 text-sm mt-2 font-medium animate-fade-in-up">{{ step1Errors()['email'] }}</p>
-            }
-          </div>
+                <div class="space-y-1.5">
+                  <label class="text-sm font-medium text-ink-foreground"
+                    >البريد الإلكتروني</label
+                  >
+                  <input
+                    type="email"
+                    [(ngModel)]="email"
+                    name="email"
+                    placeholder="name@plango.com"
+                    class="h-11 w-full rounded-lg border border-ink-border bg-ink px-3 text-ink-foreground placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand transition-colors"
+                    [class.border-red-500]="step1Errors()['email']"
+                  />
+                  @if (step1Errors()['email']) {
+                    <p class="text-brand text-xs mt-1">{{ step1Errors()['email'] }}</p>
+                  }
+                </div>
 
-          <div>
-            <input
-              type="tel"
-              [(ngModel)]="phoneNumber"
-              name="phoneNumber"
-              placeholder="رقم الهاتف"
-              class="auth-input bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-base md:text-lg rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 block w-full px-4 py-3.5 md:py-4 placeholder:text-(--muted-fg) placeholder:text-right outline-none transition-all"
-              [class.border-red-500]="step1Errors()['phoneNumber']"
-            />
-            @if (step1Errors()['phoneNumber']) {
-              <p class="text-primary-500 text-sm mt-2 font-medium animate-fade-in-up">{{ step1Errors()['phoneNumber'] }}</p>
-            }
-          </div>
+                <div class="space-y-1.5">
+                  <label class="text-sm font-medium text-ink-foreground"
+                    >رقم الهاتف</label
+                  >
+                  <input
+                    type="tel"
+                    [(ngModel)]="phoneNumber"
+                    name="phoneNumber"
+                    placeholder="01xxxxxxxxx"
+                    class="h-11 w-full rounded-lg border border-ink-border bg-ink px-3 text-ink-foreground placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand transition-colors"
+                    [class.border-red-500]="step1Errors()['phoneNumber']"
+                  />
+                  @if (step1Errors()['phoneNumber']) {
+                    <p class="text-brand text-xs mt-1">{{ step1Errors()['phoneNumber'] }}</p>
+                  }
+                </div>
 
-          <div>
-            <input
-              type="password"
-              [(ngModel)]="password"
-              name="password"
-              placeholder="كلمة المرور"
-              class="auth-input bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-base md:text-lg rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 block w-full px-4 py-3.5 md:py-4 placeholder:text-(--muted-fg) placeholder:text-right outline-none transition-all"
-              [class.border-red-500]="step1Errors()['password']"
-            />
-            @if (step1Errors()['password']) {
-              <p class="text-primary-500 text-sm mt-2 font-medium animate-fade-in-up">{{ step1Errors()['password'] }}</p>
-            }
-          </div>
-        </div>
-      }
-
-      <!-- ═══ Step 2: الموقع والمواعيد ═══ -->
-      @if (currentStep() === 2) {
-        <div class="space-y-6 md:space-y-8 animate-fade-in-up">
-          <div class="relative">
-            <label class="block mb-3 font-bold text-(--fg-color) text-base md:text-lg px-1 transition-colors"
-              >حدد موقعك الحالي؟</label
-            >
-
-            <div class="relative group">
-              <select
-                [(ngModel)]="city"
-                name="city"
-                class="auth-input !appearance-none !bg-none cursor-pointer pr-4 pl-12 transition-all hover:border-primary-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none w-full text-(--fg-color)"
-              >
-                <option value="" disabled class="bg-(--card-bg) text-(--muted-fg)">
-                  اختر المدينة...
-                </option>
-                <option value="القاهرة" class="bg-(--card-bg) text-(--fg-color)">القاهرة</option>
-                <option value="الإسكندرية" class="bg-(--card-bg) text-(--fg-color)">الإسكندرية</option>
-                <option value="المنصورة" class="bg-(--card-bg) text-(--fg-color)">المنصورة</option>
-              </select>
-
-              <div
-                class="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-(--muted-fg) group-hover:text-primary-500 transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
+                <div class="space-y-1.5">
+                  <label class="text-sm font-medium text-ink-foreground"
+                    >كلمة المرور</label
+                  >
+                  <input
+                    type="password"
+                    [(ngModel)]="password"
+                    name="password"
+                    placeholder="••••••••"
+                    class="h-11 w-full rounded-lg border border-ink-border bg-ink px-3 text-ink-foreground placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand transition-colors"
+                    [class.border-red-500]="step1Errors()['password']"
+                  />
+                  @if (step1Errors()['password']) {
+                    <p class="text-brand text-xs mt-1">{{ step1Errors()['password'] }}</p>
+                  }
+                </div>
               </div>
             </div>
-          </div>
+          }
 
-          <div>
-            <div class="flex items-center justify-between mb-4 px-1 gap-2">
-              <label class="font-bold text-(--fg-color) text-base md:text-lg transition-colors shrink-0"
-                >حدد مواعيدك المتكررة؟</label
-              >
-              <span
-                class="text-[11px] md:text-sm text-primary-500 font-bold bg-primary-500/10 px-2 md:px-3 py-1 rounded-full whitespace-nowrap"
-                >يمكنك اختيار أكثر من يوم</span
-              >
+          <!-- ═══ Step 2: الموقع والمواعيد ═══ -->
+          @if (currentStep() === 2) {
+            <div class="animate-fade-in-up">
+              <div class="text-center mb-7">
+                <h1 class="font-display text-3xl tracking-tight text-ink-foreground">
+                  تخصيص المواعيد
+                </h1>
+                <p class="mt-2 text-sm text-ink-muted">
+                  أخبرنا عن روتينك اليومي
+                </p>
+              </div>
+
+              <div class="space-y-6">
+                <div class="space-y-1.5">
+                  <label class="text-sm font-medium text-ink-foreground"
+                    >حدد موقعك الحالي</label
+                  >
+                  <div class="relative">
+                    <select
+                      [(ngModel)]="city"
+                      name="city"
+                      class="h-11 w-full appearance-none rounded-lg border border-ink-border bg-ink px-3 text-ink-foreground placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand transition-colors cursor-pointer"
+                    >
+                      <option
+                        value=""
+                        disabled
+                        class="bg-ink text-ink-muted"
+                      >
+                        اختر المدينة...
+                      </option>
+                      <option
+                        value="القاهرة"
+                        class="bg-ink text-ink-foreground"
+                      >
+                        القاهرة
+                      </option>
+                      <option
+                        value="الإسكندرية"
+                        class="bg-ink text-ink-foreground"
+                      >
+                        الإسكندرية
+                      </option>
+                      <option
+                        value="المنصورة"
+                        class="bg-ink text-ink-foreground"
+                      >
+                        المنصورة
+                      </option>
+                    </select>
+                    <div
+                      class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted"
+                    >
+                      <svg
+                        class="h-4 w-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <label class="text-sm font-medium text-ink-foreground"
+                      >مواعيدك المتكررة</label
+                    >
+                    <span
+                      class="text-[10px] text-brand bg-brand/10 px-2 py-0.5 rounded-full font-medium"
+                      >اختر يوم أو أكثر</span
+                    >
+                  </div>
+                  <div class="grid grid-cols-3 gap-2">
+                    @for (
+                      day of [
+                        { name: 'يومياً' },
+                        { name: 'السبت' },
+                        { name: 'الأحد' },
+                        { name: 'الاثنين' },
+                        { name: 'الثلاثاء' },
+                        { name: 'الأربعاء' },
+                        { name: 'الخميس' },
+                        { name: 'الجمعة' },
+                      ];
+                      track day.name
+                    ) {
+                      <button
+                        type="button"
+                        (click)="toggleDay(day.name)"
+                        [class]="
+                          isDaySelected(day.name)
+                            ? 'bg-ink-foreground text-ink border-transparent'
+                            : 'bg-transparent text-ink-foreground border-ink-border hover:bg-ink-3'
+                        "
+                        class="h-10 rounded-lg border text-sm font-medium transition-colors"
+                      >
+                        {{ day.name }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
             </div>
+          }
 
-            <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 md:gap-3">
-              @for (
-                day of [
-                  { name: 'يومياً', special: false },
-                  { name: 'السبت', special: false },
-                  { name: 'الأحد', special: false },
-                  { name: 'الاثنين', special: false },
-                  { name: 'الثلاثاء', special: false },
-                  { name: 'الأربعاء', special: false },
-                  { name: 'الخميس', special: false },
-                  { name: 'الجمعة', special: false },
-                ];
-                track day.name
-              ) {
+          <!-- ═══ Step 3: التخصيص ═══ -->
+          @if (currentStep() === 3) {
+            <div class="animate-fade-in-up">
+              <div class="text-center mb-7">
+                <h1 class="font-display text-3xl tracking-tight text-ink-foreground">
+                  الإعدادات
+                </h1>
+                <p class="mt-2 text-sm text-ink-muted">
+                  فعل الخيارات التي تناسبك
+                </p>
+              </div>
+
+              <div class="space-y-3">
+                <div
+                  class="flex items-center justify-between rounded-xl border border-ink-border bg-ink p-4"
+                >
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="flex h-10 w-10 items-center justify-center rounded-lg bg-ink-2"
+                    >
+                      <app-icon
+                        [iconName]="'GoogleIcon'"
+                        [iconSize]="20"
+                        [iconColor]="'#d32e18'"
+                      ></app-icon>
+                    </div>
+                    <div>
+                      <div class="text-sm font-bold text-ink-foreground">
+                        مزامنة تقويم جوجل
+                      </div>
+                      <div class="text-xs text-ink-muted">
+                        ربط مواعيدك الحالية
+                      </div>
+                    </div>
+                  </div>
+                  <label class="relative inline-flex cursor-pointer items-center">
+                    <input
+                      type="checkbox"
+                      [checked]="googleCalendarSync()"
+                      (change)="googleCalendarSync.set(!googleCalendarSync())"
+                      class="peer sr-only"
+                    />
+                    <div
+                      class="peer h-6 w-11 rounded-full bg-ink-3 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-brand peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full"
+                    ></div>
+                  </label>
+                </div>
+
+                <div
+                  class="flex items-center justify-between rounded-xl border border-ink-border bg-ink p-4"
+                >
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="flex h-10 w-10 items-center justify-center rounded-lg bg-ink-2"
+                    >
+                      <app-icon
+                        [iconName]="'Notification01FreeIcons'"
+                        [iconSize]="20"
+                        [iconColor]="'#d32e18'"
+                      ></app-icon>
+                    </div>
+                    <div>
+                      <div class="text-sm font-bold text-ink-foreground">
+                        تفعيل الإشعارات
+                      </div>
+                      <div class="text-xs text-ink-muted">
+                        تذكير ذكي قبل موعدك
+                      </div>
+                    </div>
+                  </div>
+                  <label class="relative inline-flex cursor-pointer items-center">
+                    <input
+                      type="checkbox"
+                      [checked]="notificationsEnabled()"
+                      (change)="notificationsEnabled.set(!notificationsEnabled())"
+                      class="peer sr-only"
+                    />
+                    <div
+                      class="peer h-6 w-11 rounded-full bg-surface-200 dark:bg-ink-3 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-brand peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full"
+                    ></div>
+                  </label>
+                </div>
+
+                <div
+                  class="flex items-center justify-between rounded-xl border border-ink-border bg-ink p-4"
+                >
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="flex h-10 w-10 items-center justify-center rounded-lg bg-ink-2"
+                    >
+                      <app-icon
+                        [iconName]="'Location01FreeIcons'"
+                        [iconSize]="20"
+                        [iconColor]="'#d32e18'"
+                      ></app-icon>
+                    </div>
+                    <div>
+                      <div class="text-sm font-bold text-ink-foreground">
+                        تفعيل الموقع
+                      </div>
+                      <div class="text-xs text-ink-muted">
+                        حساب المسافة بدقة
+                      </div>
+                    </div>
+                  </div>
+                  <label class="relative inline-flex cursor-pointer items-center">
+                    <input
+                      type="checkbox"
+                      [checked]="locationTracking()"
+                      (change)="locationTracking.set(!locationTracking())"
+                      class="peer sr-only"
+                    />
+                    <div
+                      class="peer h-6 w-11 rounded-full bg-surface-200 dark:bg-ink-3 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-brand peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full"
+                    ></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- ═══ Step 4: التحقق من OTP ═══ -->
+          @if (currentStep() === 4) {
+            <div class="animate-fade-in-up text-center">
+              <div class="mb-6 flex justify-center">
+                <div
+                  class="flex h-16 w-16 items-center justify-center rounded-full bg-brand/10 text-brand"
+                >
+                  <app-icon
+                    [iconName]="'MailOpen01FreeIcons'"
+                    [iconSize]="32"
+                    [iconColor]="'currentColor'"
+                  ></app-icon>
+                </div>
+              </div>
+              <h2
+                class="mb-2 font-display text-2xl tracking-tight text-ink-foreground"
+              >
+                التحقق من البريد
+              </h2>
+              <p class="mb-8 text-sm text-ink-muted">
+                تم إرسال كود التحقق إلى<br />
+                <span class="font-medium text-ink-foreground">{{ email }}</span>
+              </p>
+
+              <div class="mb-8 flex justify-center gap-2" dir="ltr">
+                @for (digit of otpDigits(); track $index) {
+                  <input
+                    type="text"
+                    maxlength="1"
+                    inputmode="numeric"
+                    class="h-12 w-10 md:h-14 md:w-12 rounded-lg border border-ink-border bg-ink text-center text-xl font-bold text-ink-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    [value]="digit"
+                    (input)="onOtpInput($event, $index)"
+                    (keydown)="onOtpKeyDown($event, $index)"
+                    (paste)="onOtpPaste($event)"
+                    autocomplete="one-time-code"
+                  />
+                }
+              </div>
+
+              <p class="text-sm text-ink-muted">
+                لم يصلك الكود؟
                 <button
                   type="button"
-                  (click)="toggleDay(day.name)"
-                  [class]="
-                    isDaySelected(day.name)
-                      ? 'bg-primary-500 text-white border-primary-500 shadow-lg shadow-primary-500/20'
-                      : 'bg-(--input-bg) text-(--fg-color) border-(--border-color) hover:border-primary-500 hover:text-primary-500'
-                  "
-                  class="py-2.5 md:py-3 px-1 rounded-xl md:rounded-2xl border-2 text-sm md:text-base font-bold transition-all active:scale-95 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+                  (click)="resendOtp()"
+                  [disabled]="store.isLoading()"
+                  class="font-medium text-ink-foreground hover:underline disabled:opacity-50"
                 >
-                  {{ day.name }}
+                  إعادة الإرسال
                 </button>
-              }
+              </p>
             </div>
-          </div>
-        </div>
-      }
-
-      <!-- ═══ Step 3: التخصيص ═══ -->
-      @if (currentStep() === 3) {
-        <div class="space-y-4 md:space-y-6 animate-fade-in-up">
-          <div class="text-right px-1 mb-2">
-            <h3 class="text-lg md:text-xl font-bold text-(--fg-color)">تخصيص التجربة</h3>
-            <p class="text-sm text-(--muted-fg)">فعل الخيارات التي تناسب نمط حياتك</p>
-          </div>
-
-          <!-- Google Calendar -->
-          <div
-            class="group flex items-center justify-between p-4 md:p-5 bg-(--input-bg) border-2 border-(--border-color) rounded-2xl md:rounded-[2rem] hover:border-primary-500 transition-all duration-300 shadow-sm"
-          >
-            <div class="flex items-center gap-3 md:gap-4">
-              <div
-                class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl md:rounded-2xl bg-(--card-bg) border border-(--border-color) group-hover:scale-110 transition-transform shrink-0"
-              >
-                <app-icon
-                  [iconName]="'GoogleIcon'"
-                  [iconSize]="24"
-                  [iconColor]="'#d32e18'"
-                ></app-icon>
-              </div>
-              <div>
-                <span class="block font-extrabold text-(--fg-color) text-base md:text-lg"
-                  >مزامنة تقويم جوجل</span
-                >
-                <span class="text-xs text-(--muted-fg)">ربط مواعيدك الحالية تلقائياً</span>
-              </div>
-            </div>
-
-            <label class="relative inline-flex items-center cursor-pointer shrink-0">
-              <input
-                type="checkbox"
-                [checked]="googleCalendarSync()"
-                (change)="googleCalendarSync.set(!googleCalendarSync())"
-                class="sr-only peer"
-              />
-              <div
-                class="w-11 h-6 md:w-12 md:h-6.5 bg-gray-300 dark:bg-gray-700 rounded-full peer peer-checked:bg-primary-500 transition-colors duration-300 after:content-[''] after:absolute after:top-[3px] md:after:top-[5px] after:start-[3px] md:after:start-[5px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5 md:peer-checked:after:translate-x-5.5 rtl:peer-checked:after:-translate-x-5 rtl:md:peer-checked:after:-translate-x-5.5"
-              ></div>
-            </label>
-          </div>
-
-          <!-- Notifications -->
-          <div
-            class="group flex items-center justify-between p-4 md:p-5 bg-(--input-bg) border-2 border-(--border-color) rounded-2xl md:rounded-[2rem] hover:border-primary-500 transition-all duration-300 shadow-sm"
-          >
-            <div class="flex items-center gap-3 md:gap-4">
-              <div
-                class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl md:rounded-2xl bg-(--card-bg) border border-(--border-color) group-hover:scale-110 transition-transform shrink-0"
-              >
-                <app-icon
-                  [iconName]="'Notification01FreeIcons'"
-                  [iconSize]="24"
-                  [iconColor]="'#d32e18'"
-                ></app-icon>
-              </div>
-              <div>
-                <span class="block font-extrabold text-(--fg-color) text-base md:text-lg">تفعيل الإشعارات</span>
-                <span class="text-xs text-(--muted-fg)">تذكير ذكي قبل الموعد بـ 30 دقيقة</span>
-              </div>
-            </div>
-
-            <label class="relative inline-flex items-center cursor-pointer shrink-0">
-              <input
-                type="checkbox"
-                [checked]="notificationsEnabled()"
-                (change)="notificationsEnabled.set(!notificationsEnabled())"
-                class="sr-only peer"
-              />
-              <div
-                class="w-11 h-6 md:w-12 md:h-6.5 bg-gray-300 dark:bg-gray-700 rounded-full peer peer-checked:bg-primary-500 transition-colors duration-300 after:content-[''] after:absolute after:top-[3px] md:after:top-[5px] after:start-[3px] md:after:start-[5px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5 md:peer-checked:after:translate-x-5.5 rtl:peer-checked:after:-translate-x-5 rtl:md:peer-checked:after:-translate-x-5.5"
-              ></div>
-            </label>
-          </div>
-
-          <!-- Location -->
-          <div
-            class="group flex items-center justify-between p-4 md:p-5 bg-(--input-bg) border-2 border-(--border-color) rounded-2xl md:rounded-[2rem] hover:border-primary-500 transition-all duration-300 shadow-sm"
-          >
-            <div class="flex items-center gap-3 md:gap-4">
-              <div
-                class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl md:rounded-2xl bg-(--card-bg) border border-(--border-color) group-hover:scale-110 transition-transform shrink-0"
-              >
-                <app-icon
-                  [iconName]="'Location01FreeIcons'"
-                  [iconSize]="24"
-                  [iconColor]="'#d32e18'"
-                ></app-icon>
-              </div>
-              <div>
-                <span class="block font-extrabold text-(--fg-color) text-base md:text-lg">تفعيل الموقع</span>
-                <span class="text-xs text-(--muted-fg)">حساب وقت الوصول بناءً على مكانك</span>
-              </div>
-            </div>
-
-            <label class="relative inline-flex items-center cursor-pointer shrink-0">
-              <input
-                type="checkbox"
-                [checked]="locationTracking()"
-                (change)="locationTracking.set(!locationTracking())"
-                class="sr-only peer"
-              />
-              <div
-                class="w-11 h-6 md:w-12 md:h-6.5 bg-gray-300 dark:bg-gray-700 rounded-full peer peer-checked:bg-primary-500 transition-colors duration-300 after:content-[''] after:absolute after:top-[3px] md:after:top-[5px] after:start-[3px] md:after:start-[5px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5 md:peer-checked:after:translate-x-5.5 rtl:peer-checked:after:-translate-x-5 rtl:md:peer-checked:after:-translate-x-5.5"
-              ></div>
-            </label>
-          </div>
-        </div>
-      }
-
-      <!-- ═══ Step 4: التحقق من OTP ═══ -->
-      @if (currentStep() === 4) {
-        <div class="animate-fade-in-up">
-          <div class="text-center mb-8 md:mb-10">
-            <div class="mb-6 flex justify-center">
-              <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary-500/10 flex items-center justify-center">
-                <app-icon [iconName]="'MailOpen01FreeIcons'" [iconSize]="36" [iconColor]="'#d32e18'"></app-icon>
-              </div>
-            </div>
-            <h2 class="text-2xl md:text-3xl font-extrabold text-(--fg-color) mb-3">التحقق من بريدك</h2>
-            <p class="text-sm md:text-base text-(--muted-fg) font-medium leading-relaxed">
-              تم إرسال كود مكون من 6 أرقام إلى
-              <br />
-              <span class="text-primary-500 font-bold">{{ email }}</span>
-            </p>
-          </div>
-
-          <!-- OTP Inputs -->
-          <div class="flex justify-center gap-2 md:gap-3 mb-8" dir="ltr">
-            @for (digit of otpDigits(); track $index) {
-              <input
-                type="text"
-                maxlength="1"
-                inputmode="numeric"
-                class="otp-digit"
-                [value]="digit"
-                (input)="onOtpInput($event, $index)"
-                (keydown)="onOtpKeyDown($event, $index)"
-                (paste)="onOtpPaste($event)"
-                autocomplete="one-time-code"
-              />
-            }
-          </div>
-
-          <div class="text-center mb-6">
-            <p class="text-(--muted-fg) text-sm font-medium">
-              لم يصلك الكود؟
-              <button
-                type="button"
-                (click)="resendOtp()"
-                [disabled]="store.isLoading()"
-                class="text-primary-500 font-bold hover:underline transition-all disabled:opacity-50 cursor-pointer"
-              >
-                إعادة الإرسال
-              </button>
-            </p>
-
-          </div>
-        </div>
-      }
-
-      <!-- ═══ Submit / Next Button ═══ -->
-      <div class="mt-8 md:mt-10">
-        <button
-          type="button"
-          (click)="currentStep() === 4 ? verifyAndSignUp() : nextStep()"
-          [disabled]="store.isLoading()"
-          class="text-white bg-primary-500 hover:bg-primary-600 font-bold rounded-xl text-lg md:text-xl w-full px-5 py-3.5 md:py-4 shadow-lg shadow-primary-500/20 active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-        >
-          @if (store.isLoading()) {
-            <svg class="animate-spin h-5 w-5 md:h-6 md:w-6 text-white" viewBox="0 0 24 24">
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-                fill="none"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            <span>{{ currentStep() === 4 ? 'جاري التحقق...' : 'جاري التحميل...' }}</span>
-          } @else {
-            @switch (currentStep()) {
-              @case (4) { <span>تأكيد وإنشاء الحساب</span> }
-              @default { <span>التالي</span> }
-            }
           }
-        </button>
+
+          <!-- Action Button -->
+          <button
+            type="button"
+            (click)="currentStep() === 4 ? verifyAndSignUp() : nextStep()"
+            [disabled]="store.isLoading()"
+            class="mt-8 h-11 w-full rounded-lg bg-brand px-4 text-base font-medium text-white hover:brightness-90 transition-colors disabled:cursor-not-allowed disabled:opacity-70 flex items-center justify-center gap-2"
+          >
+            @if (store.isLoading()) {
+              <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                  fill="none"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <span>{{ currentStep() === 4 ? 'جاري التحقق...' : 'جاري التحميل...' }}</span>
+            } @else {
+              <span>{{
+                currentStep() === 4
+                  ? 'تأكيد وإنشاء حساب'
+                  : currentStep() === totalSteps
+                    ? 'التالي'
+                    : 'التالي'
+              }}</span>
+              <svg
+                class="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            }
+          </button>
+        </form>
 
         @if (currentStep() === 1) {
-          <div class="mt-6 md:mt-8 text-center">
-            <p class="text-(--muted-fg) font-medium text-sm md:text-base">
-              لديك حساب بالفعل؟
-              <a
-                routerLink="/auth/login"
-                class="text-primary-500 font-bold hover:underline transition-all"
-                >تسجيل دخول</a
-              >
-            </p>
-          </div>
+          <p class="mt-6 text-center text-sm text-ink-muted">
+            لديك حساب بالفعل؟
+            <a
+              routerLink="/auth/login"
+              class="font-medium text-ink-foreground hover:underline"
+            >
+              تسجيل دخول
+            </a>
+          </p>
         }
       </div>
-    </form>
-  </div>
+    </div>
+  </main>
 </div>

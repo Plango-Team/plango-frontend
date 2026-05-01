@@ -1,22 +1,20 @@
-/* 1. استدعاء Tailwind v4 و Flowbite */
+/* 1. Google Fonts MUST come before tailwindcss */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* 2. Tailwind v4 core */
 @import 'tailwindcss';
 @import 'aos/dist/aos.css';
 @plugin "flowbite/plugin";
 @source "../node_modules/flowbite";
 
-/* 2. تعريف الخطوط (الـ Fonts) */
+/* ★ CRITICAL: Tell Tailwind v4 to use class-based dark mode (.dark on <html>) */
+@custom-variant dark (&:is(.dark *));
+
+/* 3. Local font faces (auth/dashboard) */
 @font-face {
   font-family: 'Myriad Pro';
   src: url('./assets/fonts/English/MYRIADPRO-REGULAR.woff2') format('woff2');
   font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Myriad Pro';
-  src: url('./assets/fonts/English/MYRIADPRO-BOLD.woff2') format('woff2');
-  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -30,265 +28,390 @@
   unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
 }
 
-@font-face {
-  font-family: 'Myriad Arabic';
-  src: url('./assets/fonts/Arabic/MMSFONTMyriadArabic-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
-}
-
-/* 3. تعريف الـ Theme (Tailwind v4 Config) */
+/* 4. Theme tokens */
 @theme {
-  /* Website Colors (Plan Go Primary Red) */
-  --color-primary-50: #fceae8;
-  --color-primary-100: #fad6d1;
-  --color-primary-200: #f5ada3;
-  --color-primary-300: #ef8476;
   --color-primary-400: #ea5b48;
-  --color-primary-500: #d32e18; /* Main Brand Color */
+  --color-primary-500: #d32e18;
   --color-primary-600: #b72815;
   --color-primary-700: #891e10;
+  --color-primary-800: #5c140a;
+  --color-primary-900: #2e0a05;
+  --color-primary-pink: #ed87ed;
+
+  --color-accent-50: #fef4e7;
+  --color-accent-100: #fce9cf;
+  --color-accent-200: #f9d49f;
+  --color-accent-300: #f6be6f;
+  --color-accent-400: #f4a83e;
+  --color-accent-500: #f29c24;
+  --color-accent-600: #c1750b;
+  --color-accent-700: #905809;
+  --color-accent-800: #603b06;
+  --color-accent-900: #301d03;
+  --color-accent-950: #180f01;
+
+  --color-surface-50: #f7f0ed;
+  --color-surface-100: #f0e0db;
+  --color-surface-200: #e0c1b8;
+  --color-surface-300: #d1a294;
+  --color-surface-400: #c18471;
+  --color-surface-600: #8e513e;
+  --color-surface-700: #6b3c2e;
+  --color-surface-800: #47281f;
+  --color-surface-900: #24140f;
+  --color-surface-950: #120a08;
+
+  --color-ink: hsl(var(--ink));
+  --color-ink-2: hsl(var(--ink-2));
+  --color-ink-3: hsl(var(--ink-3));
+  --color-ink-fg: hsl(var(--ink-foreground));
+  --color-ink-muted: hsl(var(--ink-muted));
+  --color-ink-border: hsl(var(--ink-border));
+
+  --color-brand: hsl(var(--brand));
+  --color-brand-foreground: hsl(var(--brand-foreground));
+  --color-brand-soft: hsl(var(--brand-soft));
+
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+
+  --color-bg-main: var(--bg-color);
+  --color-fg-main: var(--fg-color);
+  --color-card-main: var(--card-bg);
+  --color-others-main: var(--others-bg);
+  --color-gray-main: var(--gray-color);
+  --color-light-gray-main: var(--light-gray-color);
+
+  --font-sans:
+    'IBM Plex Sans Arabic', 'Inter', 'Myriad Arabic', 'Myriad Pro', system-ui, sans-serif;
+  --font-plango: 'IBM Plex Sans Arabic', 'Inter', 'Myriad Arabic', 'Myriad Pro', sans-serif;
+
   --shadow-main: 0 4px 15px 0 var(--main-shadow-color);
+  --shadow-elevated: 0 10px 30px -10px rgba(0, 0, 0, 0.15), 0 4px 12px -4px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 0 0 1px rgba(211, 46, 24, 0.2), 0 20px 60px -20px rgba(211, 46, 24, 0.4);
 
-  /* ربط المتغيرات الديناميكية */
-  --color-background: var(--bg-color);
-  --color-foreground: var(--fg-color);
-  --color-card: var(--card-bg);
-  --color-border: var(--border-color);
-  --color-input: var(--input-bg);
-  --color-muted: var(--muted-fg);
-  --color-box-bg: var(--box-bg);
+  --animate-fade-up: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in: fade-in 0.4s ease-out both;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
 
-  /* الخطوط */
-  --font-plango: 'Myriad Arabic', 'Myriad Pro', sans-serif;
-
-  /* أنيميشن مخصص */
-  --animate-wiggle: wiggle 3s ease-in-out infinite;
-  --animate-bounce-slow: bounce 3s infinite;
-
-  @keyframes wiggle {
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes pulse-glow {
     0%,
     100% {
-      transform: rotate(-3deg);
+      box-shadow: 0 0 0 0 rgba(211, 46, 24, 0.4);
     }
     50% {
-      transform: rotate(3deg);
+      box-shadow: 0 0 0 12px rgba(211, 46, 24, 0);
     }
   }
 }
 
-/* 4. إعدادات الـ Base والـ Dark Mode */
+/* 5. Base */
 @layer base {
   :root {
-    --bg-color: #ffffff;
-    --card-bg: #fdfaf9;
-    --fg-color: #170503;
-    --muted-fg: #8e513e;
-    --border-color: #e0c1b8;
-    --input-bg: #f7f0ed;
-    --box-bg: #ece0dc;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 7%;
+    --brand: 0 74% 53%;
+    --brand-foreground: 0 0% 100%;
+    --brand-soft: 0 74% 96%;
+    --success: 142 71% 40%;
+    --warning: 38 92% 50%;
+
+    --ink: 0 0% 100%;
+    --ink-2: 0 0% 98%;
+    --ink-3: 0 0% 94%;
+    --ink-foreground: 0 0% 7%;
+    --ink-muted: 0 0% 40%;
+    --ink-border: 0 0% 90%;
+
+    --bg-color: #fffaf9;
+    --fg-color: #140300;
+    --card-bg: #e8d1ca;
+    --others-bg: #ffffff;
+    --gray-color: #7c7c7c;
+    --light-gray-color: #9a9a9a;
     --main-shadow-color: rgba(211, 46, 24, 0.1);
   }
-
   .dark {
-    --bg-color: #120a08;
-    --card-bg: #1c1412;
-    --fg-color: #f7f0ed;
-    --muted-fg: #d1a294;
-    --border-color: #3f2f2c;
-    --input-bg: #24140f;
-    --box-bg: #d32e18;
-    --main-shadow-color: rgba(0, 0, 0, 0.4);
+    --background: 0 0% 6%;
+    --foreground: 0 0% 96%;
+    --brand-soft: 0 74% 12%;
+
+    --ink: 0 0% 6%;
+    --ink-2: 0 0% 9%;
+    --ink-3: 0 0% 13%;
+    --ink-foreground: 0 0% 96%;
+    --ink-muted: 0 0% 65%;
+    --ink-border: 0 0% 16%;
+
+    --bg-color: #0f0f0f;
+    --fg-color: #ffffff;
+    --card-bg: #140300;
+    --others-bg: #1f0d0a;
+    --gray-color: #888888;
+    --light-gray-color: #cbcbcb;
+    --main-shadow-color: rgba(0, 0, 0, 0.5);
+  }
+
+  html {
+    font-family: 'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif;
+    font-size: 16px;
   }
 
   body {
     background-color: var(--bg-color);
     color: var(--fg-color);
-    font-family: var(--font-plango);
+    font-family: 'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif;
     transition:
-      background-color 0.5s ease,
-      color 0.5s ease;
+      background-color 0.4s ease,
+      color 0.4s ease;
     -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'ss01', 'cv02', 'cv11';
+  }
+
+  ::selection {
+    background-color: var(--color-primary-500);
+    color: #ffffff;
   }
 }
 
-/* 5. المكونات (Components Layer) */
+/* 6. Components + utilities */
 @layer components {
-  /* الزراير الرئيسية */
   .btn-main-red {
-    @apply relative flex items-center justify-center bg-primary-500 text-white font-bold rounded-2xl px-6 py-3 transition-all duration-300 hover:bg-primary-600 hover:-translate-y-1 active:scale-95 shadow-lg shadow-primary-500/20 cursor-pointer overflow-hidden;
-  } 
-
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-primary-500);
+    color: #ffffff;
+    font-weight: 700;
+    border-radius: 1rem;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow:
+      0 10px 15px -3px rgba(211, 46, 24, 0.2),
+      0 4px 6px -4px rgba(211, 46, 24, 0.2);
+  }
+  .btn-main-red:hover {
+    background-color: var(--color-primary-600);
+    transform: translateY(-0.25rem);
+  }
+  .btn-main-red:active {
+    transform: scale(0.95);
+  }
   .btn-main-white {
-    @apply relative flex items-center justify-center bg-(--bg-color) text-primary-500 border border-primary-500 font-bold rounded-2xl px-6 py-3 transition-all duration-300 hover:bg-primary-500 hover:text-white hover:-translate-y-1 active:scale-95 cursor-pointer;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--others-bg);
+    color: var(--color-primary-500);
+    border: 2px solid var(--color-primary-500);
+    font-weight: 700;
+    border-radius: 1rem;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s;
+    cursor: pointer;
   }
-
-  /* لينكات النافبار */
+  .btn-main-white:hover {
+    background-color: var(--color-primary-500);
+    color: #ffffff;
+    transform: translateY(-0.25rem);
+  }
+  .btn-main-white:active {
+    transform: scale(0.95);
+  }
   .nav-link {
-    @apply relative font-bold text-xl px-2 md:px-1 lg:px-0 py-1 text-(--fg-color) opacity-80 transition-all duration-300 cursor-pointer hover:opacity-100 hover:text-primary-500;
+    position: relative;
+    font-weight: 700;
+    font-size: 1.25rem;
+    padding: 0.25rem 0.5rem;
+    color: var(--fg-color);
+    opacity: 0.8;
+    transition: all 0.3s;
+    cursor: pointer;
   }
-
+  .nav-link:hover {
+    opacity: 1;
+    color: var(--color-primary-500);
+  }
   .nav-link.active {
-    @apply opacity-100 text-primary-500;
+    opacity: 1;
+    color: var(--color-primary-500);
   }
-
-  .active-link-sidbar {
-    @apply w-full p-1 bg-primary-500 rounded-2xl text-white!;
-  }
-
-
-  .nav-link.active::after {
-    @apply w-full;
-  }
-
-  /* ستايل المدخلات (Auth Inputs) */
   .auth-input {
-    @apply w-full p-4 bg-(--input-bg) border border-(--border-color) text-(--fg-color) text-lg rounded-2xl outline-none transition-all duration-300 placeholder:text-(--muted-fg) focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500;
+    width: 100%;
+    padding: 1rem;
+    background-color: var(--color-surface-50);
+    border: 1px solid var(--color-surface-200);
+    color: var(--fg-color);
+    font-size: 1.125rem;
+    border-radius: 1rem;
+    outline: none;
+    transition: all 0.3s;
+  }
+  .auth-input::placeholder {
+    color: var(--color-surface-600);
+  }
+  .auth-input:focus {
+    border-color: var(--color-primary-500);
+    box-shadow: 0 0 0 2px rgba(211, 46, 24, 0.5);
+  }
+  .dark .auth-input {
+    background-color: var(--color-surface-900);
+    border-color: var(--color-surface-800);
   }
 
-  /* إخفاء سهم الـ Select الافتراضي */
-  select.appearance-none {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
+  /* font-display: heading font with weight + tracking */
+  .font-display {
+    font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif !important;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, var(--color-ink-border) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-ink-border) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+  .mask-fade-b {
+    mask-image: linear-gradient(to bottom, black 60%, transparent);
+  }
+  .shadow-soft {
+    box-shadow:
+      0 1px 2px 0 rgba(0, 0, 0, 0.04),
+      0 1px 3px 0 rgba(0, 0, 0, 0.06);
+  }
+
+  .btn-landing-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.75rem;
+    min-width: 9rem;
+    border-radius: 0.5rem;
+    background-color: hsl(var(--brand));
+    padding: 0 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #ffffff;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-landing-primary:hover {
+    filter: brightness(0.92);
+  }
+  .btn-landing-primary:active {
+    transform: scale(0.98);
+  }
+
+  .btn-landing-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.75rem;
+    min-width: 9rem;
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--ink-border));
+    background: transparent;
+    padding: 0 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--ink-foreground));
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-landing-secondary:hover {
+    background-color: hsl(var(--ink-3));
+  }
+  .btn-landing-secondary:active {
+    transform: scale(0.98);
+  }
+
+  .btn-landing-inverse {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.75rem;
+    min-width: 9rem;
+    border-radius: 0.5rem;
+    background-color: hsl(var(--ink-foreground));
+    padding: 0 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--ink));
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-landing-inverse:hover {
+    filter: brightness(0.95);
+  }
+  .btn-landing-inverse:active {
+    transform: scale(0.98);
   }
 }
 
-/* 6. تحسينات عامة */
-::selection {
-  @apply bg-primary-500 text-white;
-}
-
-/* سكرول بار شيك للدارك مود */
+/* 7. Scrollbar + OTP */
 ::-webkit-scrollbar {
   width: 8px;
 }
-
 ::-webkit-scrollbar-track {
-  @apply bg-(--bg-color);
+  background-color: var(--bg-color);
 }
-
 ::-webkit-scrollbar-thumb {
-  @apply bg-primary-500/30 rounded-full hover:bg-primary-500/60 transition-colors;
+  background-color: rgba(211, 46, 24, 0.3);
+  border-radius: 9999px;
+  transition: background-color 0.2s;
 }
-/* إلغاء السهم الافتراضي تماماً */
-select {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  background-image: none !important;
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(211, 46, 24, 0.6);
 }
-
-/* إلغاء اللون الأزرق عند الوقوف (Hover/Focus) في المدخلات */
-.auth-input:focus,
-.auth-input:active,
-button:focus {
-  outline: none !important;
-  /* لو لسه بيظهر أزرق، ده بيأكد إن الريتنج يبقى أحمر */
-  --tw-ring-color: var(--color-primary-500) !important;
-}
-
-
-
-/* 7. أنيميشنات إضافية */
-@keyframes loading-bar {
-  0% {
-    transform: translateX(100%);
-  }
-  50% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-@keyframes shake {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  10%, 30%, 50%, 70%, 90% {
-    transform: translateX(-4px);
-  }
-  20%, 40%, 60%, 80% {
-    transform: translateX(4px);
-  }
-}
-
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(211, 46, 24, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 12px rgba(211, 46, 24, 0);
-  }
-}
-
-@keyframes slide-down {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-loading-bar {
-  animation: loading-bar 1.5s ease-in-out infinite;
-}
-
-.animate-shimmer {
-  background: linear-gradient(90deg, transparent 0%, rgba(211, 46, 24, 0.08) 50%, transparent 100%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-}
-
-.animate-shake {
-  animation: shake 0.5s ease-in-out;
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.5s ease-out forwards;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.animate-slide-down {
-  animation: slide-down 0.3s ease-out forwards;
-}
-
-/* OTP Input Styling */
 .otp-digit {
-  @apply w-12 h-14 md:w-14 md:h-16 text-center text-2xl font-bold bg-(--input-bg) border-2 border-(--border-color) text-(--fg-color) rounded-xl outline-none transition-all duration-300 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500;
+  width: 3rem;
+  height: 3.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  background-color: var(--color-surface-50);
+  border: 2px solid var(--color-surface-200);
+  color: var(--fg-color);
+  border-radius: 0.75rem;
+  outline: none;
+  transition: all 0.3s;
 }
-
+@media (min-width: 768px) {
+  .otp-digit {
+    width: 3.5rem;
+    height: 4rem;
+  }
+}
 .otp-digit:focus {
-  transform: scale(1.05);
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 2px rgba(211, 46, 24, 0.5);
 }
-
+.dark .otp-digit {
+  background-color: var(--color-surface-900);
+  border-color: var(--color-surface-800);
+}
