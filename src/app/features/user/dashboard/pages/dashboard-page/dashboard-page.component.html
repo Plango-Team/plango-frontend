@@ -1,57 +1,177 @@
-<app-dashboard-header></app-dashboard-header>
-<div class="py-5 grid text-primary-100 grid-cols-1 md:grid-cols-12 gap-5 items-start">
-  <div class="md:col-span-3">
-    <app-dashboard-card 
-    title="الموعد القادم" 
-    value="10:30 ص" 
-    iconColor="oklch(72.3% 0.219 149.579)"
-    iconBackGround="#dcfce7"
-    iconName="TimeQuarter02FreeIcons">
-  </app-dashboard-card>
+
+
+<div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between px-4 mt-4">
+  <div>
+    <div class="text-sm text-ink-muted">صباح الخير، {{authStore.user.firstName()}}</div>
+    <h1 class="font-display text-2xl tracking-tight sm:text-3xl text-ink-fg">نبض اليوم</h1>
+  </div>
+  <div class="text-xs text-ink-muted sm:text-sm">
+    الخميس، 1 مايو 2026
+  </div>
+</div>
+
+<div class="grid gap-4 lg:grid-cols-12 px-4 pb-10">
+  
+  <!-- Smart Countdown -->
+  <div class="relative overflow-hidden rounded-2xl border border-ink-border bg-ink-2 p-5 text-ink-fg sm:p-6 lg:col-span-7 lg:row-span-2 shadow-soft">
+    <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-brand/20 blur-3xl"></div>
+    <div class="relative">
+      <div class="flex items-center justify-between gap-2">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-ink/10 px-2.5 py-1 text-[11px] backdrop-blur">
+          <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-success"></span> تدفق سلس
+        </span>
+        <span class="text-xs text-ink-muted">الموعد القادم</span>
+      </div>
+      <div class="mt-6 text-sm text-ink-muted">الإنطلاق الأمثل خلال</div>
+      <div class="mt-1 flex items-baseline gap-2">
+        <span class="font-display text-6xl tracking-tight tabular-nums sm:text-7xl">45</span>
+        <span class="text-xl text-ink-muted">دقيقة</span>
+      </div>
+      <div class="mt-1 text-base">اجتماع الفريق — مقر الشركة</div>
+
+      <div class="mt-6 grid grid-cols-3 gap-3">
+        <div class="rounded-xl border border-ink-border bg-ink/5 p-3 backdrop-blur">
+          <app-icon [iconName]="'Location01Icon'" [iconSize]="16" [iconColor]="'var(--color-ink-muted)'"></app-icon>
+          <div class="mt-2 text-[11px] text-ink-muted">المسافة</div>
+          <div class="font-medium text-sm">8.2 كم</div>
+        </div>
+        <div class="rounded-xl border border-ink-border bg-ink/5 p-3 backdrop-blur">
+          <app-icon [iconName]="'TimeQuarter02Icon'" [iconSize]="16" [iconColor]="'var(--color-ink-muted)'"></app-icon>
+          <div class="mt-2 text-[11px] text-ink-muted">مدة الرحلة</div>
+          <div class="font-medium text-sm">22 دقيقة</div>
+        </div>
+        <div class="rounded-xl border border-ink-border bg-ink/5 p-3 backdrop-blur">
+          <app-icon [iconName]="'CloudFreeIcons'" [iconSize]="16" [iconColor]="'var(--color-ink-muted)'"></app-icon>
+          <div class="mt-2 text-[11px] text-ink-muted">الطقس</div>
+          <div class="font-medium text-sm">مشمس 24°</div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <button class="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand/90 transition-all">
+          ابدأ الرحلة
+          <app-icon [iconName]="'ArrowLeft02Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+        </button>
+        <button class="flex items-center gap-1.5 rounded-lg border border-ink-border bg-transparent px-4 py-2 text-sm font-semibold text-ink-fg hover:bg-ink/40 transition-all">
+          <app-icon [iconName]="'Add01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+          موعد جديد
+        </button>
+      </div>
+    </div>
   </div>
 
-  <div class="md:col-span-3">
-    <app-dashboard-card 
-    title="مهام اليوم" 
-    value="5 مهام" 
-    iconColor="#024a70"
-    iconBackGround="#dff2fe"
-    iconName="CheckmarkCircle03Icon">
-  </app-dashboard-card>
-  </div>
+  <!-- Today stats -->
+  <app-card class="block lg:col-span-5" customClass="flex flex-col justify-center text-ink-fg h-full">
+    <div class="flex items-center justify-between gap-2">
+      <h3 class="font-display text-lg">إنتاجية اليوم</h3>
+      <span class="text-xs text-success inline-flex items-center gap-1">
+        <app-icon [iconName]="'ArrowUpRight01Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon> +12%
+      </span>
+    </div>
+    <div class="mt-5 grid grid-cols-3 gap-4">
+      <div>
+        <div class="font-display text-2xl tracking-tight sm:text-3xl">4</div>
+        <div class="text-xs text-ink-muted">المواعيد</div>
+        <div class="text-[10px] text-ink-muted/70">من أصل 6</div>
+      </div>
+      <div>
+        <div class="font-display text-2xl tracking-tight sm:text-3xl text-success">3</div>
+        <div class="text-xs text-ink-muted">مكتملة</div>
+        <div class="text-[10px] text-ink-muted/70">بنجاح</div>
+      </div>
+      <div>
+        <div class="font-display text-2xl tracking-tight sm:text-3xl text-brand">5</div>
+        <div class="text-xs text-ink-muted">متبقية</div>
+        <div class="text-[10px] text-ink-muted/70">مهام</div>
+      </div>
+    </div>
+    <div class="mt-5 h-2 overflow-hidden rounded-full bg-ink-3">
+      <div class="h-full rounded-full bg-ink-fg transition-all" style="width: 60%"></div>
+    </div>
+    <div class="mt-2 text-xs text-ink-muted">60% من مهام اليوم مكتملة</div>
+  </app-card>
 
-  <div class="md:col-span-3">
-    <app-dashboard-card 
-    title="الفعاليات القادمة" 
-    value="3 فعاليات" 
-    iconColor="oklch(62.7% 0.265 303.9)"
-    iconBackGround="#f3e8ff"
-    iconName="Calendar01Icon">
-  </app-dashboard-card>
-  </div>
+  <!-- Tasks tile -->
+  <app-card class="block lg:col-span-5" customClass="text-ink-fg h-full">
+    <div class="flex items-start gap-3">
+      <div class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-ink/10 text-ink-fg">
+        <app-icon [iconName]="'Task01Icon'" [iconSize]="20" [iconColor]="'currentColor'"></app-icon>
+      </div>
+      <div class="flex-1 min-w-0">
+        <h3 class="font-medium">المهام قيد التنفيذ</h3>
+        <p class="mt-1 text-sm text-ink-muted">لديك 5 مهام مرتبطة بمواعيد اليوم</p>
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+          <button class="rounded-lg border border-ink-border bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-fg hover:bg-ink-3 transition-all">
+            فتح المهام
+          </button>
+          <button class="flex items-center gap-1 rounded-lg bg-ink-fg px-3 py-1.5 text-xs font-semibold text-ink hover:bg-ink-fg/90 transition-all">
+            <app-icon [iconName]="'Add01Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
+            مهمة سريعة
+          </button>
+        </div>
+      </div>
+    </div>
+  </app-card>
 
-  <div class="md:col-span-3">
-    <app-dashboard-card 
-    title="حالة الوصول" 
-    value="في الطريق" 
-    iconColor="#d32e18"
-    iconBackGround="#fad6d1"
-    iconName="Location01Icon">
-  </app-dashboard-card>
-  </div>
-  <div class="md:col-span-7 flex flex-col gap-6">
+  <!-- Schedule List -->
+  <app-card class="block lg:col-span-12" customClass="h-full">
     <app-dashboard-appointments></app-dashboard-appointments>
-  </div>
-  <div class="md:col-span-5 flex flex-col gap-6">
-    <app-dashboard-calender-sum></app-dashboard-calender-sum>
-  </div>
-  <div class="md:col-span-6 flex flex-col gap-6">
-    <app-dashboard-map></app-dashboard-map>
-  </div>
-  <div class="md:col-span-6 flex flex-col gap-6">
-    <app-dashboard-events></app-dashboard-events>
-  </div>
-  <div class="md:col-span-4 flex flex-col gap-6">
-    <app-dashboard-notification></app-dashboard-notification>
-  </div>
+  </app-card>
+
+  <!-- Friends -->
+  <app-card class="block lg:col-span-7" customClass="text-ink-fg h-full">
+    <div class="mb-4 flex items-center justify-between gap-2">
+      <h3 class="font-display text-lg">الرحلات المشتركة</h3>
+      <span class="text-xs text-ink-muted">3 نشطة</span>
+    </div>
+    <div class="space-y-3">
+      <!-- Item 1 -->
+      <div class="flex items-center gap-3">
+        <div class="h-8 w-8 rounded-full bg-ink-3 grid place-items-center text-xs font-medium">ن</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium truncate">نادر محمد</div>
+          <div class="h-1.5 mt-1 overflow-hidden rounded-full bg-ink-3">
+            <div class="h-full rounded-full bg-ink-fg" style="width: 70%"></div>
+          </div>
+        </div>
+        <div class="text-xs text-ink-muted shrink-0">8 دقائق</div>
+      </div>
+      <!-- Item 2 -->
+      <div class="flex items-center gap-3">
+        <div class="h-8 w-8 rounded-full bg-ink-3 grid place-items-center text-xs font-medium">ب</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium truncate">بسمة جمال</div>
+          <div class="h-1.5 mt-1 overflow-hidden rounded-full bg-ink-3">
+            <div class="h-full rounded-full bg-ink-fg" style="width: 40%"></div>
+          </div>
+        </div>
+        <div class="text-xs text-ink-muted shrink-0">15 دقيقة</div>
+      </div>
+      <!-- Item 3 -->
+      <div class="flex items-center gap-3">
+        <div class="h-8 w-8 rounded-full bg-ink-3 grid place-items-center text-xs font-medium">أ</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium truncate">أحمد هشام</div>
+          <div class="h-1.5 mt-1 overflow-hidden rounded-full bg-ink-3">
+            <div class="h-full rounded-full bg-ink-fg" style="width: 90%"></div>
+          </div>
+        </div>
+        <div class="text-xs text-ink-muted shrink-0">3 دقائق</div>
+      </div>
+    </div>
+  </app-card>
+
+  <!-- Suggested -->
+  <app-card class="block lg:col-span-5" customClass="text-ink-fg h-full">
+    <div class="flex items-center gap-2">
+      <app-icon [iconName]="'UserGroupIcon'" [iconSize]="16" [iconColor]="'var(--color-brand)'"></app-icon>
+      <h3 class="font-medium">اقتراح ذكي</h3>
+    </div>
+    <p class="mt-3 text-sm text-ink-muted">يمكنك دمج مشوار التسوق مع رحلة العودة لتوفير 15 دقيقة وتقليل استهلاك الوقود.</p>
+    <div class="mt-4 flex items-center gap-2">
+      <button class="rounded-lg bg-ink-fg px-3 py-1.5 text-xs font-semibold text-ink hover:bg-ink-fg/90 transition-all">إضافة للجدول</button>
+      <button class="rounded-lg bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-fg hover:bg-ink-3 transition-all">لاحقاً</button>
+    </div>
+  </app-card>
+
 </div>

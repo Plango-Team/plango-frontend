@@ -213,6 +213,7 @@ export const authStore = signalStore(
     logOut: signalMethod<void>(() => {
       localStorage.removeItem('token');
       patchState(store, { user: null, token: null, successMessage: null, error: null });
+      router.navigate(['/']);
     }),
 
     // ─────── مسح الرسائل ───────
