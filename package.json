@@ -32,10 +32,13 @@
     "@angular/router": "^21.1.0",
     "@hugeicons/angular": "^1.0.7",
     "@hugeicons/core-free-icons": "^4.0.0",
+    "@mapbox/polyline": "^1.2.1",
     "@ngrx/signals": "^21.1.0",
     "@types/aos": "^3.0.7",
+    "@types/mapbox__polyline": "^1.0.5",
     "aos": "^2.3.4",
     "flowbite": "^4.0.1",
+    "maplibre-gl": "^5.22.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

@@ -1,0 +1,32 @@
+.custom-marker {
+  width: 30px !important;
+  height: 42px !important;
+  background-size: cover;
+  cursor: pointer;
+  z-index: 1111;
+}
+
+@keyframes popup {
+  0%, 100% {
+    top: 0;
+  }
+  50% {
+    top: -10px;
+  }
+}
+
+::ng-deep .custom-marker {
+  filter: drop-shadow(0px,4px,6px rgba(0,0,0,0.4));
+  cursor: pointer;
+}
+
+::ng-deep .custom-marker.next {
+  animation: popup 2s infinite ease-in-out;
+}
+
+
+::ng-deep .custom-marker.next:hover {
+  animation-play-state: paused;
+  transform: scale(1.1);
+}
+

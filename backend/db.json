@@ -51,6 +51,54 @@
         }
       },
       "id": "zjReWoRSe7g"
+    },
+    {
+      "email": "basma.gamal668@gmail.com",
+      "password": "bplango",
+      "firstName": "basma",
+      "lastName": "",
+      "userName": "basma_",
+      "phoneNumber": "010123456789",
+      "role": "user",
+      "status": "active",
+      "createdAt": "2026-03-31T02:08:01.955Z",
+      "updatedAt": "2026-03-31T02:08:01.955Z",
+      "preferences": {
+        "theme": "dark",
+        "language": "ar",
+        "preferredTransport": "car",
+        "defaultBufferTime": 15,
+        "notifications": {
+          "email": true,
+          "push": true,
+          "departureAlerts": true
+        }
+      },
+      "id": "wFw29JeRtB8"
+    },
+    {
+      "email": "areeg@plango.com",
+      "password": "aplango",
+      "firstName": "areeg",
+      "lastName": "",
+      "userName": "areeg_",
+      "phoneNumber": "010123456789",
+      "role": "user",
+      "status": "active",
+      "createdAt": "2026-03-31T02:13:13.404Z",
+      "updatedAt": "2026-03-31T02:13:13.404Z",
+      "preferences": {
+        "theme": "dark",
+        "language": "ar",
+        "preferredTransport": "car",
+        "defaultBufferTime": 15,
+        "notifications": {
+          "email": true,
+          "push": true,
+          "departureAlerts": true
+        }
+      },
+      "id": "rmFnsWsk9Xo"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

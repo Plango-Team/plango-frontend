@@ -1,0 +1,57 @@
+<app-dashboard-header></app-dashboard-header>
+<div class="py-5 grid text-primary-100 grid-cols-1 md:grid-cols-12 gap-5 items-start">
+  <div class="md:col-span-3">
+    <app-dashboard-card 
+    title="الموعد القادم" 
+    value="10:30 ص" 
+    iconColor="oklch(72.3% 0.219 149.579)"
+    iconBackGround="#dcfce7"
+    iconName="TimeQuarter02FreeIcons">
+  </app-dashboard-card>
+  </div>
+
+  <div class="md:col-span-3">
+    <app-dashboard-card 
+    title="مهام اليوم" 
+    value="5 مهام" 
+    iconColor="#024a70"
+    iconBackGround="#dff2fe"
+    iconName="CheckmarkCircle03Icon">
+  </app-dashboard-card>
+  </div>
+
+  <div class="md:col-span-3">
+    <app-dashboard-card 
+    title="الفعاليات القادمة" 
+    value="3 فعاليات" 
+    iconColor="oklch(62.7% 0.265 303.9)"
+    iconBackGround="#f3e8ff"
+    iconName="Calendar01Icon">
+  </app-dashboard-card>
+  </div>
+
+  <div class="md:col-span-3">
+    <app-dashboard-card 
+    title="حالة الوصول" 
+    value="في الطريق" 
+    iconColor="#d32e18"
+    iconBackGround="#fad6d1"
+    iconName="Location01Icon">
+  </app-dashboard-card>
+  </div>
+  <div class="md:col-span-7 flex flex-col gap-6">
+    <app-dashboard-appointments></app-dashboard-appointments>
+  </div>
+  <div class="md:col-span-5 flex flex-col gap-6">
+    <app-dashboard-calender-sum></app-dashboard-calender-sum>
+  </div>
+  <div class="md:col-span-6 flex flex-col gap-6">
+    <app-dashboard-map></app-dashboard-map>
+  </div>
+  <div class="md:col-span-6 flex flex-col gap-6">
+    <app-dashboard-events></app-dashboard-events>
+  </div>
+  <div class="md:col-span-4 flex flex-col gap-6">
+    <app-dashboard-notification></app-dashboard-notification>
+  </div>
+</div>
