@@ -1,0 +1,104 @@
+<div class="flex h-16 items-center gap-2 px-3 sm:gap-4 sm:px-6">
+  <!-- Mobile Menu Button -->
+  <button class="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-ink-border bg-ink-2/60 text-ink-fg hover:bg-ink-3 lg:hidden">
+    <app-icon [iconName]="'Menu01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+  </button>
+
+  <!-- Search Bar -->
+  <button class="group relative flex h-10 max-w-md flex-1 items-center gap-2 rounded-lg border border-ink-border bg-ink-2 px-3 text-start text-sm text-ink-muted transition hover:border-ink-fg/30 hover:bg-ink-3">
+    <app-icon [iconName]="'Search01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+    <span class="flex-1 truncate">ابحث عن أي شيء...</span>
+    <span class="hidden items-center gap-1 sm:flex">
+      <kbd class="rounded border border-ink-border bg-ink px-1.5 py-0.5 text-[10px] font-mono">⌘</kbd>
+      <kbd class="rounded border border-ink-border bg-ink px-1.5 py-0.5 text-[10px] font-mono">K</kbd>
+    </span>
+  </button>
+
+  <!-- Actions -->
+  <div class="ms-auto flex items-center gap-2">
+    <!-- Theme Toggle -->
+    <div class="hidden sm:block">
+      <button (click)="themeService.toggleTheme()" class="rounded-lg p-2 hover:bg-ink-3 transition-colors text-ink-muted hover:text-ink-fg">
+            @if (themeService.isDark()) {
+              <svg class="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 3V5M12 19V21M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M3 12H5M19 12H21M4.93 19.07L6.34 17.66M17.66 6.34L19.07 4.93M16 12A4 4 0 1 1 8 12A4 4 0 0 1 16 12Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                />
+              </svg>
+            } @else {
+              <svg class="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M21 12.79A9 9 0 1 1 11.21 3A7 7 0 0 0 21 12.79Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                />
+              </svg>
+            }      </button>
+    </div>
+    
+    <!-- Notifications -->
+    <button class="relative rounded-lg p-2 hover:bg-ink-3 transition-colors text-ink-muted hover:text-ink-fg">
+      <app-icon [iconName]="'Notification02Icon'" [iconSize]="20" [iconColor]="'currentColor'"></app-icon>
+      <span class="absolute right-2 top-2 h-2 w-2 rounded-full bg-brand"></span>
+    </button>
+    
+    <!-- Profile Dropdown -->
+    <div class="relative">
+      <button (click)="toggleMenu()" class="flex items-center gap-2 rounded-lg border border-ink-border bg-ink-2/60 p-1.5 text-ink-fg hover:bg-ink-3 sm:pr-3 transition-all cursor-pointer">
+        <span class="hidden text-sm font-medium sm:inline">
+          @if (authStore.user()) {
+            {{ authStore.user()?.firstName }} {{ authStore.user()?.lastName }}
+          } @else {
+            زائر
+          }
+        </span>
+        <div class="h-7 w-7 rounded-md bg-ink-fg text-ink grid place-items-center text-xs font-semibold">
+          @if (authStore.user()?.firstName) {
+            {{ authStore.user()?.firstName?.charAt(0) }}
+          } @else {
+            ز
+          }
+        </div>
+        <app-icon [iconName]="'ArrowDown01Icon'" [iconSize]="12" [iconColor]="'currentColor'" class="hidden sm:inline"></app-icon>
+      </button>
+
+      <!-- Dropdown Menu -->
+      @if (isMenuOpen()) {
+        <div class="absolute left-0 top-full mt-2 w-64 rounded-xl border border-ink-border bg-ink-2 p-1 shadow-lg z-50 text-ink-fg">
+          <!-- Signed in as Label -->
+          <div class="flex items-center gap-2 px-2 py-1.5 text-xs text-ink-muted">
+            <app-icon [iconName]="'UserGroupIcon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
+            تسجيل الدخول كــ
+          </div>
+          
+          <!-- User Info -->
+          <a routerLink="/user/settings" (click)="toggleMenu()" class="flex w-full cursor-pointer flex-col rounded-md px-2 py-1.5 hover:bg-ink-3 transition-colors">
+            <div class="text-sm font-medium truncate">{{ authStore.user()?.firstName }} {{ authStore.user()?.lastName }}</div>
+            <div class="text-[11px] text-ink-muted truncate" dir="ltr">{{ authStore.user()?.email }}</div>
+          </a>
+
+          <!-- Separator -->
+          <div class="my-1 h-px bg-ink-border"></div>
+          
+          <a routerLink="/user/settings" (click)="toggleMenu()" class="flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm hover:bg-ink-3 transition-colors">
+            <app-icon [iconName]="'Settings01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+            الإعدادات
+          </a>
+          
+          <button (click)="logout()" class="flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm text-red-500 hover:bg-red-500/10 transition-colors mt-1">
+            <app-icon [iconName]="'Logout05Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+            تسجيل الخروج
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</div>

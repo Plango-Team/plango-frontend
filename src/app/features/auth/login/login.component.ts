@@ -2,14 +2,13 @@ import { Component, effect, inject, signal } from '@angular/core';
 import { email, form, minLength, required, FormField, FormRoot } from '@angular/forms/signals';
 
 import { RouterLink } from '@angular/router';
-import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ThemeService } from '../../../core/services/theme.service';
 import { authStore } from '../auth.store';
 import { ILoginRequest } from '../../../core/models/iuser';
 
 @Component({
   selector: 'app-login',
-  imports: [FormField, FormRoot, IconComponent, RouterLink],
+  imports: [FormField, FormRoot, RouterLink],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })

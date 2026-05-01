@@ -1,57 +1,74 @@
-<button data-drawer-target="separator-sidebar" data-drawer-toggle="separator-sidebar" aria-controls="separator-sidebar" type="button" class="text-heading bg-transparent box-border border border-transparent hover:bg-neutral-secondary-medium focus:ring-4 focus:ring-neutral-tertiary font-medium leading-5 rounded-base ms-3 mt-3 text-sm p-2 focus:outline-none inline-flex sm:hidden">
-   <span class="sr-only">Open sidebar</span>
-   <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-  <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h10"/>
-   </svg>
-</button>
+<div class="flex h-full flex-col text-ink-fg">
+  <!-- Logo Area -->
+  <div class="flex h-16 items-center border-b border-ink-border px-6">
+        <a class="inline-flex items-center gap-2" routerLink="/" aria-label="PlanGo home">
+          <img
+            [src]="
+              !themeService.isDark()
+                ? 'images/planGo-BlackLogo.svg'
+                : 'images/planGo-WhiteLogo.svg'
+            "
+            alt="PlanGo"
+          />
+        </a>  </div>
 
-<aside id="separator-sidebar" class="bg-(--card-bg) fixed top-0 inset-s-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0 shadow-xl shadow-(--main-shadow-color)" aria-label="Sidebar">
-   <div class="flex flex-col justify-between h-full px-3 py-4 overflow-y-auto bg-neutral-primary-soft">
-      <ul class="space-y-2 font-medium">
-         <li>
-            <a routerLink="dashboard" routerLinkActive="active-link-sidbar" #rla="routerLinkActive" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
-               <app-icon [iconName]="'DashboardSquare02FreeIcons'" [iconSize]="20" [iconColor]="rla.isActive ? '#ffffff': 'var(--fg-color)'"></app-icon>
-               <span class="ms-3 text-2xl">لوحة التحكم</span>
-            </a>
-         </li>
-         <li>
-            <a routerLink="appointments" routerLinkActive="active-link-sidbar" #rla2="routerLinkActive" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
-                <app-icon [iconName]="'TimeQuarter02FreeIcons'" [iconSize]="20" [iconColor]="rla2.isActive ? '#ffffff': 'var(--fg-color)'"></app-icon>
-               <span class="ms-3 text-2xl">المواعيد</span>
-            </a>
-         </li>
-         <li>
-            <a routerLink="map" routerLinkActive="active-link-sidbar" #rla3="routerLinkActive" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
-                <app-icon [iconName]="'MapsLocation01Icon'" [iconSize]="20" [iconColor]="rla3.isActive ? '#ffffff': 'var(--fg-color)'"></app-icon>
-               <span class="ms-3 text-2xl">الخريطة</span>
-            </a>
-         </li>
-         <li>
-            <a routerLink="events" routerLinkActive="active-link-sidbar" #rla4="routerLinkActive" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
-                <app-icon [iconName]="'People'" [iconSize]="20" [iconColor]="rla4.isActive ? '#ffffff': 'var(--fg-color)'"></app-icon>
-               <span class="ms-3 text-2xl">الفعاليات</span>
-            </a>
-         </li>
-      </ul>
-      <ul class="space-y-2 -medium border-t border-(--border-color) pt-4 mt-4">
-         <li>
-            <a routerLink="pro" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
-                <app-icon [iconName]="'Diamond02FreeIcons'" [iconSize]="20" [iconColor]="'var(--muted-fg)'"></app-icon>
-               <span class="flex-1 ms-3 text-(--muted-fg) text-2xl whitespace-nowrap">المزيد من المميزات</span>
-            </a>
-         </li>
-         <li>
-            <a routerLink="settings" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
-                <app-icon [iconName]="'Settings01FreeIcons'" [iconSize]="20" [iconColor]="'var(--muted-fg)'"></app-icon>
-               <span class="flex-1 ms-3 text-(--muted-fg) text-2xl whitespace-nowrap">الإعدادات</span>
-            </a>
-         </li>
-         <li>
-            <button (click)="logout()" class="cursor-pointer flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
-                <app-icon [iconName]="'Logout05FreeIcons'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
-               <span class="flex-1 ms-3 text-primary-500 text-2xl whitespace-nowrap">تسجيل الخروج</span>
-            </button>
-         </li>
-      </ul>
-   </div>
-</aside>
+  <!-- Smart Appointment Action -->
+  <div class="px-3 py-4">
+    <button class="flex h-10 w-full items-center justify-start gap-2 rounded-lg bg-ink-fg px-4 text-sm font-medium text-ink hover:bg-ink-fg/90 transition-all">
+      <app-icon [iconName]="'Add01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+      موعد ذكي جديد
+    </button>
+  </div>
+
+  <!-- Navigation Links -->
+  <nav class="flex-1 space-y-1 px-3">
+    <a routerLink="/user/dashboard" routerLinkActive="bg-ink-3 font-medium text-ink-fg" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition text-ink-muted hover:bg-ink-3 hover:text-ink-fg">
+      <app-icon [iconName]="'DashboardSquare02Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+      نبض اليوم
+    </a>
+    
+    <a routerLink="/user/calendar" routerLinkActive="bg-ink-3 font-medium text-ink-fg" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition text-ink-muted hover:bg-ink-3 hover:text-ink-fg">
+      <app-icon [iconName]="'Calendar01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+      التقويم
+    </a>
+    
+    <a routerLink="/user/tasks" routerLinkActive="bg-ink-3 font-medium text-ink-fg" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition text-ink-muted hover:bg-ink-3 hover:text-ink-fg">
+      <app-icon [iconName]="'Task01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+      المهام
+    </a>
+    
+    <a routerLink="/user/map" routerLinkActive="bg-ink-3 font-medium text-ink-fg" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition text-ink-muted hover:bg-ink-3 hover:text-ink-fg">
+      <app-icon [iconName]="'Location01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+      الخريطة
+    </a>
+    
+    <a routerLink="/user/events" routerLinkActive="bg-ink-3 font-medium text-ink-fg" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition text-ink-muted hover:bg-ink-3 hover:text-ink-fg">
+      <app-icon [iconName]="'Compass01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+      الفعاليات
+    </a>
+
+    <a routerLink="/user/network" routerLinkActive="bg-ink-3 font-medium text-ink-fg" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition text-ink-muted hover:bg-ink-3 hover:text-ink-fg">
+      <app-icon [iconName]="'UserGroupIcon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+      الشبكة
+    </a>
+    
+    <a routerLink="/user/settings" routerLinkActive="bg-ink-3 font-medium text-ink-fg" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition text-ink-muted hover:bg-ink-3 hover:text-ink-fg">
+      <app-icon [iconName]="'Settings01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+      الإعدادات
+    </a>
+  </nav>
+
+  <!-- Bottom CTA / Pro Banner -->
+  <div class="p-3">
+    <div class="rounded-xl border border-ink-border bg-ink p-4">
+      <div class="flex items-center gap-2 text-xs text-ink-fg">
+        <app-icon [iconName]="'StarIcon'" [iconSize]="14" [iconColor]="'var(--color-brand)'"></app-icon>
+        <span class="font-medium">ترقية للنسخة الاحترافية</span>
+      </div>
+      <p class="mt-1 text-[11px] text-ink-muted">احصل على ذكاء اصطناعي غير محدود</p>
+      <button class="mt-3 h-8 w-full rounded-md bg-brand text-xs font-semibold text-brand-foreground hover:bg-brand/90 transition-all">
+        الترقية الآن
+      </button>
+    </div>
+  </div>
+</div>
