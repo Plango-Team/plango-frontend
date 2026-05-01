@@ -1,0 +1,52 @@
+<section class="mt-8 bg-(--card-bg) pt-4 rounded-2xl shadow-lg shadow-(--main-shadow-color)">
+  <div class="flex items-center justify-between px-3 pb-4 border-b border-(--border-color)">
+    <h2 class="text-2xl font-bold text-(--fg-color)">مواعيدك القادمة</h2>
+    <a routerLink="/user/appointments" class="text-sm text-(--muted-fg) flex items-center gap-1 cursor-pointer hover:scale-110 transition-all duration-500">
+      عرض الكل
+      <app-icon [iconName]="'ArrowLeft02Icon'" [iconSize]="16" [iconColor]="'var-(--fg-color)'"></app-icon>
+    </a>
+  </div>
+
+  <div class="flex flex-col gap-3">
+    @for (appointment of appointments(); track appointment.id) {
+      <div class="flex items-center justify-between px-8 py-2 rounded-2xl border-b border-gray-100">
+        
+        <div class="flex items-center gap-4">
+          <div class="bg-(--input-bg) p-2.5 rounded-xl flex items-center justify-center">
+             <app-icon 
+                [iconName]="'TimeQuarter02Icon'" 
+                [iconSize]="20" 
+                [iconColor]="'var(--muted-fg)'">
+             </app-icon>
+          </div>
+
+           <div class="flex flex-col text-right">
+            <span class="text-lg font-bold text-(--fg-color)">{{ appointment.title }}</span>
+            <span class="text-xs text-(--muted-fg) mt-0.5">{{ appointment.date }}</span>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            @let minsLeft = getMinutesRemaining(appointment.startTime);
+            @if (minsLeft > 0 && minsLeft <= 60) {
+                <div class="rounded-[3px] flex items-center gap-1.5 bg-primary-100 px-1">    
+                <app-icon [iconName]="'Notification01Icon'" [iconSize]="12" [iconColor]="'#d32e18'"></app-icon>
+                <span class="text-xs text-primary-500">تنبيه بعد {{getMinutesRemaining(appointment.startTime)}} دقيقة</span>
+        </div>
+            }
+        <a routerLink="/user/map" 
+          class="flex items-center justify-center gap-1 rounded-lg btn-main-red p-2 py-1 font-semibold">
+          <app-icon [iconName]="'Location01Icon'" [iconColor]="'white'" [iconSize]="15"></app-icon>
+          <span>بدء التتبع</span>
+        </a>
+        </div>
+
+      </div>
+    } @empty {
+      <div class="flex items-center justify-center gap-2 text-center py-10 rounded-2xl border border-dashed border-gray-200">
+        <app-icon [iconName]="'SearchSlash'" [iconColor]="'#d32e18'"></app-icon>
+        <p class="text-primary-500 text-lg">لا توجد مواعيد قادمة اليوم</p>
+      </div>
+    }
+  </div>
+</section>

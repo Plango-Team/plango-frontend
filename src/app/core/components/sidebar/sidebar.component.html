@@ -1,1 +1,57 @@
-<p>sidebar works!</p>
+<button data-drawer-target="separator-sidebar" data-drawer-toggle="separator-sidebar" aria-controls="separator-sidebar" type="button" class="text-heading bg-transparent box-border border border-transparent hover:bg-neutral-secondary-medium focus:ring-4 focus:ring-neutral-tertiary font-medium leading-5 rounded-base ms-3 mt-3 text-sm p-2 focus:outline-none inline-flex sm:hidden">
+   <span class="sr-only">Open sidebar</span>
+   <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h10"/>
+   </svg>
+</button>
+
+<aside id="separator-sidebar" class="bg-(--card-bg) fixed top-0 inset-s-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0 shadow-xl shadow-(--main-shadow-color)" aria-label="Sidebar">
+   <div class="flex flex-col justify-between h-full px-3 py-4 overflow-y-auto bg-neutral-primary-soft">
+      <ul class="space-y-2 font-medium">
+         <li>
+            <a routerLink="dashboard" routerLinkActive="active-link-sidbar" #rla="routerLinkActive" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
+               <app-icon [iconName]="'DashboardSquare02FreeIcons'" [iconSize]="20" [iconColor]="rla.isActive ? '#ffffff': 'var(--fg-color)'"></app-icon>
+               <span class="ms-3 text-2xl">لوحة التحكم</span>
+            </a>
+         </li>
+         <li>
+            <a routerLink="appointments" routerLinkActive="active-link-sidbar" #rla2="routerLinkActive" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
+                <app-icon [iconName]="'TimeQuarter02FreeIcons'" [iconSize]="20" [iconColor]="rla2.isActive ? '#ffffff': 'var(--fg-color)'"></app-icon>
+               <span class="ms-3 text-2xl">المواعيد</span>
+            </a>
+         </li>
+         <li>
+            <a routerLink="map" routerLinkActive="active-link-sidbar" #rla3="routerLinkActive" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
+                <app-icon [iconName]="'MapsLocation01Icon'" [iconSize]="20" [iconColor]="rla3.isActive ? '#ffffff': 'var(--fg-color)'"></app-icon>
+               <span class="ms-3 text-2xl">الخريطة</span>
+            </a>
+         </li>
+         <li>
+            <a routerLink="events" routerLinkActive="active-link-sidbar" #rla4="routerLinkActive" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
+                <app-icon [iconName]="'People'" [iconSize]="20" [iconColor]="rla4.isActive ? '#ffffff': 'var(--fg-color)'"></app-icon>
+               <span class="ms-3 text-2xl">الفعاليات</span>
+            </a>
+         </li>
+      </ul>
+      <ul class="space-y-2 -medium border-t border-(--border-color) pt-4 mt-4">
+         <li>
+            <a routerLink="pro" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
+                <app-icon [iconName]="'Diamond02FreeIcons'" [iconSize]="20" [iconColor]="'var(--muted-fg)'"></app-icon>
+               <span class="flex-1 ms-3 text-(--muted-fg) text-2xl whitespace-nowrap">المزيد من المميزات</span>
+            </a>
+         </li>
+         <li>
+            <a routerLink="settings" class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
+                <app-icon [iconName]="'Settings01FreeIcons'" [iconSize]="20" [iconColor]="'var(--muted-fg)'"></app-icon>
+               <span class="flex-1 ms-3 text-(--muted-fg) text-2xl whitespace-nowrap">الإعدادات</span>
+            </a>
+         </li>
+         <li>
+            <button (click)="logout()" class="cursor-pointer flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
+                <app-icon [iconName]="'Logout05FreeIcons'" [iconSize]="20" [iconColor]="'#d32e18'"></app-icon>
+               <span class="flex-1 ms-3 text-primary-500 text-2xl whitespace-nowrap">تسجيل الخروج</span>
+            </button>
+         </li>
+      </ul>
+   </div>
+</aside>

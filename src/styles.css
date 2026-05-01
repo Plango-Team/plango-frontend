@@ -59,6 +59,7 @@
   --color-border: var(--border-color);
   --color-input: var(--input-bg);
   --color-muted: var(--muted-fg);
+  --color-box-bg: var(--box-bg);
 
   /* الخطوط */
   --font-plango: 'Myriad Arabic', 'Myriad Pro', sans-serif;
@@ -87,6 +88,7 @@
     --muted-fg: #8e513e;
     --border-color: #e0c1b8;
     --input-bg: #f7f0ed;
+    --box-bg: #ece0dc;
     --main-shadow-color: rgba(211, 46, 24, 0.1);
   }
 
@@ -97,6 +99,7 @@
     --muted-fg: #d1a294;
     --border-color: #3f2f2c;
     --input-bg: #24140f;
+    --box-bg: #d32e18;
     --main-shadow-color: rgba(0, 0, 0, 0.4);
   }
 
@@ -116,21 +119,24 @@
   /* الزراير الرئيسية */
   .btn-main-red {
     @apply relative flex items-center justify-center bg-primary-500 text-white font-bold rounded-2xl px-6 py-3 transition-all duration-300 hover:bg-primary-600 hover:-translate-y-1 active:scale-95 shadow-lg shadow-primary-500/20 cursor-pointer overflow-hidden;
-  }
+  } 
 
   .btn-main-white {
-    @apply relative flex items-center justify-center bg-(--bg-color) text-primary-500 border-2 border-primary-500 font-bold rounded-2xl px-6 py-3 transition-all duration-300 hover:bg-primary-500 hover:text-white hover:-translate-y-1 active:scale-95 cursor-pointer;
+    @apply relative flex items-center justify-center bg-(--bg-color) text-primary-500 border border-primary-500 font-bold rounded-2xl px-6 py-3 transition-all duration-300 hover:bg-primary-500 hover:text-white hover:-translate-y-1 active:scale-95 cursor-pointer;
   }
 
   /* لينكات النافبار */
   .nav-link {
-    @apply relative font-bold text-xl px-2 py-1 text-(--fg-color) opacity-80 transition-all duration-300 cursor-pointer hover:opacity-100 hover:text-primary-500;
+    @apply relative font-bold text-xl px-2 md:px-1 lg:px-0 py-1 text-(--fg-color) opacity-80 transition-all duration-300 cursor-pointer hover:opacity-100 hover:text-primary-500;
   }
 
   .nav-link.active {
     @apply opacity-100 text-primary-500;
   }
 
+  .active-link-sidbar {
+    @apply w-full p-1 bg-primary-500 rounded-2xl text-white!;
+  }
 
 
   .nav-link.active::after {

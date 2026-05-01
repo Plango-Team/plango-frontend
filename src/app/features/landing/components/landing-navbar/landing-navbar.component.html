@@ -8,22 +8,27 @@
     <!-- ═══ Logo ═══ -->
     <div class="flex items-center shrink-0">
       <a routerLink="/" (click)="closeMenu()" class="flex items-center group">
-        <img
+        @if (!isMenuOpen()) {
+          <img
           src="/images/PlanGoLogo.png"
-          class="dark:hidden h-9 md:h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+          class="h-10 md:h-12 w-auto object-contain"
+          [class]="themeService.isDark() ? 'hidden' : 'block'"
           alt="PlanGo Logo"
         />
         <img
           src="/images/PlanGoLogo-darkMode.png"
-          class="hidden dark:block h-9 md:h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+          class="h-10 md:h-12 w-auto object-contain"
+          [class]="themeService.isDark() ? 'block' : 'hidden'"
           alt="PlanGo Logo"
         />
+        }
       </a>
     </div>
 
     <!-- ═══ Desktop Navigation Links (hidden on mobile) ═══ -->
+    @if (!store.isAuthenticated()) {
     <div class="hidden md:flex items-center gap-6 lg:gap-10">
-      <a
+        <a
         routerLink="/"
         fragment="why"
         [class.active]="activeFragment() === 'why'"
@@ -54,6 +59,11 @@
         class="nav-link"
       >الفريق</a>
     </div>
+    } @else {
+      <div class="mx-10 w-full">
+        <input class="bg-(--input-bg) p-2 rounded-[5px] w-2/3 outline-0" placeholder="ابحث عن أي شئ">
+      </div>
+    }
 
     <!-- ═══ Right Actions ═══ -->
     <div class="flex items-center gap-2 md:gap-3">
@@ -61,34 +71,15 @@
       <!-- Theme Toggle -->
       <button
         (click)="toggleTheme()"
-        class="p-2 md:p-2.5 text-(--fg-color) hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-xl transition-all cursor-pointer group"
+        class="p-2 md:p-2.5 text-(--fg-color) rounded-xl cursor-pointer group hover:scale-110 transition-all duration-500"
         aria-label="تبديل الثيم"
       >
-        <svg
-          class="hidden dark:block w-5 h-5 transition-transform duration-500 group-hover:rotate-180"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <circle cx="12" cy="12" r="4" />
-          <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-        </svg>
-        <svg
-          class="block dark:hidden w-5 h-5 transition-transform duration-500 group-hover:-rotate-12"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-        </svg>
+        @if (!isMenuOpen() && !themeService.isDark()){
+          <app-icon [iconName]="'Moon02FreeIcons'" [iconSize]="25" [iconColor]="'var-(--fg-color)'"></app-icon>
+        }
+        @else if (!isMenuOpen() && themeService.isDark()) {
+          <app-icon [iconName]="'Sun02FreeIcons'" [iconSize]="25" [iconColor]="'var-(--fg-color)'"></app-icon>
+        }
       </button>
 
       <!-- Desktop: Guest CTA -->
@@ -106,7 +97,7 @@
             (click)="toggleDropdown(); $event.stopPropagation()"
             class="flex items-center gap-3 bg-(--input-bg) p-1.5 pr-4 rounded-full border border-(--border-color) hover:border-primary-500/50 transition-all cursor-pointer"
           >
-            <div class="flex flex-col items-end">
+            <div class="flex flex-col items-end md:flex">
               <span class="text-sm font-bold text-(--fg-color) leading-none">{{
                 store.user()?.firstName
               }}</span>
@@ -162,7 +153,7 @@
       <button
         (click)="toggleMenu(); $event.stopPropagation()"
         type="button"
-        class="inline-flex items-center justify-center w-10 h-10 text-(--fg-color) rounded-xl md:hidden hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all active:scale-90"
+        class="inline-flex items-center justify-center w-10 h-10 text-(--fg-color) rounded-xl md:hidden active:scale-90 transition-all"
         aria-label="القائمة"
       >
         @if (!isMenuOpen()) {

@@ -3,11 +3,12 @@ import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ThemeService } from '../../../../core/services/theme.service';
 import { authStore } from '../../../auth/auth.store';
+import { IconComponent } from '../../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-landing-navbar',
   standalone: true,
-  imports: [RouterLink, CommonModule],
+  imports: [RouterLink, CommonModule ,IconComponent],
   templateUrl: './landing-navbar.component.html',
   styleUrl: './landing-navbar.component.css',
 })
