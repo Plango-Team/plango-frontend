@@ -1,24 +1,35 @@
-import { Component, effect, ElementRef, inject, OnDestroy, ViewChild } from '@angular/core';
+import { Component, effect, ElementRef, inject, input, OnDestroy, signal, ViewChild } from '@angular/core';
 import maplibregl, { Map , NavigationControl , Marker , Popup, GeoJSONSource} from 'maplibre-gl'
 import { MapStore } from '../../map.store';
 import { IAppointment } from '../../interfaces/Imap';
+import { IconComponent } from '../../../../../shared/components/icon/icon.component';
 import { MapService } from '../../services/map.service';
 
 @Component({
   selector: 'app-map',
-  imports: [],
+  imports: [IconComponent],
   templateUrl: './map.component.html',
   styleUrl: './map.component.css',
 })
 export class MapComponent implements OnDestroy{
   readonly mapStore = inject(MapStore)
-  private mapService = inject(MapService)
   // بغير سينتر الخريطة علي حسب لوكيشن اليوزر من خلال ال flyTo
   public lastFlyTo : {lng : number , lat : number} | null = null
   isMapReady : boolean = false;
+  userMarker : Marker | null = null
   private currentMarkers: Marker[] = [];
+  private currentFriends: Marker[] = [];
+  private currentEvents: Marker[] = [];
+  routeReady = false
+  isLayersOpen = signal(false)
+  layers = signal({
+    appointments: true,
+    friends:true,
+    events:true
+  });
 
   constructor(){
+
     effect(() => {
       const location = this.mapStore.userLocation();
       if(location && this.map && this.isMapReady){
@@ -26,13 +37,7 @@ export class MapComponent implements OnDestroy{
         const distance = this.lastFlyTo ? Math.sqrt(Math.pow(location.lng - this.lastFlyTo.lng , 2)
       + Math.pow(location.lat - this.lastFlyTo.lat , 2)) : 1;
       if(isFirstTime || distance > 0.001){
-        this.map.flyTo({
-          center : [location.lng , location.lat],
-          zoom : 10,
-          essential : true,
-          duration : 3000
-        });
-        this.lastFlyTo = location
+        this.recenter()
       }
       }
     })
@@ -46,10 +51,23 @@ export class MapComponent implements OnDestroy{
     })
 
     effect(() => {
+     const currentLayers = this.layers()
      const appointments = this.mapStore.appointments();
-     if (this.isMapReady && appointments && appointments.length > 0) {
-       this.addMarkers(); 
-      }
+     const friends = this.mapStore.friends();
+     const events = this.mapStore.events();
+     const location = this.mapStore.userLocation();
+     if (this.isMapReady) {
+     this.addUserMarker(location.lng,location.lat)
+       if(appointments && appointments.length > 0){
+         this.addMarkers();
+       }
+       if(friends && friends.length > 0){
+        this.addFriendsLayer()
+       }
+       if(events && events.length > 0){
+        this.addEventsLayer()
+       }
+     }
     });
   }
   @ViewChild('mapContainer') mapContainer!: ElementRef;
@@ -60,65 +78,147 @@ export class MapComponent implements OnDestroy{
     this.map = new Map({
       container: this.mapContainer.nativeElement,
       // ال map style
-      style: 'https://api.maptiler.com/maps/landscape-v4/style.json?key=o1yZvP8beaDxphCCCwBU', 
+      style: 'https://api.maptiler.com/maps/landscape-v4/style.json?key=o1yZvP8beaDxphCCCwBU',
       center: [31.2357, 30.0444], 
-      zoom: 8,
+      zoom: 10,
     });
-    // علشان شكل الكوره الارضيه لما نصغر الزوم
     this.map.on('load' , () => {
       this.isMapReady = true;
+      // علشان شكل الكوره الارضيه لما نصغر الزوم
       this.map.setProjection({type:'globe'});
       this.addMarkers();
+      this.addFriendsLayer()
+      this.addEventsLayer()
       const currentRoute = this.mapStore.currentRoute();
       if(currentRoute){
         this.drawRouteOnMap(currentRoute);
         this.fitMapToPoints(currentRoute);
       }
+      this.map.resize()
      }); 
 
-   // زراير التحكم
-    this.map.addControl(new NavigationControl({
-      visualizePitch : true,
-      showCompass : true,
-      showZoom : true
-    }),
-    'top-right'
-  );
   this.map.setPitch(45)
-  // رسم البوب اب بعد مالخريطه تجهز
-  this.map.on('load' , () => {
-    this.addMarkers();
-  })
+  } 
+
+  addUserMarker(lng:number , lat:number){
+    const userLoc = this.mapStore.userLocation()
+    if(!userLoc || !this.map) return;
+    if(this.userMarker){
+      this.userMarker.setLngLat([lng,lat])
+      return;
+    }
+    const el = document.createElement('div')
+    el.innerHTML = `<div class="relative w-10 h-10 flex items-center justify-center">
+      <div class="absolute inset-0 rounded-full border-2 border-blue-500 animate-ring"></div> 
+      <div class="relative w-3.5 h-3.5 bg-white rounded-full border-2 border-blue-600 shadow-lg z-10"></div>
+    </div>`
+
+    this.userMarker = new Marker({element:el , anchor : 'bottom'}).setLngLat([lng,lat]).addTo(this.map)
   }
 
   addMarkers(){
     const appointments = this.mapStore.appointments()
-    if(!appointments || !this.map) return
+    if(!appointments || !this.map) return;
     this.currentMarkers.forEach(m => m.remove());
     this.currentMarkers = []
-    appointments!.forEach((app , index) => {
+    if(!this.layers().appointments) return;
+    appointments.forEach((app , index) => {
       const isNext = index === 0
-      const color = isNext? '#d32e18' : 'black'
+      const customCss = isNext? 'bg-primary-500 animate-popup' : 'bg-black'
       const el = document.createElement('div');
-      el.className = isNext? 'custom-marker next' : 'custom-marker';
+      el.className = `flex flex-col item-center gap-1 cursor-pointer custom-marker`;
       
-      el.innerHTML = `<svg width="40" height="56" viewBox="0 0 40 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20 0C8.95 0 0 8.95 0 20C0 35 20 56 20 56C20 56 40 35 40 20C40 8.95 31.05 0 20 0Z" fill= "${color}"/>
-        <circle cx="20" cy="20" r="17" fill="white"/>
-        <defs>
-        <pattern id="img${app.id}" patternUnits="userSpaceOnUse" width="100%" height="100%">
-        <image href="" x="0" y="0" width="40" height="40" preserveAspectRatio="xMidYMid slice"/>
-        </pattern>
-        </defs>
-        <circle cx="20" cy="20" r="16" fill="url(#img${app.id})"/>
-      </svg>`;
-      const popup = new Popup({offset : [0,-25], closeButton : false , anchor : 'bottom'}).setText(app.title);
-      const marker = new Marker({element : el , anchor : 'bottom'}).setLngLat([app.lng , app.lat])
-      .setPopup(popup).addTo(this.map);
+      el.innerHTML = `<div class="w-8 h-8 rounded-full ${customCss} flex items-center justify-center shadow-lg border-2 border-white">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 21C12 21 20 15 20 9C20 4.58172 16.4183 1 12 1C7.58172 1 4 4.58172 4 9C4 15 12 21 12 21Z" 
+            stroke="white" 
+            stroke-width="1.5" 
+            fill="none"/>
+      <circle cx="12" cy="9" r="3" 
+              stroke="white" 
+              stroke-width="1.5" 
+              fill="none"/>
+    </svg>
+  </div>
+  
+  <span class="text-[10px] font-bold text-black bg-white/80 px-2 py-0.5 rounded-full backdrop-blur-sm">
+    ${app.title} 
+  </span>`;
+      const marker = new Marker({element : el , anchor : 'bottom'}).setLngLat([app.lng , app.lat]).addTo(this.map);
       marker.getElement().addEventListener('click', () => {
           this.loadRouteForAppointment(app)
       })
       this.currentMarkers.push(marker)
+    })
+  }
+
+  addFriendsLayer(){
+    const friends = this.mapStore.friends()
+    if(!friends || !this.map) return;
+    this.currentFriends.forEach(m => m.remove());
+    this.currentFriends = []
+    if(!this.layers().friends) return;
+    friends.forEach((app) => {
+      const el = document.createElement('div'); 
+      el.className = 'flex flex-col item-center gap-1 cursor-pointer custom-marker';
+      
+      el.innerHTML = `<div class="relative flex flex-col items-center group cursor-pointer">
+    <div class="relative w-10 h-10 flex items-center justify-center">
+      <div class="absolute inset-0 rounded-full border border-green-500/60 animate-ring"></div> 
+      <div class="relative w-3.5 h-3.5 bg-green-600 rounded-full border border-white shadow-md z-10"></div>
+    </div>
+    <div class="absolute -bottom-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+       <span class="text-[10px] font-bold text-black bg-white px-2 py-1 rounded-md shadow-md whitespace-nowrap border border-gray-100">
+         ${app.name}
+       </span>
+    </div>
+    
+  </div>`;
+      const marker = new Marker({element : el , anchor : 'bottom'}).setLngLat([app.lng , app.lat]).addTo(this.map); 
+      marker.getElement().addEventListener('click', () => {
+          this.loadRouteForAppointment(app as any)
+      })
+      this.currentFriends.push(marker)
+    })
+  }
+
+  addEventsLayer(){
+    const events = this.mapStore.events()
+    if(!events || !this.map) return;
+    this.currentEvents.forEach(m => m.remove());
+    this.currentEvents = []
+    if(!this.layers().events) return;
+    events.forEach((app) => {
+      const el = document.createElement('div');
+      el.className = `flex flex-col item-center gap-1 cursor-pointer custom-marker`;
+      
+      el.innerHTML = `<div class="relative flex flex-col items-center group">
+    <div class="relative w-8 h-8 flex items-center justify-center">
+      <div class="absolute inset-0 rounded-full border-2 border-orange-500/40 animate-pulse"></div>
+      
+      <div class="relative w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center border-2 border-white shadow-lg z-10">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M14.5 12.5l2-2M18.5 8.5l-2 2M12.5 14.5l-2 2M8.5 18.5l2-2"/>
+  <path d="M12 12l.5-1M12 12l-.5-1M12 12l-1-.5M12 12l-1 .5"/>
+  <path d="M12 2v2M2 12h2M12 22v-2M22 12h-2M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M19.07 4.93l-1.41 1.41"/>
+</svg>
+      </div>
+      
+      <div class="absolute -bottom-1 w-3 h-3 bg-orange-500 rotate-45 border-r-2 border-b-2 border-white"></div>
+    </div>
+
+    <div class="mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+       <span class="text-[10px] font-bold text-black bg-white px-2 py-1 rounded-md shadow-md whitespace-nowrap">
+         ${app.title || 'فعالية جديدة'}
+       </span>
+    </div>
+  </div>
+;`;
+      const marker = new Marker({element : el , anchor : 'bottom'}).setLngLat([app.lng , app.lat]).addTo(this.map); 
+      marker.getElement().addEventListener('click', () => {
+          this.loadRouteForAppointment(app)
+      })
+      this.currentEvents.push(marker)
     })
   }
 
@@ -152,11 +252,26 @@ export class MapComponent implements OnDestroy{
         source:'route',
         layout:{'line-join':'round','line-cap':'round'},
         paint:{
-          'line-color':'#38bdf8',
-          'line-width': 16,
-          'line-opacity':0.9
+          'line-color':'#891e10',
+          'line-width': 3,
+          'line-dasharray':[2,2],
+          'line-opacity':0.8
         }
       })
+    }
+  }
+
+  drawFullRoute(){
+    const tripRoute = this.mapStore.trips()[0]
+    const userloc = this.mapStore.userLocation()
+    if(tripRoute && userloc){
+      const fullRoute : number[][] = [
+        [userloc.lng, userloc.lat],
+        [tripRoute.lng , tripRoute.lat]
+      ] 
+      this.drawRouteOnMap(fullRoute)
+      this.fitMapToPoints(fullRoute)
+      this.routeReady = true
     }
   }
 
@@ -167,7 +282,34 @@ export class MapComponent implements OnDestroy{
   }, new maplibregl.LngLatBounds(coordinates[0] as [number , number], coordinates[0] as [number,number])
 )
   this.map.fitBounds(bounds, { padding: 50, duration: 1000 });
-}
+  }
+
+  recenter() {
+  const userLoc = this.mapStore.userLocation();
+  if (userLoc && this.map) {
+    this.map.flyTo({
+      center: [userLoc.lng, userLoc.lat], 
+      zoom: 10, 
+      pitch: 45,
+      essential: true,
+      duration: 3000
+    });
+    this.lastFlyTo = userLoc
+  } 
+  }
+
+  toggelLayersMenue(){
+    this.isLayersOpen.update(v => !v);
+  }
+
+  toggelLayers(key:'appointments' | 'friends' | 'events'){
+    this.layers.update(prev => ({
+      ...prev,
+      [key]: !prev[key] 
+    }));
+  }
+
+
 
 ngOnDestroy(): void {
   this.mapStore.clearLocationTracking();
