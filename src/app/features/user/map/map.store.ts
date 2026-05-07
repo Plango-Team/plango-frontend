@@ -1,21 +1,11 @@
 import { signalStore, withState, withMethods, patchState, withHooks } from '@ngrx/signals';
-import { IAppointment, IRouteResponse } from './interfaces/Imap';
+import { ChatMessage, IAppointment, IRouteResponse, MapState } from './interfaces/Imap';
 import { inject } from '@angular/core';
 import { MapService } from './services/map.service';
 import polyline from '@mapbox/polyline';
+import { authStore } from '../../auth/auth.store';
 
-interface MapState {
-  userLocation: {
-    lng: number;
-    lat: number
-  } | null;
-  appointments: IAppointment[] | null;
-  currentRoute: number[][] | null;
-  routeData: IRouteResponse['data'] | null;
-  isLoading: boolean;
-  error: string | null;
-  userHeading : number | null;
-}
+
 let watchId : number | null = null;
 
 const initialState: MapState = {
@@ -25,7 +15,13 @@ const initialState: MapState = {
   routeData: null,
   isLoading: false,
   error: null,
-  userHeading: null
+  userHeading: null,
+  events: [
+    { id: 101, title: 'ورشة', lat: 28.1130, lng: 30.7450 },
+    { id: 102, title: 'معرض الفن', lat: 27.9350, lng: 30.8350 }
+  ],
+  friends:null,
+  trips:[],
 };
 
 export const MapStore = signalStore(
@@ -34,7 +30,7 @@ export const MapStore = signalStore(
   },
   withState(initialState),
 
-  withMethods((store, mapService = inject(MapService)) => ({
+  withMethods((store, mapService = inject(MapService), authstore = inject(authStore)) => ({
     // فنكشن بتجيب اللوكيشن الحالي من المتصفح
     getCurrentLocation() {
       if (!navigator.geolocation) {
@@ -72,20 +68,56 @@ export const MapStore = signalStore(
       }
     },
 
-    loadAppointments() {
-      patchState(store, { isLoading: true });
+    loadFullData() {
+    patchState(store, { isLoading: true });
+    mapService.getAppointments().subscribe(data => {
+      patchState(store, { appointments: data, isLoading: false });
+    });
+    mapService.getTripInfo().subscribe(info => {
+      patchState(store, {trips: [info]}); 
+    });
+    mapService.getFriends().subscribe(data => {
+      patchState(store, { friends: data, isLoading: false });
+    });
+    },
 
-      mapService.getAppointments().subscribe({
-        next: (appointments) => {
-          patchState(store,{
-            appointments:appointments,
-            isLoading:false
-          });
-        },
-        error:(e) => {
-          // error msg
-          patchState(store, {isLoading:false})
+    toggleTripMenu(index: number) {
+      patchState(store,(state) => {
+        const updatedTrips = [...(state.trips ?? [])]
+        if(updatedTrips[index]){
+          updatedTrips[index] = {
+            ...updatedTrips[index],
+            showTripMenu: !updatedTrips[index].showTripMenu
+          }
         }
+        return {trips:updatedTrips}
+      })
+    },
+
+    deleteTrip(index:number){
+      patchState(store, (state) => ({
+        trips:(state.trips ?? []).filter((_,i) => i !== index)
+      }))
+    },
+
+    addMessage(messageText:string){
+    const username = authstore.user().firstName
+      const newMessage : ChatMessage = {
+        id: Date.now(),
+        sender: username,
+        text: messageText,
+        time: new Date().toLocaleTimeString('ar-EG',{hour:'numeric',minute:'numeric',hour12:true}),
+      };
+      patchState(store,(state) => {
+        const updatedTrips = [...state.trips];
+        if(updatedTrips[0]){
+          updatedTrips[0] = {
+            ...updatedTrips[0],chatMessages:[...
+              (updatedTrips[0].chatMessages || []),newMessage
+            ]
+          }
+        }
+        return {trips:updatedTrips}
       })
     },
 
@@ -97,7 +129,7 @@ export const MapStore = signalStore(
           const decodedPoly = polyline.decode(response.data.polyline)
           // بعكسه علشان الديكود بيرجع [lat,lng] واحنا عاوزيين العكس
           const coordinates = decodedPoly.map(p => [p[1], p[0]]);
-          patchState(store, {currentRoute:coordinates,isLoading:false});
+          patchState(store, {currentRoute:coordinates,routeData:response,isLoading:false});
         },
         error:(e) => {
           // error msg
@@ -114,7 +146,7 @@ export const MapStore = signalStore(
   withHooks({
     onInit(store) {
       store.getCurrentLocation();
-      store.loadAppointments();
+      store.loadFullData();
     },
   })
 );

@@ -29,7 +29,7 @@
 }
 
 /* 4. Theme tokens */
-@theme {
+@theme { 
   --color-primary-400: #ea5b48;
   --color-primary-500: #d32e18;
   --color-primary-600: #b72815;
@@ -148,6 +148,8 @@
     --gray-color: #7c7c7c;
     --light-gray-color: #9a9a9a;
     --main-shadow-color: rgba(211, 46, 24, 0.1);
+    --success-bg:#dcfce7
+
   }
   .dark {
     --background: 0 0% 6%;
@@ -168,6 +170,8 @@
     --gray-color: #888888;
     --light-gray-color: #cbcbcb;
     --main-shadow-color: rgba(0, 0, 0, 0.5);
+    --success-bg:#032e15
+
   }
 
   html {
