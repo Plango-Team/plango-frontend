@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { isUserGuard } from './core/guards/is-user-guard';
 import { isAdminGuard } from './core/guards/is-admin-guard';
+import { isOrganizationGuard } from './core/guards/is-organization-guard';
 
 export const routes: Routes = [
   {
@@ -23,6 +24,16 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./core/layouts/user-layout/user-layout.component').then((m) => m.UserLayoutComponent),
     loadChildren: () => import('./features/user/user.routes').then((m) => m.userRoutes),
+  },
+  {
+    path: 'organization',
+    canActivate: [isOrganizationGuard],
+    loadComponent: () =>
+      import('./core/layouts/organization-layout/organization-layout.component').then(
+        (m) => m.OrganizationLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/organization/organization.routes').then((m) => m.organizationRoutes),
   },
   {
     path: 'admin',

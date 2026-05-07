@@ -7,7 +7,7 @@
 </div>
 
 <div class="space-y-2">
-  @for (appointment of appointments(); track appointment.id) {
+  @for (appointment of upcomingAppointments(); track appointment.id) {
     <div class="flex items-center gap-3 rounded-xl border border-ink-border bg-ink-2 px-3 py-3 transition hover:border-ink-fg/30 sm:gap-4 sm:px-4">
       
       <div class="font-mono text-xs tabular-nums text-ink-muted flex items-center justify-center w-10 sm:w-14 sm:text-sm">
@@ -18,11 +18,11 @@
 
       <div class="flex-1 min-w-0 text-right">
         <div class="font-medium truncate text-ink-fg">{{ appointment.title }}</div>
-        <div class="mt-0.5 text-xs text-ink-muted">{{ appointment.date }}</div>
+        <div class="mt-0.5 text-xs text-ink-muted">{{ appointment.date }} - {{ appointment.time }}</div>
       </div>
       
       <div class="flex items-center gap-3">
-        @let minsLeft = getMinutesRemaining(appointment.startTime);
+        @let minsLeft = getMinutesRemaining(appointment.date, appointment.time);
         @if (minsLeft > 0 && minsLeft <= 60) {
           <div class="rounded-full flex items-center gap-1 bg-brand/10 px-2 py-0.5 text-[10px] font-medium text-brand">
             <app-icon [iconName]="'Notification01Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>

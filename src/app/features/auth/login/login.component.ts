@@ -15,6 +15,7 @@ import { ILoginRequest } from '../../../core/models/iuser';
 export class LoginComponent {
   authStore = inject(authStore);
   public themeService = inject(ThemeService);
+  showPassword = signal(false);
 
   private readonly STORAGE_KEY = 'plan_go_login_draft';
   loginData = signal<ILoginRequest>({
@@ -50,4 +51,8 @@ export class LoginComponent {
       },
     },
   );
+
+  togglePassword(): void {
+    this.showPassword.update((value) => !value);
+  }
 }

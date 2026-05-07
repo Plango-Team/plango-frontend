@@ -10,6 +10,7 @@ import {
   IVerifyOtpRequest,
   IResetPasswordRequest,
   IMessageResponse,
+  AccountType,
 } from '../../models/iuser';
 import { environment } from '../../../../environments/environment';
 
@@ -23,6 +24,57 @@ export class AuthService {
   // Mock OTP storage (سيتم استبداله بالـ Backend الحقيقي)
   private mockOtpStore = new Map<string, string>();
 
+  private normalizeUser(user: IUser): IUser {
+    const accountType = user.accountType ?? 'personal';
+    const displayName = user.displayName?.trim() || `${user.firstName} ${user.lastName}`.trim();
+
+    return {
+      ...user,
+      accountType,
+      displayName,
+      organizationName:
+        user.organizationName ?? (accountType === 'organization' ? displayName : undefined),
+    };
+  }
+
+  private createToken(user: IUser): string {
+    const payload = btoa(JSON.stringify({ id: user.id, accountType: user.accountType }));
+    return `plango.${payload}`;
+  }
+
+  private decodeToken(token: string): { id: string; accountType: AccountType } | null {
+    const encodedPayload = token.split('.')[1];
+    if (!encodedPayload) return null;
+
+    try {
+      const decoded = JSON.parse(atob(encodedPayload)) as {
+        id?: string;
+        accountType?: AccountType;
+      };
+
+      if (!decoded.id || !decoded.accountType) return null;
+
+      return {
+        id: decoded.id,
+        accountType: decoded.accountType,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  private buildDisplayName(user: Pick<IUser, 'firstName' | 'lastName' | 'displayName'>): string {
+    return user.displayName?.trim() || `${user.firstName} ${user.lastName}`.trim();
+  }
+
+  private buildHomeRoute(user: Pick<IUser, 'accountType' | 'role'>): string {
+    if (user.role === 'admin') {
+      return '/admin';
+    }
+
+    return user.accountType === 'organization' ? '/organization' : '/user';
+  }
+
   /**
    * تسجيل الدخول
    * JSON Server لا يدعم /login، لذا سنبحث عن المستخدم بالإيميل والباسورد
@@ -31,17 +83,17 @@ export class AuthService {
     return this.http.get<IUser[]>(`${this.baseUrl}/users`).pipe(
       delay(800),
       map((users) => {
-        const user = users.find(
-          (u) => u.email === credentials.email && u.password === credentials.password,
-        );
+        const user = users
+          .map((entry) => this.normalizeUser(entry))
+          .find((u) => u.email === credentials.email && u.password === credentials.password);
 
         if (!user) {
           throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
         }
 
         return {
-          token: `fake-jwt-token-${user.id}`,
-          user: user,
+          token: this.createToken(user),
+          user,
           expiresIn: 3600,
         } as IAuthResponse;
       }),
@@ -53,14 +105,30 @@ export class AuthService {
    * POST لمجموعة الـ users في JSON Server
    */
   signUp(userData: ISignUpRequest): Observable<IAuthResponse> {
+    const isOrganization = userData.accountType === 'organization';
+    const displayName = this.buildDisplayName({
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      displayName: userData.displayName,
+    });
+    const userName =
+      userData.username.trim() ||
+      `${displayName.toLowerCase().replace(/\s+/g, '_')}_${Date.now().toString(36).slice(-4)}`;
+
     const newUser: Partial<IUser> = {
       email: userData.email,
       password: userData.password,
       firstName: userData.firstName,
       lastName: userData.lastName,
-      userName: `${userData.firstName.toLowerCase()}_${userData.lastName.toLowerCase()}`,
+      displayName,
+      userName,
       phoneNumber: userData.phoneNumber,
-      role: 'user',
+      role: isOrganization ? 'user' : 'user',
+      accountType: userData.accountType,
+      bio: userData.bio,
+      privateFollows: userData.privateFollows,
+      organizationName: userData.organizationName,
+      organizationDescription: userData.organizationDescription,
       status: 'active',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -80,9 +148,10 @@ export class AuthService {
     return this.http.post<IUser>(`${this.baseUrl}/users`, newUser).pipe(
       delay(800),
       map((user) => {
+        const normalizedUser = this.normalizeUser(user);
         return {
-          token: `fake-jwt-token-${user.id}-${Date.now()}`,
-          user: user,
+          token: this.createToken(normalizedUser),
+          user: normalizedUser,
           expiresIn: 3600,
         } as IAuthResponse;
       }),
@@ -135,24 +204,6 @@ export class AuthService {
   }
 
   /**
-   * إرسال كود OTP للتحقق من الحساب بعد التسجيل
-   * Mock: بنولد كود عشوائي
-   */
-  sendSignUpOtp(email: string): Observable<IMessageResponse> {
-    return of(null).pipe(
-      delay(800),
-      map(() => {
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        this.mockOtpStore.set(email, otp);
-
-        console.log(`🔐 Signup OTP for ${email}: ${otp}`);
-
-        return { message: `تم إرسال كود التحقق إلى ${email}` };
-      }),
-    );
-  }
-
-  /**
    * إعادة تعيين كلمة المرور بعد التحقق من OTP
    * Mock: تحديث الباسورد في JSON Server
    */
@@ -191,8 +242,15 @@ export class AuthService {
    */
   getCurrentUser(): Observable<IUser> {
     const token = localStorage.getItem('token');
-    const userId = token?.split('-')[3] || '1';
+    const session = token ? this.decodeToken(token) : null;
+    const userId = session?.id || '1';
 
-    return this.http.get<IUser>(`${this.baseUrl}/users/${userId}`);
+    return this.http
+      .get<IUser>(`${this.baseUrl}/users/${userId}`)
+      .pipe(map((user) => this.normalizeUser(user)));
+  }
+
+  getHomeRoute(user: Pick<IUser, 'accountType' | 'role'>): string {
+    return this.buildHomeRoute(user);
   }
 }

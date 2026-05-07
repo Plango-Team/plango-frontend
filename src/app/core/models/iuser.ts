@@ -1,13 +1,23 @@
+export type AccountType = 'personal' | 'organization';
+
 export interface IUser {
   id: string;
   email: string;
   password: string | null;
   firstName: string;
   lastName: string;
+  displayName?: string;
   userName: string;
   phoneNumber?: string;
   avatarUrl?: string;
+  bio?: string;
+  privateFollows?: boolean;
   role: 'user' | 'admin';
+  accountType: AccountType;
+  organizationId?: string;
+  organizationRole?: 'owner' | 'member';
+  organizationName?: string;
+  organizationDescription?: string;
   createdAt: Date;
   updatedAt: Date;
 
@@ -62,7 +72,23 @@ export interface IUserStats {
 export interface IAuthResponse {
   token: string;
   user: IUser;
+  organization?: IOrganizationProfile | null;
   expiresIn: number; // مدة صلاحية الـ Token
+}
+
+export interface IOrganizationProfile {
+  id: string;
+  name: string;
+  slug: string;
+  email: string;
+  city?: string;
+  description?: string;
+  logoUrl?: string;
+  ownerId: string;
+  membersCount: number;
+  status: 'active' | 'inactive' | 'pending';
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
@@ -77,13 +103,19 @@ export interface ILoginRequest {
  * طلب إنشاء حساب جديد
  */
 export interface ISignUpRequest {
+  accountType: AccountType;
   firstName: string;
   lastName: string;
+  displayName: string;
+  username: string;
   email: string;
   phoneNumber: string;
   password: string;
   city: string;
-  recurringDays: string[];
+  bio?: string;
+  privateFollows?: boolean;
+  organizationName?: string;
+  organizationDescription?: string;
   preferences: {
     googleCalendarSync: boolean;
     notifications: boolean;

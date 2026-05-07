@@ -2,21 +2,21 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { authStore } from '../../features/auth/auth.store';
 
-export const isUserGuard: CanActivateFn = (route, state) => {
+export const isOrganizationGuard: CanActivateFn = () => {
   const store = inject(authStore);
   const router = inject(Router);
   const user = store.user();
 
-  if (user) {
-    if (user.role === 'admin') {
-      return router.parseUrl('/admin');
-    }
+  if (user?.role === 'admin') {
+    return router.parseUrl('/admin');
+  }
 
-    if (user.accountType === 'organization') {
-      return router.parseUrl('/organization');
-    }
-
+  if (user?.accountType === 'organization') {
     return true;
+  }
+
+  if (user) {
+    return router.parseUrl('/user');
   }
 
   const token = localStorage.getItem('token');
