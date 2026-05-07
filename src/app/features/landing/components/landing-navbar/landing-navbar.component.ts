@@ -85,7 +85,13 @@ export class LandingNavbarComponent {
   }
 
   dashboardRoute(): string {
-    return this.store.user()?.role === 'admin' ? '/admin' : '/user';
+    const user = this.store.user();
+
+    if (user?.role === 'admin') {
+      return '/admin';
+    }
+
+    return user?.accountType === 'organization' ? '/organization' : '/user';
   }
 
   fullName(): string {
@@ -94,7 +100,7 @@ export class LandingNavbarComponent {
       return '';
     }
 
-    return `${user.firstName} ${user.lastName}`.trim();
+    return user.displayName?.trim() || `${user.firstName} ${user.lastName}`.trim();
   }
 
   initials(): string {
@@ -103,8 +109,10 @@ export class LandingNavbarComponent {
       return 'U';
     }
 
-    const first = user.firstName?.[0] ?? '';
-    const last = user.lastName?.[0] ?? '';
+    const sourceName = user.displayName?.trim() || `${user.firstName} ${user.lastName}`.trim();
+    const parts = sourceName.split(/\s+/).filter(Boolean);
+    const first = parts[0]?.[0] ?? user.firstName?.[0] ?? '';
+    const last = parts[1]?.[0] ?? user.lastName?.[0] ?? '';
     const result = `${first}${last}`.trim();
 
     return result ? result.toUpperCase() : 'U';

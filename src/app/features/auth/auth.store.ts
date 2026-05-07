@@ -42,8 +42,20 @@ export const authStore = signalStore(
   } as AuthState),
   withComputed((store) => ({
     isAuthenticated: computed(() => !!store.user()),
+    accountType: computed(() => store.user()?.accountType ?? null),
+    isOrganization: computed(() => store.user()?.accountType === 'organization'),
   })),
   withMethods((store, authService = inject(AuthService), router = inject(Router)) => ({
+    goToHome: signalMethod<void>(() => {
+      const user = store.user();
+      if (!user) {
+        router.navigate(['/auth/login']);
+        return;
+      }
+
+      router.navigate([authService.getHomeRoute(user)]);
+    }),
+
     // ─────── تسجيل الدخول ───────
     login: rxMethod<ILoginRequest>(
       pipe(
@@ -58,7 +70,7 @@ export const authStore = signalStore(
                   isLoading: false,
                 });
                 localStorage.setItem('token', response.token);
-                router.navigate(['/']);
+                router.navigate([authService.getHomeRoute(response.user)]);
               },
               error: (err) => {
                 patchState(store, {
@@ -88,7 +100,7 @@ export const authStore = signalStore(
                   successMessage: 'تم إنشاء حسابك بنجاح!',
                 });
                 localStorage.setItem('token', response.token);
-                router.navigate(['/']);
+                router.navigate([authService.getHomeRoute(response.user)]);
               },
               error: (err) => {
                 patchState(store, {
@@ -109,32 +121,6 @@ export const authStore = signalStore(
         tap(() => patchState(store, { isLoading: true, error: null, successMessage: null })),
         switchMap((data) =>
           authService.forgotPassword(data).pipe(
-            tap({
-              next: (response) => {
-                patchState(store, {
-                  isLoading: false,
-                  successMessage: response.message,
-                });
-              },
-              error: (err) => {
-                patchState(store, {
-                  isLoading: false,
-                  error: err.message || 'حدث خطأ أثناء إرسال كود التحقق',
-                });
-              },
-            }),
-            catchError(() => of(null)),
-          ),
-        ),
-      ),
-    ),
-
-    // ─────── إرسال OTP للتسجيل ───────
-    sendSignUpOtp: rxMethod<string>(
-      pipe(
-        tap(() => patchState(store, { isLoading: true, error: null, successMessage: null })),
-        switchMap((email) =>
-          authService.sendSignUpOtp(email).pipe(
             tap({
               next: (response) => {
                 patchState(store, {
@@ -241,6 +227,9 @@ export const authStore = signalStore(
             tap({
               next: (user) => {
                 patchState(store, { user, token, isLoading: false });
+                if (user.accountType === 'organization') {
+                  router.navigate(['/organization']);
+                }
               },
               error: () => {
                 localStorage.removeItem('token');

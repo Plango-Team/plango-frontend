@@ -2,15 +2,14 @@ import { Component, signal, inject, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ThemeService } from '../../../core/services/theme.service';
-import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { authStore } from '../auth.store';
-import { ISignUpRequest } from '../../../core/models/iuser';
+import { AccountType, ISignUpRequest } from '../../../core/models/iuser';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [RouterLink, CommonModule, IconComponent, FormsModule],
+  imports: [RouterLink, CommonModule, FormsModule],
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.css',
 })
@@ -18,33 +17,37 @@ export class SignupComponent {
   public themeService = inject(ThemeService);
   public readonly store = inject(authStore);
 
-  // 4 خطوات: 1=بيانات, 2=موقع/مواعيد, 3=تفضيلات, 4=OTP
+  // 4 خطوات: 1=نوع الحساب, 2=الأساسيات, 3=اسم المستخدم, 4=الملف الشخصي
   currentStep = signal(1);
   totalSteps = 4;
 
   // بيانات الفورم
+  accountType = signal<AccountType>('personal');
   fullName = '';
   email = '';
   phoneNumber = '';
   password = '';
+  username = '';
   city = '';
-  selectedDays = signal<string[]>([]);
-
-  // خطوة 3 - التفضيلات
-  googleCalendarSync = signal(false);
-  notificationsEnabled = signal(true);
-  locationTracking = signal(true);
-
-  // خطوة 4 - OTP
-  otpDigits = signal<string[]>(['', '', '', '', '', '']);
-  otpSent = signal(false);
+  bio = '';
+  privateFollows = signal(false);
 
   // حالة الفاليديشن
-  step1Errors = signal<Record<string, string>>({});
+  step2Errors = signal<Record<string, string>>({});
+  step3Errors = signal<Record<string, string>>({});
   fieldError = signal<string>('');
 
-  get otpCode(): string {
-    return this.otpDigits().join('');
+  get usernameValid(): boolean {
+    const value = this.username.trim().toLowerCase();
+    return /^[a-z0-9_]{3,24}$/.test(value);
+  }
+
+  isOrganizationAccount(): boolean {
+    return this.accountType() === 'organization';
+  }
+
+  setAccountType(type: AccountType) {
+    this.accountType.set(type);
   }
 
   constructor() {
@@ -71,24 +74,7 @@ export class SignupComponent {
     return base + 'bg-(--card-bg) border-(--border-color) text-(--muted-fg)';
   }
 
-  toggleDay(day: string) {
-    this.selectedDays.update((days) => {
-      if (day === 'يومياً') {
-        return days.includes('يومياً') ? [] : ['يومياً'];
-      }
-      const filtered = days.filter((d) => d !== 'يومياً');
-      if (filtered.includes(day)) {
-        return filtered.filter((d) => d !== day);
-      }
-      return [...filtered, day];
-    });
-  }
-
-  isDaySelected(day: string): boolean {
-    return this.selectedDays().includes(day);
-  }
-
-  validateStep1(): boolean {
+  validateStep2(): boolean {
     const errors: Record<string, string> = {};
 
     if (!this.fullName.trim()) {
@@ -108,128 +94,87 @@ export class SignupComponent {
       errors['password'] = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
     }
 
-    this.step1Errors.set(errors);
+    this.step2Errors.set(errors);
+    return Object.keys(errors).length === 0;
+  }
+
+  validateStep3(): boolean {
+    const errors: Record<string, string> = {};
+    const value = this.username.trim().toLowerCase();
+
+    if (!value) {
+      errors['username'] = 'يرجى إدخال اسم المستخدم';
+    } else if (!/^[a-z0-9_]{3,24}$/.test(value)) {
+      errors['username'] = 'استخدم a-z, 0-9 أو _ فقط (3–24)';
+    }
+
+    this.step3Errors.set(errors);
     return Object.keys(errors).length === 0;
   }
 
   nextStep() {
-    if (this.currentStep() === 1) {
-      if (!this.validateStep1()) return;
+    if (this.currentStep() === 2 && !this.validateStep2()) {
+      return;
     }
+    if (this.currentStep() === 3 && !this.validateStep3()) {
+      return;
+    }
+
     if (this.currentStep() < this.totalSteps) {
       this.currentStep.update((s) => s + 1);
-
-      // عند الوصول للخطوة 4 → إرسال OTP تلقائياً
-      if (this.currentStep() === 4 && !this.otpSent()) {
-        this.sendOtp();
-      }
     }
+  }
+
+  canContinue(): boolean {
+    if (this.currentStep() === 1) return true;
+    if (this.currentStep() === 2) {
+      return (
+        this.fullName.trim().length >= 2 &&
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email) &&
+        this.phoneNumber.trim().length > 0 &&
+        this.password.trim().length >= 6
+      );
+    }
+    if (this.currentStep() === 3) return this.usernameValid;
+    return true;
   }
 
   prevStep() {
     if (this.currentStep() > 1) this.currentStep.update((s) => s - 1);
   }
 
-  // ─────── إرسال OTP ───────
-  sendOtp() {
-    this.store.sendSignUpOtp(this.email);
-    this.otpSent.set(true);
-  }
-
-  // ─────── إعادة إرسال OTP ───────
-  resendOtp() {
-    this.otpDigits.set(['', '', '', '', '', '']);
-    this.store.clearError();
-    this.fieldError.set('');
-    this.store.sendSignUpOtp(this.email);
-  }
-
-  // ─────── التعامل مع OTP Input ───────
-  onOtpInput(event: Event, index: number) {
-    const input = event.target as HTMLInputElement;
-    const value = input.value;
-
-    if (value && !/^\d$/.test(value)) {
-      input.value = '';
-      return;
-    }
-
-    this.otpDigits.update((digits) => {
-      const newDigits = [...digits];
-      newDigits[index] = value;
-      return newDigits;
-    });
-
-    // الانتقال للخانة التالية
-    if (value && index < 5) {
-      const nextInput = input.parentElement?.querySelectorAll('input')[index + 1] as HTMLInputElement;
-      nextInput?.focus();
-    }
-  }
-
-  onOtpKeyDown(event: KeyboardEvent, index: number) {
-    const input = event.target as HTMLInputElement;
-    if (event.key === 'Backspace' && !input.value && index > 0) {
-      const prevInput = input.parentElement?.querySelectorAll('input')[index - 1] as HTMLInputElement;
-      prevInput?.focus();
-    }
-  }
-
-  onOtpPaste(event: ClipboardEvent) {
-    event.preventDefault();
-    const pastedData = event.clipboardData?.getData('text') || '';
-    const digits = pastedData.replace(/\D/g, '').slice(0, 6);
-
-    if (digits.length === 6) {
-      this.otpDigits.set(digits.split(''));
-      const inputs = (event.target as HTMLInputElement).parentElement?.querySelectorAll('input');
-      (inputs?.[5] as HTMLInputElement)?.focus();
-    }
-  }
-
-  // ─────── التحقق من OTP ثم إنشاء الحساب ───────
-  verifyAndSignUp() {
-    if (this.otpCode.length !== 6) {
-      this.fieldError.set('يرجى إدخال كود التحقق كاملاً (6 أرقام)');
-      return;
-    }
-    this.fieldError.set('');
-    this.store.clearError();
-
-    // التحقق من OTP أولاً
-    this.store.verifyOtp({ email: this.email, otp: this.otpCode });
-
-    // مراقبة النجاح → إنشاء الحساب
-    const checkInterval = setInterval(() => {
-      if (this.store.successMessage()) {
-        this.store.clearSuccess();
-        clearInterval(checkInterval);
-        // OTP صحيح → إنشاء الحساب فعلياً
-        this.submitSignUp();
-      }
-      if (this.store.error()) {
-        clearInterval(checkInterval);
-      }
-    }, 100);
-  }
-
   submitSignUp() {
+    if (!this.validateStep2() || !this.validateStep3()) {
+      return;
+    }
+
     const nameParts = this.fullName.trim().split(' ');
     const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
+    const lastName =
+      this.accountType() === 'organization' ? '' : nameParts.slice(1).join(' ') || '';
+    const displayName = this.fullName.trim();
+    const username = this.username.trim().toLowerCase();
 
     const signUpData: ISignUpRequest = {
+      accountType: this.accountType(),
       firstName,
       lastName,
+      displayName,
+      username,
       email: this.email,
       phoneNumber: this.phoneNumber,
       password: this.password,
       city: this.city,
-      recurringDays: this.selectedDays(),
+      bio: this.bio.trim() || undefined,
+      privateFollows: this.privateFollows(),
+      organizationName: this.isOrganizationAccount() ? displayName : undefined,
+      organizationDescription: this.isOrganizationAccount()
+        ? this.bio.trim() || undefined
+        : undefined,
       preferences: {
-        googleCalendarSync: this.googleCalendarSync(),
-        notifications: this.notificationsEnabled(),
-        locationTracking: this.locationTracking(),
+        googleCalendarSync: false,
+        notifications: true,
+        locationTracking: true,
       },
     };
 

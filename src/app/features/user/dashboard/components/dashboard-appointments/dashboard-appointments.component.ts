@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { IconComponent } from '../../../../../shared/components/icon/icon.component';
 import { RouterLink } from "@angular/router";
+import { AppointmentsStore } from '../../../appointments/appointments.store';
 
 @Component({
   selector: 'app-dashboard-appointments',
@@ -9,29 +10,18 @@ import { RouterLink } from "@angular/router";
   styleUrl: './dashboard-appointments.component.css',
 })
 export class DashboardAppointmentsComponent {
-appointments = signal<any[]>([
-  {
-    id : 1,
-    title : 'أذهب إلي الدوام',
-    date : 'اليوم , 10:30 ص',
-    startTime : '2026-04-01T02:00:00'
-  },
-  {
-    id : 2,
-    title : 'اجتماع عمل',
-    date : 'اليوم , 2:00 م',
-    startTime : '2026-04-01T14:00:00'
-  },
-  {
-    id : 3,
-    title : 'موعد طبيب الأسنان',
-    date : 'اليوم , 9:15 م',
-    startTime : '2026-04-01T21:15:00'
-  }
-])
-getMinutesRemaining(startTime:string) : number{
+  private appointmentStore = inject(AppointmentsStore);
+
+  upcomingAppointments = computed(() => {
+    return this.appointmentStore.appointments()
+      .sort((a, b) => a.time.localeCompare(b.time))
+      .slice(0, 3);
+  });
+
+  getMinutesRemaining(date: string, time: string) : number{
+  if (!date || !time) return -1;
   const now = new Date();
-  const eventTime = new Date(startTime);
+  const eventTime = new Date(`${date}T${time}`);
   const diffMins = eventTime.getTime() - now.getTime();
   return Math.floor(diffMins / (1000 * 60))
 }

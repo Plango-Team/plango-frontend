@@ -6,7 +6,8 @@ import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-auth-layout',
-  imports: [RouterOutlet, LoadingBarComponent ,RouterLink],
+  standalone: true,
+  imports: [RouterOutlet, LoadingBarComponent, RouterLink],
   templateUrl: './auth-layout.component.html',
   styleUrl: './auth-layout.component.css',
 })

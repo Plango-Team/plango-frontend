@@ -1,1 +1,307 @@
-<p>calendar-page works!</p>
+<div class="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between px-4 mt-4">
+  <div>
+    <h1 class="font-display text-2xl tracking-tight sm:text-3xl text-ink-fg">{{ ar ? 'التقويم' : 'Calendar' }}</h1>
+    <p class="text-sm text-ink-muted mt-1">
+      {{ ar ? 'عرض الأسبوع — يظهر وقت التنقل ككتل شفافة قبل المواعيد' : 'Week view — travel buffer shown as ghost blocks before each appointment' }}
+    </p>
+  </div>
+  <div class="flex flex-wrap items-center gap-2">
+    <div class="flex items-center rounded-lg border border-ink-border bg-ink-2">
+      <button
+        (click)="prevWeek()"
+        class="grid h-9 w-9 place-items-center hover:bg-ink-3 rounded-r-lg transition-colors"
+      >
+        <app-icon [iconName]="'ArrowRight01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+      </button>
+      <span class="px-3 text-sm font-medium text-ink-fg">{{ monthLabel() }}</span>
+      <button
+        (click)="nextWeek()"
+        class="grid h-9 w-9 place-items-center hover:bg-ink-3 rounded-l-lg transition-colors"
+      >
+        <app-icon [iconName]="'ArrowLeft01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+      </button>
+    </div>
+    <button
+      (click)="goToToday()"
+      class="rounded-lg border border-ink-border bg-transparent px-4 py-2 text-sm font-medium text-ink-fg hover:bg-ink-3 transition-colors"
+    >
+      {{ ar ? 'اليوم' : 'Today' }}
+    </button>
+    <button
+      (click)="openAddAppointment()"
+      class="flex items-center gap-1.5 rounded-lg bg-ink-fg px-4 py-2 text-sm font-medium text-ink hover:bg-ink-fg/90 transition-colors"
+    >
+      <app-icon [iconName]="'Add01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+      {{ ar ? 'موعد جديد' : 'New appointment' }}
+    </button>
+  </div>
+</div>
+
+<!-- Mini agenda strip — next 7 days -->
+<div class="mb-4 grid grid-cols-7 gap-1.5 sm:gap-2 px-4">
+  @for (d of next7(); track d.ds) {
+    <button
+      (click)="setDrawerDay(d.ds)"
+      class="rounded-xl border p-3 text-start transition hover:bg-ink-3"
+      [ngClass]="d.ds === todayStr() ? 'border-brand/40 bg-brand/5' : 'border-ink-border bg-ink-2'"
+    >
+      <div class="text-[10px] uppercase tracking-wider text-ink-muted">
+        {{ getShortDayName(d.date) }}
+      </div>
+      <div 
+        class="mt-1 font-display text-xl tabular-nums"
+        [ngClass]="d.ds === todayStr() ? 'text-brand' : 'text-ink-fg'"
+      >
+        {{ d.date.getDate() }}
+      </div>
+      <div class="mt-1 flex items-center gap-1 min-h-[6px]">
+        @if (d.count > 0) {
+          @for (item of [].constructor(d.count > 3 ? 3 : d.count).fill(0); track $index) {
+            <span class="h-1.5 w-1.5 rounded-full bg-brand shadow-sm"></span>
+          }
+          @if (d.count > 3) {
+            <span class="text-[10px] text-ink-muted leading-none font-medium">+{{ d.count - 3 }}</span>
+          }
+        } @else {
+          <span class="text-[10px] text-ink-muted leading-none">{{ ar ? '—' : '—' }}</span>
+        }
+      </div>
+    </button>
+  }
+</div>
+
+<!-- Calendar Grid -->
+<div class="px-4 pb-10">
+  <div class="overflow-hidden rounded-2xl border border-ink-border bg-ink-2 shadow-soft">
+    <!-- Header -->
+    <div class="grid grid-cols-[60px_repeat(7,1fr)] border-b border-ink-border bg-ink">
+      <div></div>
+      @for (d of weekDays(); track $index) {
+        <button
+          (click)="setDrawerDay(ymd(d))"
+          class="border-r border-ink-border px-3 py-3 text-center transition hover:bg-ink-3"
+          [ngClass]="ymd(d) === todayStr() ? 'bg-brand/5' : ''"
+        >
+          <div class="text-[11px] text-ink-muted">{{ weekdayNames()[$index] }}</div>
+          <div
+            class="mt-0.5 inline-grid h-7 w-7 place-items-center rounded-full text-sm font-medium"
+            [ngClass]="ymd(d) === todayStr() ? 'bg-brand text-brand-foreground' : 'text-ink-fg'"
+          >
+            {{ d.getDate() }}
+          </div>
+        </button>
+      }
+    </div>
+
+    <!-- Grid -->
+    <div class="relative grid grid-cols-[60px_repeat(7,1fr)]">
+      <div>
+        @for (h of hours; track h) {
+          <div
+            [style.height.px]="slotHeight"
+            class="border-b border-ink-border px-2 pt-1 text-end text-[11px] text-ink-muted"
+          >
+            {{ h }}:00
+          </div>
+        }
+      </div>
+
+      @for (d of weekDays(); track dayIdx; let dayIdx = $index) {
+        <div 
+          class="relative border-r border-ink-border"
+          [ngClass]="ymd(d) === todayStr() ? 'bg-brand/[0.02]' : ''"
+        >
+          @for (h of hours; track h) {
+            <div [style.height.px]="slotHeight" class="border-b border-ink-border"></div>
+          }
+
+          @for (e of getApptsForDay(dayIdx); track $index) {
+            <div>
+              @if (e.buffer > 0) {
+                <div
+                  class="absolute right-1 left-1 rounded-md border border-dashed border-ink-fg/20 bg-ink-fg/5 px-2 py-1 text-[10px] text-ink-muted"
+                  [style.top.px]="(e.start - e.buffer) * slotHeight"
+                  [style.height.px]="e.buffer * slotHeight"
+                >
+                  {{ ar ? 'تنقّل' : 'Travel' }}
+                </div>
+              }
+              <button
+                (click)="setDrawerDay(ymd(d))"
+                class="absolute right-1 left-1 rounded-md px-2 py-1.5 text-start text-[11px] shadow-soft transition hover:scale-[1.02] z-10"
+                [ngClass]="e.brand ? 'bg-brand text-brand-foreground' : 'bg-ink-fg text-ink'"
+                [style.top.px]="(e.start) * slotHeight"
+                [style.height.px]="e.dur * slotHeight - 2"
+              >
+                <div class="truncate font-medium leading-tight">{{ e.title }}</div>
+                <div class="opacity-70">
+                  {{ Math.floor(e.start) }}:{{ (e.start % 1) ? '30' : '00' }}
+                </div>
+              </button>
+            </div>
+          }
+
+          @if (ymd(d) === todayStr()) {
+            <div
+              class="absolute right-0 left-0 z-10 flex items-center"
+              [style.top.px]="currentTimeOffset"
+            >
+              <div class="h-2 w-2 rounded-full bg-brand"></div>
+              <div class="h-px flex-1 bg-brand"></div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- Day Details Drawer (Sheet)                     -->
+<!-- ============================================== -->
+<dialog #drawerModal class="m-0 ml-auto mr-0 h-[100dvh] max-h-none w-full max-w-md backdrop:bg-black/40 backdrop:backdrop-blur-sm bg-transparent border-none p-0 shadow-none outline-none overflow-visible z-[100]" (click)="setDrawerDay(null)" (cancel)="setDrawerDay(null)">
+  @if (drawerDay()) {
+    <div class="h-full w-full bg-ink-2 border-l border-ink-border p-6 shadow-xl animate-slide-in-right overflow-y-auto" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="font-display text-2xl text-ink-fg">{{ drawerTitleLabel }}</h2>
+        <button (click)="setDrawerDay(null)" class="text-ink-muted hover:text-ink-fg transition-colors">
+          <app-icon [iconName]="'Cancel01Icon'" [iconSize]="24" [iconColor]="'currentColor'"></app-icon>
+        </button>
+      </div>
+
+      <div class="space-y-6">
+        <section>
+          <div class="mb-3 flex items-center justify-between">
+            <h3 class="text-sm font-medium text-ink-fg">
+              {{ ar ? 'المواعيد' : 'Appointments' }}
+              <span class="text-ink-muted font-normal">· {{ dayAppts.length }}</span>
+            </h3>
+            <button (click)="openAddAppointment(drawerDay()!)" class="h-8 w-8 rounded-lg border border-ink-border bg-transparent grid place-items-center text-ink-fg hover:bg-ink-3 transition-colors">
+              <app-icon [iconName]="'Add01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+            </button>
+          </div>
+
+          @if (dayAppts.length === 0) {
+            <div class="rounded-lg border border-dashed border-ink-border p-4 text-center text-xs text-ink-muted">
+              {{ ar ? 'لا مواعيد في هذا اليوم' : 'No appointments this day' }}
+            </div>
+          } @else {
+            <div class="space-y-2">
+              @for (a of dayAppts; track a.id) {
+                <div class="rounded-xl border border-ink-border bg-ink p-3 transition-all hover:bg-ink/60 cursor-pointer">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                      <div class="truncate font-medium text-ink-fg">{{ a.title }}</div>
+                      <div class="mt-1 flex items-center gap-2 text-[11px] text-ink-muted">
+                        <span class="flex items-center gap-1"><app-icon [iconName]="'TimeQuarter02Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon> {{ a.time }}</span>
+                        @if (a.destination) {
+                          <span class="flex items-center gap-1"><app-icon [iconName]="'Location01Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon> {{ a.destination }}</span>
+                        }
+                      </div>
+                    </div>
+                    <span class="rounded-full border border-ink-border bg-ink-2 px-2 py-0.5 text-[10px] text-ink-muted whitespace-nowrap">
+                      {{ a.bufferMin }} {{ ar ? 'دقيقة تنقل' : 'm travel' }}
+                    </span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </section>
+      </div>
+    </div>
+  }
+</dialog>
+
+<!-- ============================================== -->
+<!-- Add Appointment Dialog (Modal)                 -->
+<!-- ============================================== -->
+<dialog #apptModal class="backdrop:bg-black/50 backdrop:backdrop-blur-sm bg-transparent p-0 m-auto shadow-none outline-none overflow-visible w-full max-w-lg z-[100]" (cancel)="closeAddAppointment()">
+  <div class="relative w-full bg-ink-2 border border-ink-border rounded-xl shadow-elevated p-6 animate-fade-in-up max-h-[90vh] overflow-y-auto">
+    
+    <div class="mb-4">
+      <h2 class="font-display text-2xl text-ink-fg">{{ ar ? 'موعد ذكي جديد' : 'New smart appointment' }}</h2>
+      <p class="text-sm text-ink-muted mt-1">
+        {{ ar ? 'سنحسب وقت المغادرة المثلى بناءً على وسيلة التنقل والمسافة.' : 'We\'ll compute the optimal departure based on transport and distance.' }}
+      </p>
+    </div>
+
+    <form (ngSubmit)="submitAppointment()" class="space-y-4">
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-ink-fg">{{ ar ? 'عنوان الموعد' : 'Title' }}</label>
+        <input 
+          [(ngModel)]="newApptTitle" name="title" required
+          class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          [placeholder]="ar ? 'اجتماع فريق التصميم' : 'Design team sync'"
+        />
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-ink-fg">{{ ar ? 'الوجهة' : 'Destination' }}</label>
+        <input 
+          [(ngModel)]="newApptDestination" name="destination"
+          class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          [placeholder]="ar ? 'مكتب الزمالك، القاهرة' : 'Zamalek office, Cairo'"
+        />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-ink-fg">{{ ar ? 'التاريخ' : 'Date' }}</label>
+          <input 
+            type="date" [(ngModel)]="newApptDate" name="date" required
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-ink-fg">{{ ar ? 'الوقت' : 'Time' }}</label>
+          <input 
+            type="time" [(ngModel)]="newApptTime" name="time" required
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+        </div>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-ink-fg">{{ ar ? 'الوصول قبل الموعد بـ' : 'Arrive before by' }}</label>
+        <div class="grid grid-cols-5 gap-2">
+          @for (b of buffers; track b) {
+            <button
+              type="button"
+              (click)="newApptBufferMin = b"
+              class="rounded-lg border py-2 text-xs transition"
+              [ngClass]="newApptBufferMin === b ? 'border-brand bg-brand/10 text-brand' : 'border-ink-border bg-ink text-ink-muted hover:bg-ink-3'"
+            >
+              {{ b === 0 ? (ar ? 'بدون' : 'None') : b + (ar ? ' د' : ' m') }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-ink-fg">{{ ar ? 'ملاحظات' : 'Notes' }}</label>
+        <textarea
+          [(ngModel)]="newApptNotes" name="notes"
+          class="min-h-[72px] w-full rounded-lg border border-ink-border bg-ink p-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          [placeholder]="ar ? 'اختياري...' : 'Optional...'"
+        ></textarea>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-3 pt-2">
+        <button
+          type="button"
+          (click)="closeAddAppointment()"
+          class="rounded-lg border border-ink-border bg-transparent px-4 py-2 text-sm font-medium text-ink-fg hover:bg-ink-3 transition-colors"
+        >
+          {{ ar ? 'إلغاء' : 'Cancel' }}
+        </button>
+        <button
+          type="submit"
+          class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
+        >
+          {{ ar ? 'إنشاء الموعد' : 'Create appointment' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</dialog>

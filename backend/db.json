@@ -6,7 +6,9 @@
       "password": "123456",
       "firstName": "Nader",
       "lastName": "Mohamed",
+      "displayName": "Nader Mohamed",
       "role": "user",
+      "accountType": "personal",
       "preferences": {
         "theme": "dark",
         "language": "ar",
@@ -20,7 +22,9 @@
       "password": "123456",
       "firstName": "Basma",
       "lastName": "Gamal",
+      "displayName": "Basma Gamal",
       "role": "user",
+      "accountType": "personal",
       "preferences": {
         "theme": "dark",
         "language": "ar",
@@ -33,9 +37,11 @@
       "password": "123456",
       "firstName": "Nader",
       "lastName": "Mohamed",
+      "displayName": "Nader Mohamed",
       "userName": "nader_mohamed",
       "phoneNumber": "01022175316",
       "role": "admin",
+      "accountType": "personal",
       "status": "active",
       "createdAt": "2026-03-30T19:34:27.003Z",
       "updatedAt": "2026-03-30T19:34:27.003Z",
@@ -57,9 +63,11 @@
       "password": "bplango",
       "firstName": "basma",
       "lastName": "",
+      "displayName": "basma",
       "userName": "basma_",
       "phoneNumber": "010123456789",
       "role": "user",
+      "accountType": "personal",
       "status": "active",
       "createdAt": "2026-03-31T02:08:01.955Z",
       "updatedAt": "2026-03-31T02:08:01.955Z",
@@ -81,9 +89,11 @@
       "password": "aplango",
       "firstName": "areeg",
       "lastName": "",
+      "displayName": "areeg",
       "userName": "areeg_",
       "phoneNumber": "010123456789",
       "role": "user",
+      "accountType": "personal",
       "status": "active",
       "createdAt": "2026-03-31T02:13:13.404Z",
       "updatedAt": "2026-03-31T02:13:13.404Z",
@@ -99,6 +109,172 @@
         }
       },
       "id": "rmFnsWsk9Xo"
+    },
+    {
+      "email": "org@plango.com",
+      "password": "123456",
+      "firstName": "PlanGo",
+      "lastName": "Organization",
+      "displayName": "PlanGo Organization",
+      "userName": "plango_organization",
+      "phoneNumber": "01055555555",
+      "role": "user",
+      "accountType": "organization",
+      "organizationName": "PlanGo Organization",
+      "organizationDescription": "PlanGo creates smart departure tools for teams and communities.",
+      "organizationRole": "owner",
+      "status": "active",
+      "createdAt": "2026-04-10T10:00:00.000Z",
+      "updatedAt": "2026-04-10T10:00:00.000Z",
+      "preferences": {
+        "theme": "dark",
+        "language": "ar",
+        "preferredTransport": "car",
+        "defaultBufferTime": 20,
+        "notifications": {
+          "email": true,
+          "push": true,
+          "departureAlerts": true
+        }
+      },
+      "id": "org_plango"
+    },
+    {
+      "email": "nader@org.com",
+      "password": "123456",
+      "firstName": "NaderOrg",
+      "lastName": "",
+      "displayName": "NaderOrg",
+      "userName": "naderorg_2jlo",
+      "phoneNumber": "01022175316",
+      "role": "user",
+      "accountType": "personal",
+      "status": "active",
+      "createdAt": "2026-05-04T14:39:27.420Z",
+      "updatedAt": "2026-05-04T14:39:27.420Z",
+      "preferences": {
+        "theme": "dark",
+        "language": "ar",
+        "preferredTransport": "car",
+        "defaultBufferTime": 15,
+        "notifications": {
+          "email": true,
+          "push": true,
+          "departureAlerts": true
+        }
+      },
+      "id": "gQGsKDivea0"
+    },
+    {
+      "email": "nader@org.com",
+      "password": "123456",
+      "firstName": "naderOrg",
+      "lastName": "",
+      "displayName": "naderOrg",
+      "userName": "naderorg",
+      "phoneNumber": "01022175316",
+      "role": "user",
+      "accountType": "organization",
+      "bio": "فعاليات حلوة وحذابة",
+      "privateFollows": false,
+      "organizationName": "naderOrg",
+      "organizationDescription": "فعاليات حلوة وحذابة",
+      "status": "active",
+      "createdAt": "2026-05-04T14:49:22.223Z",
+      "updatedAt": "2026-05-04T14:49:22.223Z",
+      "preferences": {
+        "theme": "dark",
+        "language": "ar",
+        "preferredTransport": "car",
+        "defaultBufferTime": 15,
+        "notifications": {
+          "email": true,
+          "push": true,
+          "departureAlerts": true
+        }
+      },
+      "id": "cYiRuAnBUV8"
+    },
+    {
+      "email": "nader@user.com",
+      "password": "12345678",
+      "firstName": "naderUser",
+      "lastName": "",
+      "displayName": "naderUser",
+      "userName": "naderuser",
+      "phoneNumber": "01022173516",
+      "role": "user",
+      "accountType": "personal",
+      "bio": "مهتم بالفعاليات الحلوة والجذابة",
+      "privateFollows": true,
+      "status": "active",
+      "createdAt": "2026-05-04T14:50:33.935Z",
+      "updatedAt": "2026-05-04T14:50:33.935Z",
+      "preferences": {
+        "theme": "dark",
+        "language": "ar",
+        "preferredTransport": "car",
+        "defaultBufferTime": 15,
+        "notifications": {
+          "email": true,
+          "push": true,
+          "departureAlerts": true
+        }
+      },
+      "id": "II37b_61XUQ"
+    }
+  ],
+  "appointments": [
+    {
+      "id": "1",
+      "userId": "1",
+      "date": "2026-05-04",
+      "time": "10:30",
+      "title": "أذهب إلي الدوام",
+      "bufferMin": 30
+    },
+    {
+      "id": "2",
+      "userId": "1",
+      "date": "2026-05-04",
+      "time": "14:00",
+      "title": "اجتماع عمل",
+      "bufferMin": 15
+    },
+    {
+      "id": "3",
+      "userId": "1",
+      "date": "2026-05-05",
+      "time": "09:00",
+      "title": "موعد طبيب الأسنان",
+      "bufferMin": 45
+    },
+    {
+      "id": "4",
+      "userId": "1",
+      "date": "2026-05-04",
+      "time": "12:00",
+      "title": "غداء مع العائلة",
+      "bufferMin": 20
+    },
+    {
+      "id": "5",
+      "userId": "1",
+      "date": "2026-05-04",
+      "time": "16:30",
+      "title": "جلسة تصوير",
+      "bufferMin": 60
+    },
+    {
+      "userId": "1",
+      "title": "Meeting",
+      "destination": "القاهرة",
+      "date": "2026-05-04",
+      "time": "21:00",
+      "transport": "car",
+      "bufferMin": 15,
+      "notes": "هلووو",
+      "id": "3cLa8_Kp4Vs"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

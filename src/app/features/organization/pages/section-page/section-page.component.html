@@ -1,0 +1,75 @@
+<section class="px-4 py-6 sm:px-6 lg:px-8">
+  <div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <div class="text-sm text-ink-muted">{{ title }}</div>
+      <h1 class="font-display text-2xl tracking-tight sm:text-3xl text-ink-foreground">
+        {{ title }}
+      </h1>
+      <p class="mt-1 max-w-2xl text-sm text-ink-muted">{{ description }}</p>
+    </div>
+    <a
+      routerLink="/organization/dashboard"
+      class="inline-flex items-center justify-center rounded-lg border border-ink-border bg-ink-2 px-4 py-2 text-sm text-ink-foreground hover:bg-ink-3"
+    >
+      العودة إلى اللوحة
+    </a>
+  </div>
+
+  @if (section === 'events') {
+    <div class="grid gap-4 lg:grid-cols-12">
+      <article class="rounded-2xl border border-ink-border bg-ink-2 p-5 lg:col-span-7">
+        <div class="space-y-3">
+          @for (row of eventRows; track row.title) {
+            <div class="rounded-xl border border-ink-border bg-ink p-4">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <div class="font-medium text-ink-foreground">{{ row.title }}</div>
+                  <div class="mt-1 text-xs text-ink-muted">{{ row.attendees }} حضور</div>
+                </div>
+                <span
+                  class="rounded-full bg-brand/10 px-2.5 py-1 text-[10px] font-medium text-brand"
+                  >{{ row.status }}</span
+                >
+              </div>
+            </div>
+          }
+        </div>
+      </article>
+
+      <article class="rounded-2xl border border-ink-border bg-ink-2 p-5 lg:col-span-5">
+        <h2 class="font-display text-xl text-ink-foreground">جدولة الفعاليات</h2>
+        <p class="mt-2 text-sm text-ink-muted">
+          جهّز نشر الفعاليات مع ربطها بموقع ومواعيد مغادرة ذكية.
+        </p>
+        <div class="mt-4 space-y-2 text-sm text-ink-foreground">
+          <div class="rounded-xl border border-ink-border bg-ink p-3">نموذج إنشاء فعالية</div>
+          <div class="rounded-xl border border-ink-border bg-ink p-3">ربط الموقع</div>
+          <div class="rounded-xl border border-ink-border bg-ink p-3">إشعارات الحضور</div>
+        </div>
+      </article>
+    </div>
+  } @else if (section === 'members') {
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      @for (member of teamMembers; track member.name) {
+        <article class="rounded-2xl border border-ink-border bg-ink-2 p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-medium text-ink-foreground">{{ member.name }}</div>
+              <div class="mt-1 text-xs text-ink-muted">{{ member.role }}</div>
+            </div>
+            <span class="rounded-full bg-ink-3 px-2.5 py-1 text-[10px] text-ink-muted">{{
+              member.status
+            }}</span>
+          </div>
+        </article>
+      }
+    </div>
+  } @else {
+    <div class="rounded-2xl border border-ink-border bg-ink-2 p-5">
+      <div class="text-sm text-ink-muted">{{ title }}</div>
+      <p class="mt-2 text-sm text-ink-foreground">
+        اضبط إعدادات الشعار، معلومات الاتصال، وبيانات الوصول الخاصة بالمؤسسة.
+      </p>
+    </div>
+  }
+</section>

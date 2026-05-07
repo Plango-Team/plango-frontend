@@ -12,6 +12,13 @@ export const isAdminGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  router.navigate(['/']);
-  return false;
+  if (user?.accountType === 'organization') {
+    return router.parseUrl('/organization');
+  }
+
+  if (user) {
+    return router.parseUrl('/user');
+  }
+
+  return router.parseUrl('/auth/login');
 };
