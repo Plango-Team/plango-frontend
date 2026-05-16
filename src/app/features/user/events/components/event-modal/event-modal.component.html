@@ -1,0 +1,140 @@
+<dialog
+  #eventtModal
+  class="backdrop:bg-black/50 backdrop:backdrop-blur-sm bg-transparent p-0 m-auto shadow-none outline-none overflow-visible w-full max-w-lg z-100"
+  (cancel)="close()" > <!--------------- close-------------------> 
+>
+  <form (ngSubmit)="onSubmit()"
+    class="relative w-full bg-ink-2 border border-ink-border overflow-visible rounded-xl shadow-elevated p-6 animate-fade-in-up max-h-[90vh]"
+  >
+    <div class="mb-4">
+      <h2 class="font-display text-2xl text-ink-fg">
+        {{ 'إنشاء فعالية' }}
+      </h2>
+      <p class="text-sm text-ink-muted mt-1">
+        {{'شارك فعاليتك مع مجتمع PlanGo القريب منك.' }}
+      </p>
+    </div>
+
+    <div class="space-y-4"> 
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-ink-fg">{{ 'عنوان الفعالية'}}</label>
+        <input
+          [(ngModel)]="eventData.title"
+          name="title"
+          required
+          class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          [placeholder]="'مؤتمر تصميم تجربة المستخدم'"
+        />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">  
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-ink-fg">{{'المنظّم'}}</label>
+          <input
+            type="text"
+            [(ngModel)]="eventData.organizer"
+            name="organizer"
+            required
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-ink-fg">{{'السعر' }}</label>
+          <input
+            type="text"
+            [(ngModel)]="eventData.priceType"
+            name="priceType"
+            required
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+        </div>
+      </div>
+
+      <div class="relative space-y-1.5">
+        <label class="text-sm font-medium text-ink-fg">{{'المكان' }}</label>
+        <input
+          type="text"
+          [(ngModel)]="eventData.location"
+          (input)="onLocationInput(eventData.location)"
+          name="location"
+          class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          [placeholder]="'اختر مكاناً او اضف جديداً'"
+        />
+           @if (showDropDown) {
+    <ul class="bg-ink-2 absolute z-9999 w-full mt-1 max-h-44 overflow-y-auto border border-ink-border rounded-lg shadow-lg animate-fade-in">
+      @for (place of searchRes; track place.place_id) {
+        <li>
+          <button 
+            type="button"
+            (click)="selectLocation(place)"
+            class="w-full text-right px-4 py-2.5 text-xs text-ink-muted flex items-center gap-2 transition-colors">
+            <span><app-icon [iconName]="'Location01FreeIcons'" [iconSize]="12" [iconColor]="'#d32e18'"></app-icon></span>
+            <span class="truncate">{{ place.display_name }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+}
+      </div>
+</div>
+
+      <div class="grid grid-cols-2 gap-3">  
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-ink-fg">{{'التاريخ'}}</label>
+          <input
+            type="date"
+            [(ngModel)]="date"
+            name="date"
+            required
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-ink-fg">{{'الوقت' }}</label>
+          <input
+            type="time"
+            [(ngModel)]="time"
+            name="time"
+            required
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+        </div>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-ink-fg">{{ 'الفئة'
+        }}</label>
+        <div class="grid grid-cols-5 gap-2">
+          @for (cat of categories; track cat) {
+            <button
+              type="button"
+              (click)="eventData.category = cat"
+              class="rounded-lg border py-2 text-xs transition"
+              [class]="
+                eventData.category === cat
+                  ? 'border-brand bg-brand/10 text-brand'
+                  : 'border-ink-border bg-ink text-ink-muted hover:bg-ink-3'
+              "
+            > {{cat}}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-3 pt-2"> <!--------close---------->
+        <button
+          type="button"
+          (click)="close()" 
+          class="rounded-lg border border-ink-border bg-transparent px-4 py-2 text-sm font-medium text-ink-fg hover:bg-ink-3 transition-colors"
+        >
+          {{'إلغاء'}}
+        </button>
+        <button
+          type="submit"
+          class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
+        >
+          {{'نشر فعالية'}}
+        </button>
+      </div>
+    </form>
+</dialog> 

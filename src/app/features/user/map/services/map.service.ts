@@ -4,12 +4,14 @@ import { delay, Observable, of } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { IAppointment, IRouteResponse ,Friend, ITrip,ChatMessage} from '../interfaces/Imap';
 import polyline from '@mapbox/polyline';
+import { authStore } from '../../../auth/auth.store';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MapService {
   private http = inject(HttpClient)
+  authstore = inject(authStore)
   private isDevMode = true // بعد ميخلصوا الباك هنخليها فولس 
 
   getRoute(origin: {lat: number , lng: number}, destination: {lat: number , lng: number}) : Observable<IRouteResponse> {
@@ -34,7 +36,7 @@ export class MapService {
     const url = `http://nominatim.openstreetmap.org/search?format=json&q=${quary}`;
     return this.http.get<any[]>(url)
   }
-  
+  //************************************
   getAppointments(): Observable<IAppointment[]> {
   if (this.isDevMode) {
     const mockAppointments : IAppointment[] = [
@@ -66,13 +68,13 @@ getTripInfo(): Observable<ITrip>{
       time: '10:15',
     },
     {
-      id: 1,
+      id: 2,
       sender : 'مرام عامر',
       text: 'أنا وصلت',
       time: '10:00',
     },
     {
-      id: 1,
+      id: 3,
       sender : 'أريج حسنيين',
       text: 'خرجت دلوقتي',
       time: '09:45',

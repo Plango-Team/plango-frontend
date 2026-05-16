@@ -2,11 +2,11 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { IconComponent } from "../../../../../shared/components/icon/icon.component";
 import { InvitModalComponent } from '../invit-modal/invit-modal.component';
 import { MapStore } from '../../map.store';
-import { AuthService } from '../../../../../core/services/auth/auth.service';
+import { authStore } from '../../../../auth/auth.store';
 
 @Component({
   selector: 'app-trips',
-  imports: [IconComponent, InvitModalComponent],
+  imports: [IconComponent, InvitModalComponent], 
   templateUrl: './trips.component.html',
   styleUrl: './trips.component.css',
 })
@@ -14,10 +14,11 @@ export class TripsComponent {
   mapStore = inject(MapStore)
   isChatOpen = signal(false)
   newMessageText = signal('')
-currentUser = signal('نادر محمد');
+  authStore = inject(authStore)
+  currentUser = this.authStore.user.firstName() + ' ' + this.authStore.user.lastName();
   frindsArray = signal([
     {
-      name:'بسمة جمال',
+      name: this.currentUser,
       late:20,
       arrive:8,
       distance:4.2,
