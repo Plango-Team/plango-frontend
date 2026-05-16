@@ -14,39 +14,50 @@ export const organizationRoutes: Routes = [
       ),
   },
   {
-    path: 'events',
+    path: 'feed',
     loadComponent: () =>
-      import('./pages/section-page/section-page.component').then(
-        (m) => m.OrganizationSectionPageComponent,
-      ),
-    data: {
-      section: 'events',
-      title: 'فعاليات المؤسسة',
-      description: 'تابع الفعاليات القادمة وحالات الحضور من لوحة موحدة.',
-    },
+      import('./pages/feed-page/feed-page.component').then((m) => m.OrganizationFeedPageComponent),
   },
   {
-    path: 'members',
+    path: 'posts',
     loadComponent: () =>
-      import('./pages/section-page/section-page.component').then(
-        (m) => m.OrganizationSectionPageComponent,
+      import('./pages/posts-page/posts-page.component').then(
+        (m) => m.OrganizationPostsPageComponent,
       ),
-    data: {
-      section: 'members',
-      title: 'أعضاء الفريق',
-      description: 'أدِر الموظفين والمشرفين المرتبطين بحساب المؤسسة.',
-    },
+  },
+  {
+    path: 'events',
+    loadComponent: () =>
+      import('./pages/events-page/events-page.component').then(
+        (m) => m.OrganizationEventsPageComponent,
+      ),
+  },
+  {
+    path: 'followers',
+    loadComponent: () =>
+      import('./pages/followers-page/followers-page.component').then(
+        (m) => m.OrganizationFollowersPageComponent,
+      ),
+  },
+  {
+    path: 'profile/:username',
+    loadComponent: () =>
+      import('../user/social/pages/profile-page/profile-page.component').then(
+        (m) => m.ProfilePageComponent,
+      ),
   },
   {
     path: 'settings',
     loadComponent: () =>
-      import('./pages/section-page/section-page.component').then(
-        (m) => m.OrganizationSectionPageComponent,
+      import('./pages/settings-page/settings-page.component').then(
+        (m) => m.OrganizationSettingsPageComponent,
       ),
-    data: {
-      section: 'settings',
-      title: 'إعدادات المؤسسة',
-      description: 'اضبط معلومات الحساب، الشعار، وطرق التواصل.',
-    },
+  },
+  {
+    path: 'notifications',
+    loadComponent: () =>
+      import('../user/notifications/pages/notifications-page/notifications-page.component').then(
+        (m) => m.NotificationsPageComponent,
+      ),
   },
 ];

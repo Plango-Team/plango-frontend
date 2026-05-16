@@ -1,0 +1,208 @@
+<section class="px-4 py-6 sm:px-6 lg:px-8">
+  <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">إعدادات المؤسسة</h1>
+      <p class="text-sm text-ink-muted">اضبط هوية مؤسستك وكيف يتفاعل المجتمع معها.</p>
+    </div>
+    <button
+      type="button"
+      (click)="saveSettings()"
+      [disabled]="!isDirty || authStore.isLoading()"
+      class="rounded-full bg-brand px-4 py-2 text-xs font-semibold text-brand-foreground hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      حفظ التغييرات
+    </button>
+  </div>
+
+  @if (authStore.error()) {
+    <div
+      class="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-300"
+    >
+      {{ authStore.error() }}
+    </div>
+  }
+
+  @if (authStore.successMessage()) {
+    <div
+      class="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-300"
+    >
+      {{ authStore.successMessage() }}
+    </div>
+  }
+
+  <div class="mb-4 grid gap-3 sm:grid-cols-3">
+    <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
+      <div class="text-xs text-ink-muted">المتابعون</div>
+      <div class="mt-1 font-display text-2xl text-ink-fg">{{ followersCount() }}</div>
+    </article>
+    <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
+      <div class="text-xs text-ink-muted">البثوث</div>
+      <div class="mt-1 font-display text-2xl text-ink-fg">{{ broadcastsCount() }}</div>
+    </article>
+    <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
+      <div class="text-xs text-ink-muted">المعرّف</div>
+      <div class="mt-1 font-display text-2xl text-ink-fg">
+        &#64;{{ currentProfile()?.username }}
+      </div>
+    </article>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-3">
+    <article class="rounded-2xl border border-ink-border bg-ink-2 p-6 lg:col-span-2">
+      <h3 class="font-display text-lg text-ink-fg">هوية المؤسسة</h3>
+      <p class="text-xs text-ink-muted">كيف تظهرون للجميع</p>
+      <div class="mt-4 grid gap-3 sm:grid-cols-2">
+        <div class="space-y-1">
+          <label class="text-xs text-ink-muted">اسم المؤسسة</label>
+          <input
+            [(ngModel)]="displayName"
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none"
+          />
+        </div>
+        <div class="space-y-1">
+          <label class="text-xs text-ink-muted">المعرّف</label>
+          <input
+            [(ngModel)]="username"
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none"
+          />
+        </div>
+        <div class="space-y-1">
+          <label class="text-xs text-ink-muted">المدينة</label>
+          <input
+            [(ngModel)]="city"
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none"
+          />
+        </div>
+        <div class="space-y-1">
+          <label class="text-xs text-ink-muted">البريد العام</label>
+          <input
+            [(ngModel)]="contactEmail"
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none"
+          />
+        </div>
+        <div class="space-y-1 sm:col-span-2">
+          <label class="text-xs text-ink-muted">الموقع الإلكتروني</label>
+          <input
+            [(ngModel)]="website"
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none"
+          />
+        </div>
+        <div class="space-y-1 sm:col-span-2">
+          <label class="text-xs text-ink-muted">نبذة</label>
+          <textarea
+            [(ngModel)]="bio"
+            rows="3"
+            class="w-full rounded-lg border border-ink-border bg-ink px-3 py-2 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none"
+            placeholder="عرّف بمؤسستك في سطرين"
+          ></textarea>
+        </div>
+      </div>
+    </article>
+
+    <article class="rounded-2xl border border-ink-border bg-ink-2 p-6">
+      <h3 class="font-display text-lg text-ink-fg">المجتمع</h3>
+      <p class="text-xs text-ink-muted">إدارة المتابعين والتفاعل</p>
+      <div class="mt-4 space-y-3">
+        <button
+          type="button"
+          (click)="autoApprove = !autoApprove"
+          class="flex w-full items-center justify-between rounded-lg border border-ink-border bg-ink px-3 py-2.5 text-start transition hover:bg-ink-3"
+        >
+          <div>
+            <div class="text-sm text-ink-fg">قبول المتابعين تلقائياً</div>
+            <div class="text-[11px] text-ink-muted">المؤسسات عادةً عامة</div>
+          </div>
+          <span
+            class="relative inline-flex h-5 w-9 rounded-full"
+            [class.bg-brand]="autoApprove"
+            [class.bg-ink-3]="!autoApprove"
+          >
+            <span
+              class="absolute top-0.5 h-4 w-4 rounded-full bg-ink-fg transition-all"
+              [ngClass]="autoApprove ? 'start-[18px]' : 'start-0.5'"
+            ></span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          (click)="allowMentions = !allowMentions"
+          class="flex w-full items-center justify-between rounded-lg border border-ink-border bg-ink px-3 py-2.5 text-start transition hover:bg-ink-3"
+        >
+          <div>
+            <div class="text-sm text-ink-fg">السماح بالإشارات</div>
+            <div class="text-[11px] text-ink-muted">يمكن للمستخدمين الإشارة إليكم</div>
+          </div>
+          <span
+            class="relative inline-flex h-5 w-9 rounded-full"
+            [class.bg-brand]="allowMentions"
+            [class.bg-ink-3]="!allowMentions"
+          >
+            <span
+              class="absolute top-0.5 h-4 w-4 rounded-full bg-ink-fg transition-all"
+              [ngClass]="allowMentions ? 'start-[18px]' : 'start-0.5'"
+            ></span>
+          </span>
+        </button>
+      </div>
+    </article>
+
+    <article class="rounded-2xl border border-ink-border bg-ink-2 p-6 lg:col-span-2">
+      <h3 class="font-display text-lg text-ink-fg">الفعاليات والبثوث</h3>
+      <p class="text-xs text-ink-muted">إعدادات تشغيلية</p>
+      <div class="mt-4 space-y-3">
+        <button
+          type="button"
+          (click)="broadcastReminders = !broadcastReminders"
+          class="flex w-full items-center justify-between rounded-lg border border-ink-border bg-ink px-3 py-2.5 text-start transition hover:bg-ink-3"
+        >
+          <div>
+            <div class="text-sm text-ink-fg">تذكير المتابعين قبل الفعاليات</div>
+            <div class="text-[11px] text-ink-muted">إشعار قبل ساعتين من الفعالية</div>
+          </div>
+          <span
+            class="relative inline-flex h-5 w-9 rounded-full"
+            [class.bg-brand]="broadcastReminders"
+            [class.bg-ink-3]="!broadcastReminders"
+          >
+            <span
+              class="absolute top-0.5 h-4 w-4 rounded-full bg-ink-fg transition-all"
+              [ngClass]="broadcastReminders ? 'start-[18px]' : 'start-0.5'"
+            ></span>
+          </span>
+        </button>
+        <div class="rounded-lg border border-ink-border bg-ink p-3 text-xs text-ink-muted">
+          تتبع الحضور (في الطريق / وصل / متأخر محتمل) يعمل تلقائياً لكل فعالية تنشرها المؤسسة.
+        </div>
+      </div>
+    </article>
+
+    <article class="rounded-2xl border border-ink-border bg-ink-2 p-6">
+      <h3 class="font-display text-lg text-ink-fg">اللغة</h3>
+      <div class="mt-4 grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          (click)="setLanguage('ar')"
+          class="rounded-lg px-3 py-2 text-sm"
+          [class.bg-ink-fg]="selectedLanguage === 'ar'"
+          [class.text-ink]="selectedLanguage === 'ar'"
+          [class.bg-ink]="selectedLanguage !== 'ar'"
+          [class.text-ink-fg]="selectedLanguage !== 'ar'"
+        >
+          العربية
+        </button>
+        <button
+          type="button"
+          (click)="setLanguage('en')"
+          class="rounded-lg px-3 py-2 text-sm"
+          [class.bg-ink-fg]="selectedLanguage === 'en'"
+          [class.text-ink]="selectedLanguage === 'en'"
+          [class.bg-ink]="selectedLanguage !== 'en'"
+          [class.text-ink-fg]="selectedLanguage !== 'en'"
+        >
+          English
+        </button>
+      </div>
+    </article>
+  </div>
+</section>

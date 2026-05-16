@@ -1,34 +1,27 @@
 <div class="flex h-16 items-center gap-2 px-3 sm:gap-4 sm:px-6">
-  <!-- Mobile Menu Button -->
   <button
-    class="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-ink-border bg-ink-2/60 text-ink-fg hover:bg-ink-3 lg:hidden"
+    (click)="onSidebarToggle()"
+    class="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-ink-border bg-ink-2/60 text-ink-fg transition-colors hover:bg-ink-3 lg:hidden"
   >
     <app-icon [iconName]="'Menu01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
   </button>
 
-  <!-- Search Bar -->
   <button
     class="group relative flex h-10 max-w-md flex-1 items-center gap-2 rounded-lg border border-ink-border bg-ink-2 px-3 text-start text-sm text-ink-muted transition hover:border-ink-fg/30 hover:bg-ink-3"
   >
     <app-icon [iconName]="'Search01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
     <span class="flex-1 truncate">ابحث عن أي شيء...</span>
     <span class="hidden items-center gap-1 sm:flex">
-      <kbd class="rounded border border-ink-border bg-ink px-1.5 py-0.5 text-[10px] font-mono"
-        >⌘</kbd
-      >
-      <kbd class="rounded border border-ink-border bg-ink px-1.5 py-0.5 text-[10px] font-mono"
-        >K</kbd
-      >
+      <kbd class="rounded border border-ink-border bg-ink px-1.5 py-0.5 text-[10px] font-mono">⌘</kbd>
+      <kbd class="rounded border border-ink-border bg-ink px-1.5 py-0.5 text-[10px] font-mono">K</kbd>
     </span>
   </button>
 
-  <!-- Actions -->
   <div class="ms-auto flex items-center gap-2">
-    <!-- Theme Toggle -->
     <div class="hidden sm:block">
       <button
         (click)="themeService.toggleTheme()"
-        class="rounded-lg p-2 hover:bg-ink-3 transition-colors text-ink-muted hover:text-ink-fg"
+        class="rounded-lg p-2 text-ink-muted transition-colors hover:bg-ink-3 hover:text-ink-fg"
       >
         @if (themeService.isDark()) {
           <svg class="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -56,23 +49,94 @@
       </button>
     </div>
 
-    <!-- Notifications -->
-    <button
-      class="relative rounded-lg p-2 hover:bg-ink-3 transition-colors text-ink-muted hover:text-ink-fg"
-    >
-      <app-icon
-        [iconName]="'Notification02Icon'"
-        [iconSize]="20"
-        [iconColor]="'currentColor'"
-      ></app-icon>
-      <span class="absolute right-2 top-2 h-2 w-2 rounded-full bg-brand"></span>
-    </button>
+    <div class="relative" #notificationsMenuWrap>
+      <button
+        (click)="toggleNotificationsMenu()"
+        class="relative grid h-10 w-10 place-items-center rounded-lg border border-ink-border bg-ink-2/60 text-ink-fg transition-colors hover:bg-ink-3"
+        aria-label="Notifications"
+      >
+        <app-icon [iconName]="'Notification02Icon'" [iconSize]="18" [iconColor]="'currentColor'"></app-icon>
+        @if (notificationsStore.unreadCount() > 0) {
+          <span
+            class="absolute -right-0.5 -top-0.5 grid h-4 min-w-[16px] place-items-center rounded-full bg-brand px-1 text-[9px] font-bold text-brand-foreground"
+          >
+            {{ notificationsStore.unreadCount() > 9 ? '9+' : notificationsStore.unreadCount() }}
+          </span>
+        }
+      </button>
 
-    <!-- Profile Dropdown -->
-    <div class="relative">
+      @if (isNotificationsOpen()) {
+        <div class="absolute left-0 top-full z-50 mt-2 w-[360px] rounded-xl border border-ink-border bg-ink-2 p-0 shadow-lg">
+          <div class="flex items-center justify-between border-b border-ink-border px-3 py-2.5">
+            <div class="text-sm font-semibold text-ink-fg">
+              الإشعارات
+              @if (notificationsStore.unreadCount() > 0) {
+                <span class="ms-2 rounded-full bg-brand/15 px-1.5 py-0.5 text-[10px] text-brand">
+                  {{ notificationsStore.unreadCount() }} جديدة
+                </span>
+              }
+            </div>
+            <div class="flex items-center gap-1">
+              <button
+                type="button"
+                (click)="markAllNotificationsRead()"
+                class="grid h-7 w-7 place-items-center rounded-md text-ink-muted transition-colors hover:bg-ink-3 hover:text-ink-fg"
+                title="تعليم الكل كمقروء"
+              >
+                <app-icon [iconName]="'CheckmarkCircle01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+              </button>
+              <button
+                type="button"
+                (click)="clearNotifications()"
+                class="grid h-7 w-7 place-items-center rounded-md text-ink-muted transition-colors hover:bg-red-500/10 hover:text-red-400"
+                title="مسح الكل"
+              >
+                <app-icon [iconName]="'Delete01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="max-h-[420px] overflow-y-auto">
+            @if (notificationsStore.visible().length === 0) {
+              <div class="px-6 py-10 text-center text-sm text-ink-muted">لا توجد إشعارات بعد</div>
+            } @else {
+              @for (item of notificationsStore.visible(); track item.id) {
+                <a
+                  [routerLink]="item.link || notificationsRoute()"
+                  (click)="openNotification(item)"
+                  class="flex w-full items-start gap-3 border-b border-ink-border px-3 py-3 text-start transition-colors hover:bg-ink-3"
+                  [class.opacity-60]="item.read"
+                >
+                  <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full" [class.bg-brand]="!item.read" [class.bg-ink-border]="item.read"></span>
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-medium text-ink-fg">{{ item.title }}</div>
+                    @if (item.body) {
+                      <div class="mt-0.5 line-clamp-2 text-xs text-ink-muted">{{ item.body }}</div>
+                    }
+                    <div class="mt-1 text-[10px] text-ink-muted">{{ notificationTime(item) }}</div>
+                  </div>
+                </a>
+              }
+            }
+          </div>
+
+          <div class="border-t border-ink-border px-3 py-2">
+            <a
+              [routerLink]="notificationsRoute()"
+              (click)="isNotificationsOpen.set(false)"
+              class="block rounded-md px-2 py-1.5 text-center text-xs font-medium text-ink-muted transition-colors hover:bg-ink-3 hover:text-ink-fg"
+            >
+              عرض كل الإشعارات
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="relative" #profileMenuWrap>
       <button
         (click)="toggleMenu()"
-        class="flex items-center gap-2 rounded-lg border border-ink-border bg-ink-2/60 p-1.5 text-ink-fg hover:bg-ink-3 sm:pr-3 transition-all cursor-pointer"
+        class="flex cursor-pointer items-center gap-2 rounded-lg border border-ink-border bg-ink-2/60 p-1.5 text-ink-fg transition-all hover:bg-ink-3 sm:pr-3"
       >
         <span class="hidden text-sm font-medium sm:inline">
           @if (authStore.user()) {
@@ -85,7 +149,7 @@
           }
         </span>
         <div
-          class="h-7 w-7 rounded-md text-ink grid place-items-center text-xs font-semibold"
+          class="grid h-7 w-7 place-items-center rounded-md text-xs font-semibold text-ink"
           [class.bg-brand]="authStore.user()?.accountType === 'organization'"
           [class.bg-ink-fg]="authStore.user()?.accountType !== 'organization'"
         >
@@ -95,55 +159,39 @@
             ز
           }
         </div>
-        <app-icon
-          [iconName]="'ArrowDown01Icon'"
-          [iconSize]="12"
-          [iconColor]="'currentColor'"
-          class="hidden sm:inline"
-        ></app-icon>
+        <app-icon [iconName]="'ArrowDown01Icon'" [iconSize]="12" [iconColor]="'currentColor'" class="hidden sm:inline"></app-icon>
       </button>
 
-      <!-- Dropdown Menu -->
       @if (isMenuOpen()) {
-        <div
-          class="absolute left-0 top-full mt-2 w-64 rounded-xl border border-ink-border bg-ink-2 p-1 shadow-lg z-50 text-ink-fg"
-        >
-          <!-- Signed in as Label -->
+        <div class="absolute left-0 top-full z-50 mt-2 w-64 rounded-xl border border-ink-border bg-ink-2 p-1 shadow-lg text-ink-fg">
           <div class="flex items-center gap-2 px-2 py-1.5 text-xs text-ink-muted">
-            <app-icon
-              [iconName]="'UserGroupIcon'"
-              [iconSize]="12"
-              [iconColor]="'currentColor'"
-            ></app-icon>
+            <app-icon [iconName]="'UserGroupIcon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
             {{
               authStore.user()?.accountType === 'organization'
-                ? 'تسجيل الدخول كـ مؤسسة'
-                : 'تسجيل الدخول كـ شخصي'
+                ? 'تسجيل الدخول كمؤسسة'
+                : 'تسجيل الدخول كشخصي'
             }}
           </div>
 
-          <!-- User Info -->
           <a
-            [routerLink]="
-              authStore.user()?.accountType === 'organization'
-                ? '/organization/settings'
-                : '/user/settings'
-            "
+            [routerLink]="[
+              profileRoutePrefix(),
+              socialStore.myProfile()?.username || authStore.user()?.userName,
+            ]"
             (click)="toggleMenu()"
-            class="flex w-full cursor-pointer flex-col rounded-md px-2 py-1.5 hover:bg-ink-3 transition-colors"
+            class="flex w-full cursor-pointer flex-col rounded-md px-2 py-1.5 transition-colors hover:bg-ink-3"
           >
-            <div class="text-sm font-medium truncate">
+            <div class="truncate text-sm font-medium">
               {{
                 authStore.user()?.displayName ||
                   authStore.user()?.firstName + ' ' + authStore.user()?.lastName
               }}
             </div>
-            <div class="text-[11px] text-ink-muted truncate" dir="ltr">
+            <div class="truncate text-[11px] text-ink-muted" dir="ltr">
               {{ authStore.user()?.email }}
             </div>
           </a>
 
-          <!-- Separator -->
           <div class="my-1 h-px bg-ink-border"></div>
 
           <a
@@ -153,25 +201,17 @@
                 : '/user/settings'
             "
             (click)="toggleMenu()"
-            class="flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm hover:bg-ink-3 transition-colors"
+            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-ink-3"
           >
-            <app-icon
-              [iconName]="'Settings01Icon'"
-              [iconSize]="16"
-              [iconColor]="'currentColor'"
-            ></app-icon>
+            <app-icon [iconName]="'Settings01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
             الإعدادات
           </a>
 
           <button
             (click)="logout()"
-            class="flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm text-red-500 hover:bg-red-500/10 transition-colors mt-1"
+            class="mt-1 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-red-500 transition-colors hover:bg-red-500/10"
           >
-            <app-icon
-              [iconName]="'Logout05Icon'"
-              [iconSize]="16"
-              [iconColor]="'currentColor'"
-            ></app-icon>
+            <app-icon [iconName]="'Logout05Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
             تسجيل الخروج
           </button>
         </div>

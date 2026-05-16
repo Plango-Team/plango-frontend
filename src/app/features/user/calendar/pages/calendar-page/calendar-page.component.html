@@ -276,7 +276,7 @@
 <!-- ============================================== -->
 <dialog
   #apptModal
-  class="backdrop:bg-black/50 backdrop:backdrop-blur-sm bg-transparent p-0 m-auto shadow-none outline-none overflow-visible w-full max-w-lg z-100"
+  class="backdrop:bg-black/50 backdrop:backdrop-blur-sm bg-transparent p-0 m-auto shadow-none outline-none overflow-visible w-full max-w-2xl z-100"
   (cancel)="closeAddAppointment()"
 >
   <div
@@ -296,6 +296,7 @@
     </div>
 
     <form (ngSubmit)="submitAppointment()" class="space-y-4">
+      <!-- Title -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-ink-fg">{{ ar ? 'عنوان الموعد' : 'Title' }}</label>
         <input
@@ -307,16 +308,51 @@
         />
       </div>
 
-      <div class="space-y-1.5">
-        <label class="text-sm font-medium text-ink-fg">{{ ar ? 'الوجهة' : 'Destination' }}</label>
-        <input
-          [(ngModel)]="newApptDestination"
-          name="destination"
-          class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          [placeholder]="ar ? 'مكتب الزمالك، القاهرة' : 'Zamalek office, Cairo'"
-        />
+      <!-- Origin + Destination (2-column with LocationCombobox) -->
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div class="space-y-1.5">
+          <div class="flex h-7 items-center justify-between">
+            <label class="text-sm font-medium text-ink-fg">{{ ar ? 'نقطة الانطلاق' : 'From' }}</label>
+            <button
+              type="button"
+              (click)="useCurrentLocationAsOrigin()"
+              class="inline-flex h-7 items-center gap-1 rounded-md border border-ink-border bg-ink px-2 text-[11px] font-medium text-ink-muted transition-colors hover:bg-ink-3 hover:text-ink-fg disabled:cursor-wait disabled:opacity-60"
+              [disabled]="isResolvingCurrentLocation()"
+            >
+              <app-icon
+                [iconName]="'Target02FreeIcons'"
+                [iconSize]="13"
+                [iconColor]="'currentColor'"
+              ></app-icon>
+              {{ isResolvingCurrentLocation() ? (ar ? 'تحديد...' : 'Locating...') : (ar ? 'موقعي' : 'My location') }}
+            </button>
+          </div>
+          <app-location-combobox
+            [value]="newApptOrigin"
+            (valueChange)="newApptOrigin = $event"
+            (placeSelected)="onOriginPlaceSelected($event)"
+            [allowCreate]="false"
+            [searchLabel]="ar ? 'بحث' : 'Search'"
+            [placeholder]="ar ? 'المنزل، المكتب...' : 'Home, office...'"
+          ></app-location-combobox>
+        </div>
+        <div class="space-y-1.5">
+          <div class="flex h-7 items-center justify-between">
+            <label class="text-sm font-medium text-ink-fg">{{ ar ? 'الوجهة' : 'Destination' }}</label>
+            <span class="h-7 w-[78px]"></span>
+          </div>
+          <app-location-combobox
+            [value]="newApptDestination"
+            (valueChange)="newApptDestination = $event"
+            (placeSelected)="onDestPlaceSelected($event)"
+            [allowCreate]="false"
+            [searchLabel]="ar ? 'بحث' : 'Search'"
+            [placeholder]="ar ? 'اختر أو أضف مكاناً' : 'Pick or add a place'"
+          ></app-location-combobox>
+        </div>
       </div>
 
+      <!-- Date & Time -->
       <div class="grid grid-cols-2 gap-3">
         <div class="space-y-1.5">
           <label class="text-sm font-medium text-ink-fg">{{ ar ? 'التاريخ' : 'Date' }}</label>
@@ -330,16 +366,45 @@
         </div>
         <div class="space-y-1.5">
           <label class="text-sm font-medium text-ink-fg">{{ ar ? 'الوقت' : 'Time' }}</label>
-          <input
-            type="time"
-            [(ngModel)]="newApptTime"
-            name="time"
-            required
-            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          />
+          <div class="relative">
+            <app-icon
+              [iconName]="'TimeQuarter02Icon'"
+              [iconSize]="16"
+              [iconColor]="'var(--color-ink-muted)'"
+              class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+            ></app-icon>
+            <input
+              type="time"
+              [(ngModel)]="newApptTime"
+              name="time"
+              required
+              class="h-10 w-full rounded-lg border border-ink-border bg-ink pr-10 pl-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+            />
+          </div>
         </div>
       </div>
 
+      <!-- Transport mode grid -->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-ink-fg">{{ ar ? 'وسيلة التنقل' : 'Transport' }}</label>
+        <div class="grid grid-cols-4 gap-2">
+          @for (t of transports; track t.id) {
+            <button
+              type="button"
+              (click)="newApptTransport = t.id"
+              class="flex flex-col items-center gap-1 rounded-lg border px-2 py-3 text-xs transition"
+              [ngClass]="newApptTransport === t.id
+                ? 'border-ink-fg bg-ink-fg text-ink'
+                : 'border-ink-border bg-ink text-ink-muted hover:bg-ink-3 hover:text-ink-fg'"
+            >
+              <app-icon [iconName]="$any(t.icon)" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+              {{ ar ? t.ar : t.en }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Buffer selection -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-ink-fg">{{
           ar ? 'الوصول قبل الموعد بـ' : 'Arrive before by'
@@ -352,7 +417,7 @@
               class="rounded-lg border py-2 text-xs transition"
               [ngClass]="
                 newApptBufferMin === b
-                  ? 'border-brand bg-brand/10 text-brand'
+                  ? 'border-ink-fg bg-ink-fg text-ink'
                   : 'border-ink-border bg-ink text-ink-muted hover:bg-ink-3'
               "
             >
@@ -362,16 +427,55 @@
         </div>
       </div>
 
+      <!-- Prep time -->
+      <div class="space-y-1.5">
+        <label class="flex items-center gap-1.5 text-sm font-medium text-ink-fg">
+          <app-icon [iconName]="'SparklesIcon'" [iconSize]="14" [iconColor]="'var(--color-brand)'"></app-icon>
+          {{ ar ? 'وقت التحضير (لبس، استعداد...)' : 'Prep time (getting ready)' }}
+        </label>
+        <div class="grid grid-cols-6 gap-2">
+          @for (p of prepOptions; track p) {
+            <button
+              type="button"
+              (click)="newApptPrepMin = p"
+              class="rounded-lg border py-2 text-xs transition"
+              [ngClass]="
+                newApptPrepMin === p
+                  ? 'border-ink-fg bg-ink-fg text-ink'
+                  : 'border-ink-border bg-ink text-ink-muted hover:bg-ink-3'
+              "
+            >
+              {{ p === 0 ? (ar ? 'بدون' : 'None') : p + (ar ? 'د' : 'm') }}
+            </button>
+          }
+        </div>
+        <p class="text-[11px] text-ink-muted">
+          {{ ar ? 'سنذكّرك بالاستعداد قبل وقت المغادرة بهذا الوقت.' : "We'll remind you to get ready this many minutes before departure." }}
+        </p>
+      </div>
+
+      <!-- Notes -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-ink-fg">{{ ar ? 'ملاحظات' : 'Notes' }}</label>
         <textarea
           [(ngModel)]="newApptNotes"
           name="notes"
-          class="min-h-18 w-full rounded-lg border border-ink-border bg-ink p-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          maxlength="400"
+          class="min-h-[72px] w-full rounded-lg border border-ink-border bg-ink p-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
           [placeholder]="ar ? 'اختياري...' : 'Optional...'"
         ></textarea>
       </div>
 
+      @if (apptError()) {
+        <div
+          class="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200"
+          role="alert"
+        >
+          {{ apptError() }}
+        </div>
+      }
+
+      <!-- Footer -->
       <div class="mt-6 flex justify-end gap-3 pt-2">
         <button
           type="button"
@@ -382,7 +486,8 @@
         </button>
         <button
           type="submit"
-          class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
+          [disabled]="isSubmittingAppointment()"
+          class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors disabled:cursor-wait disabled:opacity-60"
         >
           {{ ar ? 'إنشاء الموعد' : 'Create appointment' }}
         </button>
@@ -390,3 +495,4 @@
     </form>
   </div>
 </dialog>
+

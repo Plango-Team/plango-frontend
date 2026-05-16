@@ -1,0 +1,128 @@
+<div class="px-4 py-6 sm:px-6 lg:px-8">
+  <div class="mb-6">
+    <div
+      class="inline-flex items-center rounded-full border border-brand/40 bg-brand/10 px-2.5 py-0.5 text-[11px] font-medium text-brand"
+    >
+      خلاصة المؤسسة
+    </div>
+    <h1 class="mt-1 font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">صوت مؤسستك</h1>
+    <p class="text-sm text-ink-muted">أرسل تحديثات، تابع المجتمع، وقِس التفاعل مع متابعيك.</p>
+  </div>
+
+  <div class="mb-6 grid gap-3 sm:grid-cols-3">
+    <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
+      <div class="text-xs text-ink-muted">البثوث</div>
+      <div class="mt-2 font-display text-3xl tabular-nums text-ink-fg">{{ ownPosts().length }}</div>
+    </article>
+    <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
+      <div class="text-xs text-ink-muted">إجمالي الإعجابات</div>
+      <div class="mt-2 font-display text-3xl tabular-nums text-brand">{{ totalLikes() }}</div>
+    </article>
+    <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
+      <div class="text-xs text-ink-muted">تتابع</div>
+      <div class="mt-2 font-display text-3xl tabular-nums text-ink-fg">
+        {{ followingIds().size }}
+      </div>
+    </article>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-12">
+    <section class="space-y-4 lg:col-span-8">
+      <div>
+        <h2 class="mb-2 font-display text-lg text-ink-fg">بث جديد لمتابعيك</h2>
+        <app-post-composer
+          placeholder="أعلن عن فعالية، شارك خبر، أو أطلق تحديثاً جديداً..."
+        ></app-post-composer>
+      </div>
+
+      <div>
+        <h2 class="mb-3 font-display text-lg text-ink-fg">بثوثك الأخيرة</h2>
+        @if (ownPosts().length === 0) {
+          <div
+            class="rounded-2xl border border-dashed border-ink-border bg-ink-2 p-8 text-center text-sm text-ink-muted"
+          >
+            لا توجد بثوث بعد. ابدأ بمشاركة أول تحديث.
+          </div>
+        } @else {
+          <div class="space-y-3">
+            @for (post of ownPosts().slice(0, 5); track post.id) {
+              <app-post-card [post]="post"></app-post-card>
+            }
+          </div>
+        }
+      </div>
+
+      <div>
+        <h2 class="mb-3 font-display text-lg text-ink-fg">من المجتمع</h2>
+        @if (communityPosts().length === 0) {
+          <div
+            class="rounded-2xl border border-dashed border-ink-border bg-ink-2 p-8 text-center text-sm text-ink-muted"
+          >
+            لا توجد منشورات بعد. تابع مزيداً من المؤسسات والأشخاص لرؤية تحديثاتهم هنا.
+          </div>
+        } @else {
+          <div class="space-y-3">
+            @for (post of communityPosts(); track post.id) {
+              <app-post-card [post]="post"></app-post-card>
+            }
+          </div>
+        }
+      </div>
+    </section>
+
+    <aside class="space-y-4 lg:col-span-4">
+      <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
+        <div class="mb-3 text-sm font-medium text-ink-fg">فعاليات قادمة من شبكتك</div>
+        @if (upcomingFromNetwork().length === 0) {
+          <p class="text-xs text-ink-muted">لا توجد فعاليات قادمة حالياً.</p>
+        } @else {
+          <div class="space-y-2">
+            @for (event of upcomingFromNetwork(); track event.id) {
+              <article class="rounded-xl border border-ink-border bg-ink p-3 text-xs">
+                <div class="font-medium text-ink-fg">{{ event.title }}</div>
+                <div class="mt-1 text-ink-muted">{{ event.date }} · {{ event.time }}</div>
+                <div class="mt-1 text-ink-muted">{{ event.place }}</div>
+                @if (ownerUsername(event.ownerId); as username) {
+                  <a
+                    [routerLink]="['/organization/profile', username]"
+                    class="mt-2 inline-flex text-brand hover:underline"
+                  >
+                    {{ ownerDisplayName(event.ownerId) }}
+                  </a>
+                } @else {
+                  <span class="mt-2 inline-flex text-ink-muted">{{
+                    ownerDisplayName(event.ownerId)
+                  }}</span>
+                }
+              </article>
+            }
+          </div>
+        }
+      </article>
+
+      <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
+        <div class="mb-2 text-sm font-medium text-ink-fg">اختصارات</div>
+        <div class="grid gap-2">
+          <a
+            routerLink="/organization/posts"
+            class="rounded-lg border border-ink-border bg-ink px-3 py-2 text-xs text-ink-fg hover:bg-ink-3"
+          >
+            إدارة البثوث
+          </a>
+          <a
+            routerLink="/organization/followers"
+            class="rounded-lg border border-ink-border bg-ink px-3 py-2 text-xs text-ink-fg hover:bg-ink-3"
+          >
+            المجتمع والمتابعون
+          </a>
+          <a
+            routerLink="/organization/events"
+            class="rounded-lg border border-ink-border bg-ink px-3 py-2 text-xs text-ink-fg hover:bg-ink-3"
+          >
+            إدارة الفعاليات
+          </a>
+        </div>
+      </article>
+    </aside>
+  </div>
+</div>

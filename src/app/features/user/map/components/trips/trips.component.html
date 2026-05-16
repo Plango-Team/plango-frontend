@@ -61,7 +61,7 @@
             <!--edit-->
           <div class="flex items-center gap-2 group transition-all duration-500">
            @if (!friend.isEditing) {
-              @if(friend.name === currentUser){  
+              @if(friend.name === currentUser()){  
               <span class="font-medium lg:text-xs cursor-pointer" (click)="friend.isEditing = true">{{ friend.name }}</span>
               <span class="opacity-0 group-hover:opacity-100 text-xs text-ink-muted cursor-pointer " (click)="friend.isEditing = true">✎</span>
               } @else {
@@ -69,7 +69,7 @@
               <span class="font-medium lg:text-xs cursor-pointer">{{ friend.name }}</span>
               }
            } @else {
-                @if (friend.name === currentUser) {
+                @if (friend.name === currentUser()) {
                        <input 
       #nameInput
       [value]="friend.name"
@@ -98,7 +98,7 @@
         </div>
           </div>
           <div class="relative">
-            @if (friend.name === currentUser) {
+            @if (friend.name === currentUser()) {
               <button (click)="toggleMenu($index)">
                 <app-icon [iconName]="'MoreVerticalCircle01FreeIcons'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
               </button>

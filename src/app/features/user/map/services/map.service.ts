@@ -32,11 +32,18 @@ export class MapService {
     )
   }
 
-  searchLocation(quary:string): Observable<any>{
-    const url = `http://nominatim.openstreetmap.org/search?format=json&q=${quary}`;
+    searchLocation(query:string): Observable<any>{
+    const url = `${environment.nominatimUrl}/search?format=jsonv2&q=${encodeURIComponent(query)}`;
     return this.http.get<any[]>(url)
   }
-  //************************************
+
+  // searchLocation(query: string): Observable<any> {
+  //   const url = `https://api.maptiler.com/geocoding/${encodeURIComponent(query)}.json`;
+  //   return this.http.get<any>(url, {
+  //     params: { key: environment.mapTilerKey, limit: '5', language: 'ar,en' }
+  //   });
+  // }
+  
   getAppointments(): Observable<IAppointment[]> {
   if (this.isDevMode) {
     const mockAppointments : IAppointment[] = [

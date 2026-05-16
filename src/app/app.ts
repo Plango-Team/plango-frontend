@@ -3,10 +3,11 @@ import { RouterOutlet } from '@angular/router';
 import { FlowbiteService } from './core/services/flowbite/flowbite.service';
 import { initFlowbite } from 'flowbite/lib/esm/components';
 import { authStore } from './features/auth/auth.store';
+import { ToastOutletComponent } from './shared/components/toast-outlet/toast-outlet.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, ToastOutletComponent],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

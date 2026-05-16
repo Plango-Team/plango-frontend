@@ -23,6 +23,7 @@ export class SidebarComponent {
 
   private readonly userNavItems: SidebarItem[] = [
     { route: '/user/dashboard', label: 'نبض اليوم', icon: 'DashboardSquare02Icon', exact: true },
+    { route: '/user/feed', label: 'الخلاصة', icon: 'Note01Icon' },
     { route: '/user/calendar', label: 'التقويم', icon: 'Calendar01Icon' },
     { route: '/user/tasks', label: 'المهام', icon: 'Task01Icon' },
     { route: '/user/map', label: 'الخريطة', icon: 'Location01Icon' },
@@ -34,12 +35,14 @@ export class SidebarComponent {
   private readonly organizationNavItems: SidebarItem[] = [
     {
       route: '/organization/dashboard',
-      label: 'لوحة المؤسسة',
+      label: 'نظرة عامة',
       icon: 'DashboardSquare02Icon',
       exact: true,
     },
+    { route: '/organization/feed', label: 'الخلاصة', icon: 'Note01Icon' },
+    { route: '/organization/posts', label: 'البثوث', icon: 'Message01Icon' },
     { route: '/organization/events', label: 'الفعاليات', icon: 'Compass01Icon' },
-    { route: '/organization/members', label: 'الأعضاء', icon: 'UserGroupIcon' },
+    { route: '/organization/followers', label: 'المجتمع', icon: 'UserGroupIcon' },
     { route: '/organization/settings', label: 'الإعدادات', icon: 'Settings01Icon' },
   ];
 
@@ -75,6 +78,12 @@ export class SidebarComponent {
 
   readonly quickActionIcon = computed(() =>
     this.authStore.user()?.accountType === 'organization' ? 'Calendar01Icon' : 'Add01Icon',
+  );
+
+  readonly quickActionRoute = computed(() =>
+    this.authStore.user()?.accountType === 'organization'
+      ? '/organization/events'
+      : '/user/appointments',
   );
 
   logout() {

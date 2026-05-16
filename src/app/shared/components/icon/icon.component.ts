@@ -2,7 +2,7 @@ import { Component, input } from '@angular/core';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import * as HugeIcons from '@hugeicons/core-free-icons';
 
-export type HugeiconsIconName = keyof typeof HugeIcons;
+export type HugeiconsIconName = string;
 
 @Component({
   selector: 'app-icon',
