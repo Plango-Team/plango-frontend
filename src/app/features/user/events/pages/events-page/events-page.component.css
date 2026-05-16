@@ -1,0 +1,25 @@
+:host {
+  --featured-start: #fee2e2; 
+  --featured-end: #fef2f2;
+  
+  --normal-start: #e5e7eb;  
+  --normal-end: #f3f4f6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --featured-start: #450a0a; 
+    --featured-end: #1a0505;
+    
+    --normal-start: #262626;   
+    --normal-end: #171717;
+  }
+}
+
+:host-context(.dark) {
+  --featured-start: #450a0a;
+  --featured-end: #1a0505;
+  
+  --normal-start: #262626;
+  --normal-end: #171717;
+}

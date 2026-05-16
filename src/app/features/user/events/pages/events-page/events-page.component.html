@@ -1,0 +1,179 @@
+<div class="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between px-4 mt-5">
+  <div>
+    <h1 class="font-display text-2xl tracking-tight sm:text-3xl text-ink-fg">اكتشف الفعاليات</h1>
+    <div class="text-sm text-ink-muted">أحداث عامة بالقرب منك — انضم بنقرة واحدة</div>
+  </div>
+  <div class="sm:">
+    <button (click)="eventtModal.open()" class="mt-4 flex h-10 lg:w-full items-center justify-center gap-2 rounded-lg bg-ink-fg px-4 text-sm font-bold text-ink hover:bg-ink-fg/90 transition-all">
+        إنشاء فعالية
+    </button>
+    <app-event-modal #eventtModal></app-event-modal>
+  </div>
+</div>
+
+<div class="flex row gap-4 justify-center items-center p-4">
+    <app-card class="block sm:col-span-6 lg:col-span-4 w-full" customClass="flex flex-col justify-center text-ink-fg">
+        <p class="text-xs text-ink-muted">ذاهب</p>
+        <h2 class="text-3xl text-primary-500 mt-1.5 font-bold">{{store.goingCount()}}</h2>
+    </app-card>
+    
+    <app-card class="block sm:col-span-6 lg:col-span-4 w-full" customClass="flex flex-col justify-center text-ink-fg">
+        <p class="text-xs text-ink-muted">مهتم</p>
+        <h2 class="text-3xl mt-1.5 font-bold">{{store.interestedCount()}}</h2>
+    </app-card>
+    
+    <app-card class="block sm:col-span-6 lg:col-span-4 w-full" customClass="flex flex-col justify-center text-ink-fg">
+        <p class="text-xs text-ink-muted">إجمالي الفعاليات</p>
+        <h2 class="text-3xl mt-1.5 font-bold">{{store.totalCount()}}</h2>
+    </app-card>
+</div>
+<!--Categories-->
+<div class="flex flex-col lg:flex-row lg:items-center gap-4 p-4 w-full">
+
+  <div class="flex flex-wrap items-center gap-2 border-l-0 lg:border-l-2 border-ink-border pl-0 lg:pl-4 w-full lg:w-auto">
+    <button (click)="store.updateCategory('الكل')" [class]="store.filters.selectedCategory() === 'الكل'? 'bg-ink-fg text-ink px-6 py-2 rounded-full text-sm hover:bg-ink-fg/90 transition-all': 'bg-ink-2 border border-ink-border px-6 py-2 rounded-full text-sm hover:bg-ink-3 transition-all duration-300'">
+      الكل
+    </button>
+    
+    <button (click)="store.updateCategory('تقنية')" [class]="store.filters.selectedCategory() === 'تقنية'? 'bg-ink-fg text-ink px-6 py-2 rounded-full text-sm hover:bg-ink-fg/90 transition-all': 'bg-ink-2 border border-ink-border px-6 py-2 rounded-full text-sm hover:bg-ink-3 transition-all duration-300'">
+      تقنية
+    </button>
+    <button (click)="store.updateCategory('تصوير')" [class]="store.filters.selectedCategory() === 'تصوير'? 'bg-ink-fg text-ink px-6 py-2 rounded-full text-sm hover:bg-ink-fg/90 transition-all': 'bg-ink-2 border border-ink-border px-6 py-2 rounded-full text-sm hover:bg-ink-3 transition-all duration-300'">
+      تصوير
+    </button>
+    <button (click)="store.updateCategory('موسيقى')" [class]="store.filters.selectedCategory() === 'موسيقى'? 'bg-ink-fg text-ink px-6 py-2 rounded-full text-sm hover:bg-ink-fg/90 transition-all': 'bg-ink-2 border border-ink-border px-6 py-2 rounded-full text-sm hover:bg-ink-3 transition-all duration-300'">
+      موسيقى
+    </button>
+    <button (click)="store.updateCategory('فن')" [class]="store.filters.selectedCategory() === 'فن'? 'bg-ink-fg text-ink px-6 py-2 rounded-full text-sm hover:bg-ink-fg/90 transition-all': 'bg-ink-2 border border-ink-border px-6 py-2 rounded-full text-sm hover:bg-ink-3 transition-all duration-300'">
+      فن
+    </button>
+    <button (click)="store.updateCategory('ثقافة')" [class]="store.filters.selectedCategory() === 'ثقافة'? 'bg-ink-fg text-ink px-6 py-2 rounded-full text-sm hover:bg-ink-fg/90 transition-all': 'bg-ink-2 border border-ink-border px-6 py-2 rounded-full text-sm hover:bg-ink-3 transition-all duration-300'">
+      ثقافة
+    </button>
+  </div>
+
+  <div class="flex flex-wrap items-center w-full gap-2 lg:w-auto">
+    <button (click)="store.updatePriceFilter('كل الأسعار')" [class]="store.filters.selectedPrice() === 'كل الأسعار' ? 'border border-primary-500 text-primary-500 px-6 py-1.5 rounded-2xl text-sm font-medium' : 'bg-ink-2 border border-ink-border px-6 py-2 rounded-full text-sm hover:bg-ink-3 transition-all duration-300'">
+      كل الأسعار
+    </button>
+    <button (click)="store.updatePriceFilter('مجاني')" [class]="store.filters.selectedPrice() === 'مجاني' ? 'border border-primary-500 text-primary-500 px-6 py-1.5 rounded-2xl text-sm font-medium' : 'bg-ink-2 border border-ink-border px-6 py-2 rounded-full text-sm hover:bg-ink-3 transition-all duration-300'">
+      مجاني
+    </button>
+    <button (click)="store.updatePriceFilter('مدفوع')" [class]="store.filters.selectedPrice() === 'مدفوع' ? 'border border-primary-500 text-primary-500 px-6 py-1.5 rounded-2xl text-sm font-medium' : 'bg-ink-2 border border-ink-border px-6 py-2 rounded-full text-sm hover:bg-ink-3 transition-all duration-300'">
+      مدفوع
+    </button>
+  </div>
+
+</div>
+
+<!--Cards-->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+  @for (event of store.filteredEvents(); track event.id) {
+    <div  
+      [class]="event.isFeatured? 'md:col-span-2 border-2 border-ink-border': 'border border-ink-border'" 
+      class="relative rounded-2xl shadow-brand-soft hover:shadow-xl ease-out hover:-translate-y-2 transition-all overflow-hidden"
+    >
+      
+      <span class="absolute top-4 right-4 bg-ink-2 text-ink-muted text-xs px-3 py-1 rounded-full">
+        {{ event.category }}
+      </span>
+
+      @if (event.isFeatured) {
+        <span class="absolute top-40 right-4 bg-primary-500 text-white text-[10px] px-2 py-0.5 rounded-md font-bold">
+          مميز
+        </span>
+      }
+
+
+      <div class="relative w-full h-44 rounded-t-2xl overflow-hidden mb-4 z-[-111]"
+        [style.background]="event.isFeatured? 'linear-gradient(to bottom, var(--featured-start) 0%, var(--featured-end) 50%, transparent 100%)' : 'linear-gradient(to bottom, var(--normal-start) 0%, var(--normal-end) 50%, transparent 100%)'">
+        @if (event.imageUrl) {
+          <img [src]="event.imageUrl" class="h-full object-cover" alt="event image">
+        }
+      </div>
+
+      <div class="text-right px-5">
+        <div class="flex gap-1">
+          <app-icon [iconName]="'Group01FreeIcons'" [iconSize]="14" [iconColor]="'hsl(var(--ink-muted))'"></app-icon>
+        <p class="text-ink-muted text-xs mb-1">{{ event.organizer }}</p>
+        </div>
+        <h3 class="text-lg font-bold mb-2">{{ event.title }}</h3>
+        
+        <div class="flex flex-col gap-1 text-ink-muted text-xs">
+          <div class="flex items-center justify-start gap-1.5">
+            <app-icon [iconName]="'Calendar03FreeIcons'" [iconSize]="12" [iconColor]="'hsl(var(--ink-muted))'"></app-icon>
+            <span>{{ event.date | date:'a h:mm · d MMMM ' }}</span>
+          </div>
+          <div class="flex items-center justify-start gap-1.5">
+            <app-icon [iconName]="'Location01FreeIcons'" [iconSize]="12" [iconColor]="'hsl(var(--ink-muted))'"></app-icon>
+            <span>{{ event.location }}</span>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="flex-col border-t border-ink-border my-4 p-4">
+        
+        <div>
+          @if (event.isGoing) {
+  <div class="flex flex-col justify-evenly gap-2 animate-fade-in">
+    
+    <div class="w-full my-2">
+      <input 
+        type="text" 
+        [value]="cardStatuses[event.id] || 'مؤكد'" 
+        readonly
+        class="w-full px-3 text-sm border border-ink-border bg-ink-2 text-ink-muted rounded-xl font-medium focus:outline-none"
+      />
+    </div>
+
+    @if (cardStatuses[event.id] !== 'وصلت') {
+      <div class="flex items-center gap-2 my-2">
+        
+        <button 
+          (click)="updateCardStatus(event.id,'وصلت')"
+          class="border border-success text-success px-4 py-1.5 rounded-xl text-xs font-me">
+          وصلت
+        </button>
+        
+        <button 
+          (click)="updateCardStatus(event.id ,'في الطريق')"
+          class="border border-primary-500 text-primary-500 px-4 py-1.5 rounded-xl text-xs font-me">
+          خرجت
+        </button>
+
+      </div>
+    }
+
+  </div>
+}
+        </div>
+
+          <div class="flex items-center justify-between">
+            <div class="flex gap-4">
+          <button (click)="store.toggleInterest(event.id)" class="cursor-pointer flex items-center gap-1 text-sm p-2 rounded-lg border transition-all duration-300" [class]="event.isInterested? 'text-yellow-400 border border-yellow-400' :'text-ink-muted border-transparent'">
+            <app-icon [iconName]="'StarIcon'" [iconSize]="12" [iconColor]="event.isInterested? 'oklch(85.2% 0.199 91.936)' :''"></app-icon>
+            <span>مهتم</span>
+          </button>
+
+<button class="flex gap-1 px-6 py-2 rounded-xl text-sm font-semibold transition-all"
+  (click)="store.toggleGoing(event.id); updateCardStatus(event.id,'مؤكد')"
+  [class]="!event.isGoing? 'bg-ink-fg text-ink' : 'bg-primary-500 text-white'">
+  @if (event.isGoing) {
+    <app-icon [iconName]="'Check'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon> ذاهب
+  }@else{
+    انضم
+  }
+</button>
+      
+      </div>
+
+        <button class="flex gap-1 cursor-pointer text-ink-muted text-sm">
+            <app-icon [iconName]="'PlusSignIcon'" [iconSize]="12" [iconColor]="'hsl(var(--ink-muted))'"></app-icon> مهمة
+          </button>
+          </div>
+        
+      </div>
+        </div>
+  }
+</div>

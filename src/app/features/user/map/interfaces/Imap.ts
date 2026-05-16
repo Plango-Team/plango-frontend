@@ -19,7 +19,6 @@ export interface IRouteResponse {
     steps?: IRouteStep[];
   };
 }
-
 export interface IRouteStep {
   type: 'walk' | 'bus' | 'train';
   duration: number;

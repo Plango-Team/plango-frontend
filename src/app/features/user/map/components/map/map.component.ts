@@ -30,6 +30,8 @@ export class MapComponent implements OnDestroy{
 
   constructor(){
 
+    this.mapStore.getCurrentLocation()
+
     effect(() => {
       const location = this.mapStore.userLocation();
       if(location && this.map && this.isMapReady){

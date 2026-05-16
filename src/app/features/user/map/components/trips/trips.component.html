@@ -61,17 +61,24 @@
             <!--edit-->
           <div class="flex items-center gap-2 group transition-all duration-500">
            @if (!friend.isEditing) {
+              @if(friend.name === currentUser){  
               <span class="font-medium lg:text-xs cursor-pointer" (click)="friend.isEditing = true">{{ friend.name }}</span>
               <span class="opacity-0 group-hover:opacity-100 text-xs text-ink-muted cursor-pointer " (click)="friend.isEditing = true">✎</span>
+              } @else {
+                
+              <span class="font-medium lg:text-xs cursor-pointer">{{ friend.name }}</span>
+              }
            } @else {
-                <input 
+                @if (friend.name === currentUser) {
+                       <input 
       #nameInput
       [value]="friend.name"
       (keydown.enter)="updateFriendName($index, nameInput.value)"
       class="border-none rounded px-1 outline-none focus:ring-1 focus:ring-primary-500 text-sm w-24"
       autofocus
-                />
+                />   
                 <span (click)="updateFriendName($index, nameInput.value)" class="cursor-pointer"><app-icon [iconName]="'Check'" [iconSize]="14" [iconColor]="'#0d542b'"></app-icon></span>
+                }
             }
           </div>
           <div class="flex items-center gap-1">
@@ -91,9 +98,11 @@
         </div>
           </div>
           <div class="relative">
-            <button (click)="toggleMenu($index)">
+            @if (friend.name === currentUser) {
+              <button (click)="toggleMenu($index)">
                 <app-icon [iconName]="'MoreVerticalCircle01FreeIcons'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
-           </button>
+              </button>
+            }
 
       @if (friend.showMenu) {
         <div class="absolute left-0 bottom-full mb-2 w-40 bg-ink-2 border border-ink-border rounded-lg shadow-xl z-50 overflow-hidden">
