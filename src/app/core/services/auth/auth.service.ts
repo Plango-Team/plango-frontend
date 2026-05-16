@@ -250,6 +250,13 @@ export class AuthService {
       .pipe(map((user) => this.normalizeUser(user)));
   }
 
+  updateUser(userId: string, patch: Partial<IUser>): Observable<IUser> {
+    return this.http.patch<IUser>(`${this.baseUrl}/users/${userId}`, patch).pipe(
+      delay(300),
+      map((user) => this.normalizeUser(user)),
+    );
+  }
+
   getHomeRoute(user: Pick<IUser, 'accountType' | 'role'>): string {
     return this.buildHomeRoute(user);
   }

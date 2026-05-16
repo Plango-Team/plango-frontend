@@ -1,1 +1,65 @@
-<p>notifications-pages works!</p>
+<section class="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+  <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="font-display text-2xl text-ink-fg sm:text-3xl">الإشعارات</h1>
+      <p class="mt-1 text-sm text-ink-muted">
+        مركز تنبيهات PlanGo: المواعيد، المهام، وتحديثات الفعاليات.
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        (click)="markAllRead()"
+        class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-ink-border bg-ink-2 px-3 text-sm text-ink-fg transition-colors hover:bg-ink-3"
+      >
+        <app-icon [iconName]="'CheckmarkCircle01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+        تعليم الكل كمقروء
+      </button>
+      <button
+        type="button"
+        (click)="clearAll()"
+        class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-500/40 bg-red-500/10 px-3 text-sm text-red-300 transition-colors hover:bg-red-500/20"
+      >
+        <app-icon [iconName]="'Delete01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+        مسح الكل
+      </button>
+    </div>
+  </div>
+
+  <div class="overflow-hidden rounded-2xl border border-ink-border bg-ink-2 shadow-soft">
+    @if (items().length === 0) {
+      <div class="px-6 py-16 text-center">
+        <div class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full border border-ink-border bg-ink text-ink-muted">
+          <app-icon [iconName]="'Notification02Icon'" [iconSize]="20" [iconColor]="'currentColor'"></app-icon>
+        </div>
+        <h2 class="text-base font-semibold text-ink-fg">لا توجد إشعارات بعد</h2>
+        <p class="mt-1 text-sm text-ink-muted">عند وصول أي تنبيه جديد سيظهر هنا مباشرة.</p>
+      </div>
+    } @else {
+      @for (item of items(); track item.id) {
+        <div
+          (click)="open(item)"
+          class="flex w-full cursor-pointer items-start gap-3 border-b border-ink-border px-4 py-3 text-start transition-colors hover:bg-ink-3"
+          [class.opacity-65]="item.read"
+        >
+          <span class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full" [class.bg-brand]="!item.read" [class.bg-ink-border]="item.read"></span>
+          <div class="min-w-0 flex-1">
+            <div class="truncate text-sm font-semibold text-ink-fg">{{ item.title }}</div>
+            @if (item.body) {
+              <div class="mt-0.5 line-clamp-2 text-xs text-ink-muted">{{ item.body }}</div>
+            }
+            <div class="mt-1 text-[11px] text-ink-muted">{{ relativeTime(item) }}</div>
+          </div>
+          <button
+            type="button"
+            (click)="remove(item.id, $event)"
+            class="grid h-7 w-7 shrink-0 place-items-center rounded-md text-ink-muted transition-colors hover:bg-ink hover:text-red-400"
+            aria-label="Delete notification"
+          >
+            <app-icon [iconName]="'Cancel01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+          </button>
+        </div>
+      }
+    }
+  </div>
+</section>

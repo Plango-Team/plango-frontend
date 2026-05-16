@@ -15,7 +15,7 @@ export class MapPageComponent {
   isFullScreen = signal(false)
   @ViewChild(MapComponent)
   mapComponent!:MapComponent;
-  
+
   toggelFullScreen(){
     this.isFullScreen.update(prev => ! prev)
   }

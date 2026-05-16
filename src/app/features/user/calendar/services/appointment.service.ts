@@ -10,9 +10,17 @@ export interface Appointment {
   date: string;
   time: string;
   title: string;
+  origin?: string;
   destination?: string;
+  originLat?: number;
+  originLng?: number;
+  destinationLat?: number;
+  destinationLng?: number;
+  lat?: number;
+  lng?: number;
   transport?: string;
   bufferMin: number;
+  prepMin?: number;
   notes?: string;
 }
 
@@ -31,5 +39,9 @@ export class AppointmentService {
 
   createAppointment(appointment: Appointment): Observable<Appointment> {
     return this.http.post<Appointment>(this.apiUrl, appointment);
+  }
+
+  deleteAppointment(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

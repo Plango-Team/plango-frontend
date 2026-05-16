@@ -59,6 +59,18 @@ export const AppointmentsStore = signalStore(
           )
         )
       )
+    ),
+    removeAppointment: rxMethod<string>(
+      pipe(
+        switchMap((id) =>
+          appointmentService.deleteAppointment(id).pipe(
+            tap(() => patchState(store, {
+              appointments: store.appointments().filter(a => a.id !== id)
+            })),
+            catchError(() => of(null))
+          )
+        )
+      )
     )
   })),
   withHooks({

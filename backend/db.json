@@ -1,7 +1,7 @@
 {
   "users": [
     {
-      "id": "1",
+      "id": "p_nader",
       "email": "nader@plango.com",
       "password": "123456",
       "firstName": "Nader",
@@ -17,7 +17,7 @@
       }
     },
     {
-      "id": "2",
+      "id": "p_basma",
       "email": "basma@plango.com",
       "password": "123456",
       "firstName": "Basma",
@@ -115,17 +115,17 @@
       "password": "123456",
       "firstName": "PlanGo",
       "lastName": "Organization",
-      "displayName": "PlanGo Organization",
+      "displayName": "PlanGo org",
       "userName": "plango_organization",
       "phoneNumber": "01055555555",
       "role": "user",
       "accountType": "organization",
-      "organizationName": "PlanGo Organization",
+      "organizationName": "PlanGo org",
       "organizationDescription": "PlanGo creates smart departure tools for teams and communities.",
       "organizationRole": "owner",
       "status": "active",
       "createdAt": "2026-04-10T10:00:00.000Z",
-      "updatedAt": "2026-04-10T10:00:00.000Z",
+      "updatedAt": "2026-05-14T05:07:22.837Z",
       "preferences": {
         "theme": "dark",
         "language": "ar",
@@ -137,7 +137,9 @@
           "departureAlerts": true
         }
       },
-      "id": "org_plango"
+      "id": "org_plango",
+      "bio": "PlanGo creates smart departure tools for teams and communities.",
+      "privateFollows": false
     },
     {
       "email": "nader@org.com",
@@ -227,7 +229,7 @@
   "appointments": [
     {
       "id": "1",
-      "userId": "1",
+      "userId": "p_nader",
       "date": "2026-05-04",
       "time": "10:30",
       "title": "أذهب إلي الدوام",
@@ -235,7 +237,7 @@
     },
     {
       "id": "2",
-      "userId": "1",
+      "userId": "p_nader",
       "date": "2026-05-04",
       "time": "14:00",
       "title": "اجتماع عمل",
@@ -243,7 +245,7 @@
     },
     {
       "id": "3",
-      "userId": "1",
+      "userId": "p_nader",
       "date": "2026-05-05",
       "time": "09:00",
       "title": "موعد طبيب الأسنان",
@@ -251,7 +253,7 @@
     },
     {
       "id": "4",
-      "userId": "1",
+      "userId": "p_nader",
       "date": "2026-05-04",
       "time": "12:00",
       "title": "غداء مع العائلة",
@@ -259,14 +261,14 @@
     },
     {
       "id": "5",
-      "userId": "1",
+      "userId": "p_nader",
       "date": "2026-05-04",
       "time": "16:30",
       "title": "جلسة تصوير",
       "bufferMin": 60
     },
     {
-      "userId": "1",
+      "userId": "p_nader",
       "title": "Meeting",
       "destination": "القاهرة",
       "date": "2026-05-04",
@@ -277,26 +279,440 @@
       "id": "3cLa8_Kp4Vs"
     },
     {
-      "userId": "2",
-      "title": "hhhh",
-      "destination": "hhhhh",
+      "userId": "p_nader",
+      "title": "Team Meeting",
+      "destination": "جامعة المنيا",
+      "lat": 28.113,
+      "lng": 30.745,
       "date": "2026-05-14",
-      "time": "00:00",
+      "time": "07:00",
       "transport": "car",
-      "bufferMin": 10,
+      "bufferMin": 15,
       "notes": "",
-      "id": "B5nV8x56AeE"
+      "id": "TSFKDif_Y2A"
     },
     {
-      "userId": "2",
-      "title": "nvvvvvvvvvvvv",
-      "destination": "mmmmmmmmmm",
+      "userId": "p_nader",
+      "title": "اجتماع مهم",
+      "origin": "شارع كليه الاداب",
+      "destination": "طريق طه حسين",
+      "originLat": 28.1172368,
+      "originLng": 30.7399208,
+      "destinationLat": 28.053402,
+      "destinationLng": 30.8405027,
+      "lat": 28.053402,
+      "lng": 30.8405027,
       "date": "2026-05-15",
-      "time": "12:00",
+      "time": "10:00",
       "transport": "car",
-      "bufferMin": 10,
-      "notes": "",
-      "id": "nK9zd5Ncir4"
+      "bufferMin": 15,
+      "prepMin": 20,
+      "id": "C08ZKhZpTO0"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "t1",
+      "userId": "p_nader",
+      "title": "تجهيز عرض التصميم",
+      "description": "جمّع الشرائح وراجع الـ user flow قبل الاجتماع.",
+      "status": "todo",
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": "st1",
+          "title": "جمع الشرائح",
+          "done": true
+        },
+        {
+          "id": "st2",
+          "title": "مراجعة flow",
+          "done": false
+        }
+      ],
+      "order": 0,
+      "appointmentId": "1",
+      "createdAt": 1715600000000
+    },
+    {
+      "id": "t2",
+      "userId": "p_nader",
+      "title": "كتابة ملخص اللقاء",
+      "description": "",
+      "status": "todo",
+      "priority": "medium",
+      "subtasks": [],
+      "order": 1,
+      "appointmentId": "2",
+      "createdAt": 1715601000000
+    },
+    {
+      "userId": "p_nader",
+      "title": "تسليم تاسك 2",
+      "appointmentId": "TSFKDif_Y2A",
+      "status": "todo",
+      "priority": "high",
+      "subtasks": [],
+      "order": 0,
+      "createdAt": 1778652808917,
+      "id": "4lZ8iLA7AdQ"
+    }
+  ],
+  "profiles": [
+    {
+      "id": "p_nader",
+      "kind": "user",
+      "username": "nader",
+      "displayName": "نادر محمد",
+      "city": "Cairo",
+      "bio": "Angular Developer",
+      "privateFollows": false,
+      "createdAt": 1778600000000
+    },
+    {
+      "id": "p_basma",
+      "kind": "user",
+      "username": "basma",
+      "displayName": "بسمة جمال",
+      "city": "Cairo",
+      "bio": "Lead Front-end Developer",
+      "privateFollows": true,
+      "createdAt": 1778601000000
+    },
+    {
+      "id": "p_ahmed",
+      "kind": "user",
+      "username": "ahmed",
+      "displayName": "احمد هشام",
+      "city": "Giza",
+      "bio": "Lead Back-end Developer",
+      "privateFollows": false,
+      "createdAt": 1778602000000
+    },
+    {
+      "id": "p_areej",
+      "kind": "user",
+      "username": "areej",
+      "displayName": "اريج حسنيين",
+      "city": "Alexandria",
+      "bio": "Back-end Developer",
+      "privateFollows": true,
+      "createdAt": 1778603000000
+    },
+    {
+      "id": "p_maram",
+      "kind": "user",
+      "username": "maram",
+      "displayName": "مرام عامر",
+      "city": "Cairo",
+      "bio": "Back-end Developer",
+      "privateFollows": false,
+      "createdAt": 1778604000000
+    },
+    {
+      "id": "p_jehad",
+      "kind": "user",
+      "username": "jehad",
+      "displayName": "جهاد عاشور",
+      "city": "Cairo",
+      "bio": "UI UX Designer",
+      "privateFollows": false,
+      "createdAt": 1778605000000
+    },
+    {
+      "id": "p_devcairo",
+      "kind": "org",
+      "username": "devcairo",
+      "displayName": "Dev Cairo",
+      "city": "Cairo",
+      "bio": "Community of developers building the future of MENA tech.",
+      "privateFollows": false,
+      "createdAt": 1778590000000
+    },
+    {
+      "id": "p_uxcairo",
+      "kind": "org",
+      "username": "uxcairo",
+      "displayName": "Cairo UX Community",
+      "city": "Cairo",
+      "bio": "Designers shaping the region's product experiences.",
+      "privateFollows": false,
+      "createdAt": 1778591000000
+    },
+    {
+      "id": "p_lightacademy",
+      "kind": "org",
+      "username": "lightacademy",
+      "displayName": "Light Academy",
+      "city": "Cairo",
+      "bio": "Photography workshops at iconic locations.",
+      "privateFollows": false,
+      "createdAt": 1778592000000
+    },
+    {
+      "id": "L9h9WBJzkOI",
+      "kind": "org",
+      "username": "plango_organization",
+      "displayName": "PlanGo org",
+      "createdAt": 1775815200000,
+      "bio": "PlanGo creates smart departure tools for teams and communities.",
+      "privateFollows": false
+    },
+    {
+      "id": "cYiRuAnBUV8",
+      "kind": "org",
+      "username": "naderorg",
+      "displayName": "naderOrg",
+      "city": "Minya",
+      "bio": "فعاليات مجتمعية وتقنية داخل المحافظة.",
+      "privateFollows": false,
+      "createdAt": 1775821200000
+    }
+  ],
+  "posts": [
+    {
+      "id": "po_1",
+      "authorId": "p_devcairo",
+      "body": "🚀 يوم الجمعة عندنا ماراثون البرمجة الأسبوعي. الدعوة عامة، الأماكن محدودة! / Friday code marathon — public invite, limited seats!",
+      "likes": ["p_basma", "p_nader"],
+      "createdAt": 1778650000000
+    },
+    {
+      "id": "po_2",
+      "authorId": "p_uxcairo",
+      "body": "نشارك خلال أيام مؤتمر تصميم تجربة المستخدم 2026 — تذاكر مجانية للأعضاء النشطين 🎟️",
+      "likes": ["p_nader", "p_ahmed", "p_maram"],
+      "createdAt": 1778640000000
+    },
+    {
+      "id": "po_3",
+      "authorId": "p_lightacademy",
+      "body": "ورشة التصوير الليلي على كورنيش النيل — حملوا الكاميرات وحضروا 📸",
+      "likes": ["p_areej"],
+      "createdAt": 1778630000000
+    },
+    {
+      "id": "po_4",
+      "authorId": "p_nader",
+      "body": "PlanGo بقى يدعم لوحة المؤسسات — جربوها وقولولي رأيكم 💡",
+      "likes": ["p_basma", "p_ahmed"],
+      "createdAt": 1778652000000
+    },
+    {
+      "id": "po_5",
+      "authorId": "p_basma",
+      "body": "أحلى حاجة في PlanGo إنه بيقولّك امتى تطلع، مش بس امتى الميعاد 🤍",
+      "likes": ["p_nader", "p_maram", "p_jehad"],
+      "createdAt": 1778648000000
+    },
+    {
+      "authorId": "p_nader",
+      "body": "هلووو",
+      "likes": [],
+      "createdAt": 1778657166878,
+      "id": "wGc32NPTiCE"
+    },
+    {
+      "authorId": "L9h9WBJzkOI",
+      "body": "igh",
+      "likes": ["L9h9WBJzkOI"],
+      "createdAt": 1778732415500,
+      "id": "5ezu9oqY2VQ"
+    },
+    {
+      "authorId": "L9h9WBJzkOI",
+      "body": "hi",
+      "likes": ["L9h9WBJzkOI"],
+      "createdAt": 1778735260094,
+      "id": "IbSRDWVB6GI"
+    },
+    {
+      "authorId": "p_nader",
+      "body": "test",
+      "likes": [],
+      "createdAt": 1778799110872,
+      "id": "qU10TUaC_9Y"
+    }
+  ],
+  "follows": [
+    {
+      "id": "f1",
+      "followerId": "p_nader",
+      "followeeId": "p_devcairo",
+      "status": "approved",
+      "createdAt": 1778640000000
+    },
+    {
+      "id": "f2",
+      "followerId": "p_nader",
+      "followeeId": "p_uxcairo",
+      "status": "approved",
+      "createdAt": 1778641000000
+    },
+    {
+      "id": "f3",
+      "followerId": "p_nader",
+      "followeeId": "p_lightacademy",
+      "status": "approved",
+      "createdAt": 1778642000000
+    },
+    {
+      "id": "f4",
+      "followerId": "p_nader",
+      "followeeId": "p_basma",
+      "status": "approved",
+      "createdAt": 1778643000000
+    },
+    {
+      "id": "f5",
+      "followerId": "p_basma",
+      "followeeId": "p_nader",
+      "status": "approved",
+      "createdAt": 1778643000000
+    },
+    {
+      "id": "f6",
+      "followerId": "p_ahmed",
+      "followeeId": "p_nader",
+      "status": "pending",
+      "createdAt": 1778644000000
+    },
+    {
+      "id": "f7",
+      "followerId": "p_maram",
+      "followeeId": "p_devcairo",
+      "status": "approved",
+      "createdAt": 1778645000000
+    },
+    {
+      "id": "f8",
+      "followerId": "p_nader",
+      "followeeId": "L9h9WBJzkOI",
+      "status": "approved",
+      "createdAt": 1778651000000
+    },
+    {
+      "id": "f9",
+      "followerId": "p_basma",
+      "followeeId": "L9h9WBJzkOI",
+      "status": "approved",
+      "createdAt": 1778652000000
+    },
+    {
+      "id": "f10",
+      "followerId": "p_ahmed",
+      "followeeId": "L9h9WBJzkOI",
+      "status": "pending",
+      "createdAt": 1778653000000
+    },
+    {
+      "followerId": "org_plango",
+      "followeeId": "p_nader",
+      "status": "approved",
+      "createdAt": 1778799777527,
+      "id": "-Jill8fSi5I"
+    },
+    {
+      "followerId": "L9h9WBJzkOI",
+      "followeeId": "p_nader",
+      "status": "approved",
+      "createdAt": 1778800343279,
+      "id": "DPvKJD2bijk"
+    }
+  ],
+  "orgEvents": [
+    {
+      "id": "oe_1",
+      "ownerId": "L9h9WBJzkOI",
+      "title": "ورشة الذكاء الاصطناعي للمجتمع",
+      "host": "PlanGo Organization",
+      "date": "2026-05-18",
+      "time": "18:30",
+      "place": "مركز الإبداع - القاهرة",
+      "category": "tech",
+      "price": "مجاني",
+      "description": "جلسة عملية لبناء أدوات تخطيط المغادرة الذكية.",
+      "distanceKm": 8.2,
+      "createdAt": 1778655000000
+    },
+    {
+      "id": "oe_2",
+      "ownerId": "L9h9WBJzkOI",
+      "title": "لقاء قادة المجتمعات التقنية",
+      "host": "PlanGo Organization",
+      "date": "2026-05-20",
+      "time": "20:00",
+      "place": "نادي القاهرة للتقنية",
+      "category": "culture",
+      "price": "150 جنيه",
+      "description": "مناقشة خطط التعاون بين المؤسسات التقنية المحلية.",
+      "distanceKm": 12.5,
+      "createdAt": 1778656000000
+    },
+    {
+      "id": "oe_3",
+      "ownerId": "cYiRuAnBUV8",
+      "title": "ملتقى Minya Dev Community",
+      "host": "naderOrg",
+      "date": "2026-05-22",
+      "time": "17:00",
+      "place": "جامعة المنيا",
+      "category": "tech",
+      "price": "مجاني",
+      "description": "تعارف ومناقشات بين مطوري المنيا.",
+      "distanceKm": 5.4,
+      "createdAt": 1778657000000
+    },
+    {
+      "ownerId": "L9h9WBJzkOI",
+      "title": "مؤتمر تصميم مهم",
+      "host": "PlanGo Organization",
+      "date": "2026-05-14",
+      "time": "22:02",
+      "place": "كرياتيفا القاهرة",
+      "category": "art",
+      "price": "مجاني",
+      "description": "مهممم جدا جدا",
+      "createdAt": 1778733033396,
+      "id": "hjKO_1ZNPmw"
+    }
+  ],
+  "orgAttendances": [
+    {
+      "id": "oa_1",
+      "eventId": "oe_1",
+      "attendeeId": "p_nader",
+      "status": "en_route",
+      "travelMin": 24,
+      "departureAt": 1779179400000,
+      "updatedAt": 1778733054461
+    },
+    {
+      "id": "oa_2",
+      "eventId": "oe_1",
+      "attendeeId": "p_basma",
+      "status": "confirmed",
+      "travelMin": 19,
+      "departureAt": 1779179700000,
+      "updatedAt": 1779178200000
+    },
+    {
+      "id": "oa_3",
+      "eventId": "oe_2",
+      "attendeeId": "p_ahmed",
+      "status": "declined",
+      "travelMin": 32,
+      "departureAt": 1779357600000,
+      "updatedAt": 1779355000000
+    },
+    {
+      "id": "oa_4",
+      "eventId": "oe_2",
+      "attendeeId": "p_maram",
+      "status": "arrived",
+      "travelMin": 27,
+      "departureAt": 1779357300000,
+      "updatedAt": 1779359200000
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

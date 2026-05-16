@@ -41,5 +41,13 @@ export const userRoutes: Routes = [
   {
     path: 'notifications',
     loadComponent: () => import('./notifications/pages/notifications-page/notifications-page.component').then((m) => m.NotificationsPageComponent),
+  },
+  {
+    path: 'feed',
+    loadComponent: () => import('./social/pages/feed-page/feed-page.component').then((m) => m.FeedPageComponent),
+  },
+  {
+    path: 'profile/:username',
+    loadComponent: () => import('./social/pages/profile-page/profile-page.component').then((m) => m.ProfilePageComponent),
   }
 ];

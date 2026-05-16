@@ -211,6 +211,43 @@ export const authStore = signalStore(
       patchState(store, { successMessage: null });
     }),
 
+    updateCurrentUser: rxMethod<Partial<IUser>>(
+      pipe(
+        tap(() => patchState(store, { isLoading: true, error: null, successMessage: null })),
+        switchMap((changes) => {
+          const current = store.user();
+          if (!current) {
+            patchState(store, { isLoading: false, error: 'لا يوجد مستخدم مسجّل حالياً' });
+            return of(null);
+          }
+
+          return authService
+            .updateUser(current.id, {
+              ...changes,
+              updatedAt: new Date(),
+            })
+            .pipe(
+              tap({
+                next: (user) => {
+                  patchState(store, {
+                    user,
+                    isLoading: false,
+                    successMessage: 'تم حفظ إعدادات المؤسسة',
+                  });
+                },
+                error: (err) => {
+                  patchState(store, {
+                    isLoading: false,
+                    error: err.message || 'حدث خطأ أثناء تحديث بيانات المؤسسة',
+                  });
+                },
+              }),
+              catchError(() => of(null)),
+            );
+        }),
+      ),
+    ),
+
     // ─────── تهيئة المصادقة عند تحميل التطبيق ───────
     initAuth: rxMethod<void>(
       pipe(

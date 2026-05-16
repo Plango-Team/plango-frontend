@@ -38,6 +38,8 @@ export const MapStore = signalStore(
         return;
       }
 
+      if (watchId !== null) return;
+
       watchId = navigator.geolocation.watchPosition(
         (position) => {
           patchState(store , {
