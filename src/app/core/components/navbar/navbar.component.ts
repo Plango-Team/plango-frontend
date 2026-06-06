@@ -23,16 +23,17 @@ export class NavbarComponent {
   public socialStore = inject(SocialStore);
   public notificationsStore = inject(NotificationsStore);
   private toastService = inject(ToastService);
-  public profileRoutePrefix = computed(() =>
-    this.authStore.user()?.accountType === 'organization'
+  readonly isOrganization = computed(() => (this.authStore.user() as any)?.accountType === 'organization');
+  public profileRoutePrefix = computed(() => {
+    return (this.authStore.user() as any)?.accountType === 'organization'
       ? '/organization/profile'
-      : '/user/profile',
-  );
-  public notificationsRoute = computed(() =>
-    this.authStore.user()?.accountType === 'organization'
+      : '/user/profile';
+});
+  public notificationsRoute = computed(() => {
+    return (this.authStore.user() as any)?.accountType === 'organization'
       ? '/organization/notifications'
-      : '/user/notifications',
-  );
+      : '/user/notifications';
+});
 
   public isMenuOpen = signal(false);
   public isNotificationsOpen = signal(false);

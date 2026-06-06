@@ -47,7 +47,7 @@ export class SidebarComponent {
   ];
 
   readonly navItems = computed(() =>
-    this.authStore.user()?.accountType === 'organization'
+    (this.authStore.user() as any)?.accountType === 'organization'
       ? this.organizationNavItems
       : this.userNavItems,
   );
@@ -59,29 +59,29 @@ export class SidebarComponent {
       return '/admin';
     }
 
-    return user?.accountType === 'organization' ? '/organization/dashboard' : '/user/dashboard';
+    return (user as any)?.accountType === 'organization' ? '/organization/dashboard' : '/user/dashboard';
   });
 
   readonly quickActionLabel = computed(() =>
-    this.authStore.user()?.accountType === 'organization' ? 'فعالية جديدة' : 'موعد ذكي جديد',
+    (this.authStore.user() as any)?.accountType === 'organization' ? 'فعالية جديدة' : 'موعد ذكي جديد',
   );
 
   readonly quickActionDescription = computed(() =>
-    this.authStore.user()?.accountType === 'organization'
+    (this.authStore.user() as any)?.accountType === 'organization'
       ? 'أنشئ فعالية جديدة وابدأ دعوة الحضور.'
       : 'أنشئ موعداً جديداً مع تنبيه المغادرة الذكي.',
   );
 
   readonly quickActionButtonLabel = computed(() =>
-    this.authStore.user()?.accountType === 'organization' ? 'إنشاء فعالية' : 'إنشاء موعد',
+   (this.authStore.user() as any)?.accountType === 'organization' ? 'إنشاء فعالية' : 'إنشاء موعد',
   );
 
   readonly quickActionIcon = computed(() =>
-    this.authStore.user()?.accountType === 'organization' ? 'Calendar01Icon' : 'Add01Icon',
+   (this.authStore.user() as any)?.accountType === 'organization' ? 'Calendar01Icon' : 'Add01Icon',
   );
 
   readonly quickActionRoute = computed(() =>
-    this.authStore.user()?.accountType === 'organization'
+    (this.authStore.user() as any)?.accountType === 'organization'
       ? '/organization/events'
       : '/user/appointments',
   );
@@ -96,7 +96,7 @@ export class SidebarComponent {
       return 'زائر';
     }
 
-    return user.displayName?.trim() || `${user.firstName} ${user.lastName}`.trim();
+    return user.name?.trim();
   }
 
   initials(): string {
@@ -105,10 +105,10 @@ export class SidebarComponent {
       return 'ز';
     }
 
-    const name = user.displayName?.trim() || `${user.firstName} ${user.lastName}`.trim();
+    const name = user.name?.trim();
     const parts = name.split(/\s+/).filter(Boolean);
-    const first = parts[0]?.[0] ?? user.firstName?.[0] ?? '';
-    const last = parts[1]?.[0] ?? user.lastName?.[0] ?? '';
+    const first = parts[0] ? parts[0].charAt(0) : '';
+    const last = parts[1] ? parts[1].charAt(0) : '';
     const value = `${first}${last}`.trim();
 
     return value ? value.toUpperCase() : 'ز';

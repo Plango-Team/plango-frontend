@@ -147,6 +147,9 @@ export class SignupComponent {
     if (!this.validateStep2() || !this.validateStep3()) {
       return;
     }
+    if(!this.store.verifyEmail(this.email)){
+      return;
+    }
 
     const nameParts = this.fullName.trim().split(' ');
     const firstName = nameParts[0] || '';

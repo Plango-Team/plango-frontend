@@ -20,18 +20,15 @@ export class OrganizationSettingsPageComponent implements OnInit {
     if (fromSocial) return fromSocial;
 
     const user = this.authStore.user();
-    if (!user || user.accountType !== 'organization') return null;
+    if (!user || (user as any).accountType !== 'organization') return null;
 
     return {
-      id: user.id,
+      id: user._id,
       kind: 'org',
-      username: user.userName,
-      displayName:
-        user.displayName?.trim() ||
-        user.organizationName ||
-        `${user.firstName} ${user.lastName}`.trim(),
-      bio: user.bio || user.organizationDescription,
-      privateFollows: user.privateFollows,
+      username: user.username,
+      displayName:user.name,
+      bio: (user as any).bio || (user as any).organizationDescription,
+      privateFollows: (user as any).privateFollows,
       createdAt: this.asEpoch(user.createdAt),
     };
   });
@@ -103,24 +100,19 @@ export class OrganizationSettingsPageComponent implements OnInit {
     }
 
     this.authStore.updateCurrentUser({
-      displayName: nextDisplayName,
-      userName: nextUsername,
+      name: nextDisplayName,
+      username: nextUsername,
+      email: this.contactEmail.trim() || user.email,
       bio: nextBio,
       privateFollows: !this.autoApprove,
-      email: this.contactEmail.trim() || user.email,
       organizationName: nextDisplayName,
       organizationDescription: nextBio,
       preferences: {
-        ...user.preferences,
-        language: this.selectedLanguage,
-        notifications: {
-          ...user.preferences.notifications,
-          push: this.broadcastReminders,
-        },
-      },
-    });
+           language: this.selectedLanguage,
+           notif:{preferences: {notifications:{push: this.broadcastReminders,
+        }}}}} as any);
 
-    localStorage.setItem(this.allowMentionsKey(user.id), JSON.stringify(this.allowMentions));
+    localStorage.setItem(this.allowMentionsKey(user._id), JSON.stringify(this.allowMentions));
     this.initial = {
       displayName: nextDisplayName,
       username: nextUsername,
@@ -138,10 +130,10 @@ export class OrganizationSettingsPageComponent implements OnInit {
     const profile = this.currentProfile();
     if (!user || !profile) return;
 
-    const displayName = profile.displayName || user.organizationName || user.displayName || '';
-    const username = profile.username || user.userName || '';
+    const displayName = profile.displayName || (user as any).organizationName || user.name || '';
+    const username = profile.username || user.username || '';
     const city = profile.city || '';
-    const bio = profile.bio || user.organizationDescription || user.bio || '';
+    const bio = profile.bio || (user as any).organizationDescription || (user as any).bio || '';
 
     this.displayName = displayName;
     this.username = username;
@@ -149,11 +141,11 @@ export class OrganizationSettingsPageComponent implements OnInit {
     this.bio = bio;
     this.contactEmail = user.email || `hello@${username}.com`;
     this.website = `https://${username}.com`;
-    this.autoApprove = !(profile.privateFollows ?? user.privateFollows ?? false);
-    this.broadcastReminders = user.preferences.notifications.push;
-    this.selectedLanguage = user.preferences.language;
+    this.autoApprove = !(profile.privateFollows ?? (user as any).privateFollows ?? false);
+    this.broadcastReminders = (user as any).preferences.notifications.push;
+    this.selectedLanguage = (user as any).preferences.language;
 
-    const mentions = localStorage.getItem(this.allowMentionsKey(user.id));
+    const mentions = localStorage.getItem(this.allowMentionsKey(user._id));
     this.allowMentions = mentions === null ? true : mentions === 'true';
 
     this.initial = { displayName, username, city, bio };

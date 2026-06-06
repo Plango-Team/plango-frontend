@@ -1,0 +1,27 @@
+<section class="verify-page">
+  <div class="card">
+    <h1>تفعيل البريد الإلكتروني</h1>
+
+    <div class="status">
+      <p *ngIf="!token()" class="error">
+        لا يوجد رمز تفعيل. تأكد من فتح الرابط الصحيح من الإيميل.
+      </p>
+
+      <p *ngIf="token()">
+        جاري التحقق من الرابط...
+      </p>
+
+      <p *ngIf="authStore.successMessage()" class="success">
+        {{ authStore.successMessage() }}
+      </p>
+
+      <p *ngIf="authStore.error()" class="error">
+        {{ authStore.error() }}
+      </p>
+    </div>
+
+    <button type="button" class="action-button" (click)="goToLogin()">
+      العودة لتسجيل الدخول
+    </button>
+  </div>
+</section>

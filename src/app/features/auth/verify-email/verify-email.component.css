@@ -1,0 +1,45 @@
+.verify-page {
+  min-height: 70vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.card {
+  max-width: 420px;
+  width: 100%;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.12);
+  background: #ffffff;
+  text-align: center;
+}
+
+.status {
+  margin: 1rem 0 1.5rem;
+  min-height: 4rem;
+}
+
+.success {
+  color: #1f7a5a;
+}
+
+.error {
+  color: #be123c;
+}
+
+.action-button {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: none;
+  border-radius: 999px;
+  background: #2563eb;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.action-button:hover {
+  background: #1d4ed8;
+}

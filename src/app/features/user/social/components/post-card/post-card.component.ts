@@ -98,29 +98,29 @@ export class PostCardComponent {
 
   post = input.required<Post>();
 
-  profileRouteBase = computed(() =>
-    this.authStore.user()?.accountType === 'organization'
+  profileRouteBase = computed(() =>{
+    const user = this.authStore.user();
+    const accountType = user ?(user as any).accountType : null;
+    return accountType === 'organization'
       ? '/organization/profile'
-      : '/user/profile',
-  );
+      : '/user/profile';
+});
 
-  activeProfileId = computed(() => this.socialStore.myProfile()?.id ?? this.authStore.user()?.id ?? null);
+  activeProfileId = computed(() => this.socialStore.myProfile()?.id ?? this.authStore.user()?._id ?? null);
 
   author = computed<Profile | null>(() => {
     const fromStore = this.socialStore.getAuthor(this.post().authorId);
     if (fromStore) return fromStore;
 
     const currentUser = this.authStore.user();
-    if (currentUser && currentUser.id === this.post().authorId) {
+    if (currentUser && currentUser._id === this.post().authorId) {
       return {
-        id: currentUser.id,
-        kind: currentUser.accountType === 'organization' ? 'org' : 'user',
-        username: currentUser.userName,
-        displayName:
-          currentUser.displayName?.trim() ||
-          `${currentUser.firstName} ${currentUser.lastName}`.trim(),
-        bio: currentUser.bio,
-        privateFollows: currentUser.privateFollows,
+        id: currentUser._id,
+        kind: (currentUser as any).accountType === 'organization' ? 'org' : 'user',
+        username: currentUser.username,
+        displayName:currentUser.name,
+        bio: (currentUser as any).bio,
+        privateFollows: (currentUser as any).privateFollows,
         createdAt: Date.now(),
       };
     }

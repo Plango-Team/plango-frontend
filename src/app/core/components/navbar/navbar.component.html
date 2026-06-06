@@ -141,8 +141,7 @@
         <span class="hidden text-sm font-medium sm:inline">
           @if (authStore.user()) {
             {{
-              authStore.user()?.displayName ||
-                authStore.user()?.firstName + ' ' + authStore.user()?.lastName
+              authStore.user()?.name
             }}
           } @else {
             زائر
@@ -150,11 +149,11 @@
         </span>
         <div
           class="grid h-7 w-7 place-items-center rounded-md text-xs font-semibold text-ink"
-          [class.bg-brand]="authStore.user()?.accountType === 'organization'"
-          [class.bg-ink-fg]="authStore.user()?.accountType !== 'organization'"
+          [class.bg-brand]="isOrganization()"
+          [class.bg-ink-fg]="!isOrganization()"
         >
-          @if (authStore.user()?.displayName || authStore.user()?.firstName) {
-            {{ (authStore.user()?.displayName || authStore.user()?.firstName)?.charAt(0) }}
+          @if (authStore.user()?.name) {
+            {{ (authStore.user()?.name || authStore.user()?.name)?.charAt(0) || ''}}
           } @else {
             ز
           }
@@ -167,7 +166,7 @@
           <div class="flex items-center gap-2 px-2 py-1.5 text-xs text-ink-muted">
             <app-icon [iconName]="'UserGroupIcon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
             {{
-              authStore.user()?.accountType === 'organization'
+              isOrganization()
                 ? 'تسجيل الدخول كمؤسسة'
                 : 'تسجيل الدخول كشخصي'
             }}
@@ -176,15 +175,14 @@
           <a
             [routerLink]="[
               profileRoutePrefix(),
-              socialStore.myProfile()?.username || authStore.user()?.userName,
+              socialStore.myProfile()?.username || authStore.user()?.username,
             ]"
             (click)="toggleMenu()"
             class="flex w-full cursor-pointer flex-col rounded-md px-2 py-1.5 transition-colors hover:bg-ink-3"
           >
             <div class="truncate text-sm font-medium">
               {{
-                authStore.user()?.displayName ||
-                  authStore.user()?.firstName + ' ' + authStore.user()?.lastName
+                authStore.user()?.name
               }}
             </div>
             <div class="truncate text-[11px] text-ink-muted" dir="ltr">
@@ -196,7 +194,7 @@
 
           <a
             [routerLink]="
-              authStore.user()?.accountType === 'organization'
+              isOrganization()
                 ? '/organization/settings'
                 : '/user/settings'
             "

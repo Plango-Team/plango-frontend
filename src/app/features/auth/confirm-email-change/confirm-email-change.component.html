@@ -1,0 +1,27 @@
+<section class="verify-page">
+  <div class="card">
+    <h1>تأكيد تغيير البريد الألكتروني</h1>
+
+    <div class="status">
+      <p *ngIf="!token()" class="error">
+        لا يوجد رمز تفعيل. تأكد من فتح الرابط الصحيح من الإيميل.
+      </p>
+
+      <p *ngIf="token()">
+        جاري التحقق من الرابط...
+      </p>
+
+      <p *ngIf="store.successMessage()" class="success">
+        {{ store.successMessage() }}
+      </p>
+
+      <p *ngIf="store.error()" class="error">
+        {{ store.error() }}
+      </p>
+    </div>
+
+    <button type="button" class="action-button" (click)="goToLogin()">
+      العودة لتسجيل الدخول
+    </button>
+  </div>
+</section>

@@ -1,35 +1,62 @@
 export type AccountType = 'personal' | 'organization';
 
-export interface IUser {
-  id: string;
-  email: string;
-  password: string | null;
-  firstName: string;
-  lastName: string;
-  displayName?: string;
-  userName: string;
-  phoneNumber?: string;
-  avatarUrl?: string;
-  bio?: string;
-  privateFollows?: boolean;
-  role: 'user' | 'admin';
-  accountType: AccountType;
-  organizationId?: string;
-  organizationRole?: 'owner' | 'member';
-  organizationName?: string;
-  organizationDescription?: string;
-  createdAt: Date;
-  updatedAt: Date;
-
-  // إعدادات المستخدم الخاصة بالجدولة والذكاء الاصطناعي
-  preferences: IUserPreferences;
-
-  // إحصائيات الأداء (Productivity Tracking)
-  stats?: IUserStats;
-
-  // حالة الحساب
-  status: 'active' | 'inactive' | 'suspended';
+export interface Welcome {
+    status:  string;
+    message: string;
+    data:    IAuthResponse;
 }
+
+export interface IUser {
+    _id:                         string;
+    name:                        string;
+    email:                       string;
+    role:                        string;
+    location:                    string;
+    username:                    string;
+    isPrivate:                   boolean;
+    provider:                    string;
+    phone:                       string;
+    isEmailVerified:             boolean;
+    isPhoneVerified:             boolean;
+    passwordChangeCooldownHours: number;
+    emailChangeCooldownHours:    number;
+    phoneChangeCooldownHours:    number;
+    lastLoginAt:                 Date;
+    createdAt:                   Date;
+    updatedAt?:                   Date;
+
+}
+
+// export interface IUser {
+//   id: string;
+//   email: string;
+//   password: string | null;
+//   firstName: string;
+//   lastName: string;
+//   displayName?: string;
+//   userName: string;
+//   phoneNumber?: string;
+//   avatarUrl?: string;
+//   bio?: string;
+//   privateFollows?: boolean;
+//   role: 'user' | 'admin';
+//   accountType: AccountType;
+//   organizationId?: string;
+//   organizationRole?: 'owner' | 'member';
+//   organizationName?: string;
+//   organizationDescription?: string;
+//   createdAt: Date;
+//   updatedAt: Date;
+
+//   // إعدادات المستخدم الخاصة بالجدولة والذكاء الاصطناعي
+//   preferences: IUserPreferences;
+
+//   // إحصائيات الأداء (Productivity Tracking)
+//   stats?: IUserStats;
+
+//   // حالة الحساب
+//   status: 'active' | 'inactive' | 'suspended';
+// }
 
 export interface IUserPreferences {
   theme: 'light' | 'dark' | 'system';
@@ -74,6 +101,21 @@ export interface IAuthResponse {
   user: IUser;
   organization?: IOrganizationProfile | null;
   expiresIn: number; // مدة صلاحية الـ Token
+}
+
+export interface IWrappedResponse<T> {
+  status: string;
+  message: string;
+  code?: string;
+  data: T;
+}
+
+export interface ISignUpResponse {
+  status: string;
+  message: string;
+  data: {
+    user: IUser;
+  };
 }
 
 export interface IOrganizationProfile {
@@ -145,6 +187,10 @@ export interface IResetPasswordRequest {
   email: string;
   otp: string;
   newPassword: string;
+}
+
+export interface IResendVerificationRequest {
+  email: string;
 }
 
 /**

@@ -132,7 +132,7 @@ export class CalendarPageComponent {
     if (this.isSubmittingAppointment()) return;
 
     const user = this.authStore.user();
-    if (!user?.id) return;
+    if (!user?._id) return;
 
     const title = this.newApptTitle.trim();
     const origin = this.newApptOrigin.trim();
@@ -185,7 +185,7 @@ export class CalendarPageComponent {
       }
 
       const appt: Appointment = {
-        userId: user.id,
+        userId: user._id,
         title,
         origin: originPlace.name,
         destination: destinationPlace.name,

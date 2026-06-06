@@ -75,7 +75,7 @@ export const AppointmentsStore = signalStore(
   })),
   withHooks({
     onInit(store, authStoreInstance = inject(authStore)) {
-      const userId = computed(() => authStoreInstance.user()?.id);
+      const userId = computed(() => authStoreInstance.user()?._id);
       store.loadAppointments(userId);
     }
   })
