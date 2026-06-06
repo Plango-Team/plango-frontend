@@ -13,6 +13,12 @@ export const routes: Routes = [
     loadChildren: () => import('./features/landing/landing.routes').then((m) => m.landingRoutes),
   },
   {
+    // Support verification links that omit the /auth prefix (e.g. http://localhost:4200/verify-email?token=...)
+    // Load the same VerifyEmailComponent used under /auth/verify-email
+    path: 'verify-email',
+    loadComponent: () => import('./features/auth/verify-email/verify-email.component').then((m) => m.VerifyEmailComponent),
+  },
+  {
     path: 'auth',
     loadComponent: () =>
       import('./core/layouts/auth-layout/auth-layout.component').then((m) => m.AuthLayoutComponent),

@@ -74,16 +74,17 @@ export class OrganizationEventsPageComponent {
   readonly currentProfileId = computed(() => {
     const socialProfile = this.socialStore.myProfile();
     if (socialProfile) return socialProfile.id;
-    return this.authStore.user()?.id ?? null;
+    return this.authStore.user()?._id ?? null;
   });
 
   readonly defaultHost = computed(
-    () =>
-      this.socialStore.myProfile()?.displayName ||
-      this.authStore.user()?.organizationName ||
-      this.authStore.user()?.displayName ||
-      '',
-  );
+    () =>{
+      const user = this.authStore.user();
+      return this.socialStore.myProfile()?.displayName ||
+      (user as any)?.organizationName ||
+      user?.name ||
+      '';
+});
 
   readonly orgEvents = computed(() => {
     const profileId = this.currentProfileId();

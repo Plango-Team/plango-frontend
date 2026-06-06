@@ -1,0 +1,52 @@
+<div class="rounded-2xl border border-ink-border bg-ink-2/80 p-8 shadow-elevated backdrop-blur">
+<div class="animate-fade-in-up">
+            <div class="text-center mb-8">
+              <div class="mb-6 flex justify-center">
+                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-brand/10 text-brand">
+                  <app-icon [iconName]="'LockFreeIcons'" [iconSize]="32" [iconColor]="'currentColor'"></app-icon>
+                </div>
+              </div>
+              <h1 class="font-display text-3xl tracking-tight text-ink-foreground">تم إرسال رمز التحقق الي رقمك</h1>
+                <p class="mt-2 text-sm text-ink-muted">
+                أدخل رمز التحقق
+                </p>
+            </div>
+
+            <div class="space-y-4">
+              <div class="space-y-1.5">
+                  <input
+                  #codeRef
+                  type="number"
+                  name="code"
+                  class="h-11 w-full rounded-lg border border-ink-border bg-ink px-3 text-ink-foreground placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand transition-colors"
+                  placeholder="xxxxxx"
+                />
+              </div>
+               @if(err()){
+                <span class="text-sm text-primary-500">{{ err() }}</span>
+               } 
+              <button 
+                type="submit"
+                (click)="onConfirmOTP(codeRef.value)"
+                [disabled]="store.isLoading()"
+                class="mt-6 h-11 w-full rounded-lg bg-brand px-4 text-base font-medium text-white hover:brightness-90 transition-colors disabled:cursor-not-allowed disabled:opacity-70 flex items-center justify-center gap-2"
+              >
+                @if (store.isLoading()) {
+                  <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>جاري الإرسال...</span>
+                } @else {
+                  <span>تأكييد</span>
+                }
+              </button>
+
+              <div class="mt-6 text-center">
+                <a routerLink="/auth/login" class="text-sm font-medium text-ink-muted hover:text-ink-foreground transition-colors">
+                  العودة لتسجيل الدخول
+                </a>
+              </div>
+            </div>
+</div>
+</div>

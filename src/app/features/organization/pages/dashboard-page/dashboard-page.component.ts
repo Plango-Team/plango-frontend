@@ -61,17 +61,17 @@ export class OrganizationDashboardPageComponent {
     if (!user) return null;
 
     return {
-      id: user.id,
-      kind: user.accountType === 'organization' ? 'org' : 'user',
-      username: user.userName,
-      displayName: user.displayName?.trim() || `${user.firstName} ${user.lastName}`.trim(),
-      bio: user.bio,
-      privateFollows: user.privateFollows,
+      id: user._id,
+      kind: (user as any).accountType === 'organization' ? 'org' : 'user',
+      username: user.username,
+      displayName: user.name,
+      bio: (user as any).bio,
+      privateFollows: (user as any).privateFollows,
       createdAt: this.asEpoch(user.createdAt),
     };
   });
 
-  readonly isOrganization = computed(() => this.authStore.user()?.accountType === 'organization');
+  readonly isOrganization = computed(() => (this.authStore.user() as any)?.accountType === 'organization');
 
   readonly orgEvents = computed(() => {
     const profile = this.currentProfile();
@@ -90,6 +90,11 @@ export class OrganizationDashboardPageComponent {
       .filter((attendance) => ids.has(attendance.eventId));
   });
 
+  readonly dashboardTitle = computed(() => {  
+    const profile = this.socialStore.myProfile();
+    const user = this.authStore.user();
+    return profile?.displayName || (user as any)?.organizationName || '';
+  });
   readonly followers = computed(() => {
     const profile = this.currentProfile();
     return profile ? this.socialStore.followersOf(profile.id) : [];

@@ -14,6 +14,8 @@ import {
   IForgotPasswordRequest,
   IVerifyOtpRequest,
   IResetPasswordRequest,
+  IResendVerificationRequest,
+  AccountType,
 } from '../../core/models/iuser';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { catchError, of, pipe, switchMap, tap } from 'rxjs';
@@ -23,7 +25,8 @@ import { Router } from '@angular/router';
 
 export type AuthState = {
   user: IUser | null;
-  token: string | null;
+  token: string | null; 
+  accountType: AccountType | null;
   isLoading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -36,14 +39,15 @@ export const authStore = signalStore(
   withState({
     user: null,
     token: null,
+    accountType: null,
     isLoading: false,
     error: null,
     successMessage: null,
   } as AuthState),
   withComputed((store) => ({
     isAuthenticated: computed(() => !!store.user()),
-    accountType: computed(() => store.user()?.accountType ?? null),
-    isOrganization: computed(() => store.user()?.accountType === 'organization'),
+    accountType: computed(() => store.accountType() ?? null),
+    isOrganization: computed(() => store.accountType() === 'organization'),
   })),
   withMethods((store, authService = inject(AuthService), router = inject(Router)) => ({
     goToHome: signalMethod<void>(() => {
@@ -94,13 +98,10 @@ export const authStore = signalStore(
             tap({
               next: (response) => {
                 patchState(store, {
-                  user: response.user,
-                  token: response.token,
                   isLoading: false,
-                  successMessage: 'تم إنشاء حسابك بنجاح!',
+                  successMessage: 'تم إنشاء الحساب بنجاح! تحقق من بريدك الإلكتروني للتأكيد',
                 });
-                localStorage.setItem('token', response.token);
-                router.navigate([authService.getHomeRoute(response.user)]);
+                router.navigate(['/auth/login']);
               },
               error: (err) => {
                 patchState(store, {
@@ -142,11 +143,65 @@ export const authStore = signalStore(
     ),
 
     // ─────── التحقق من OTP ───────
-    verifyOtp: rxMethod<IVerifyOtpRequest>(
+    // verifyOtp: rxMethod<IVerifyOtpRequest>(
+    //   pipe(
+    //     tap(() => patchState(store, { isLoading: true, error: null, successMessage: null })),
+    //     switchMap((data) =>
+    //       authService.verifyOtp(data).pipe(
+    //         tap({
+    //           next: (response) => {
+    //             patchState(store, {
+    //               isLoading: false,
+    //               successMessage: response.message,
+    //             });
+    //           },
+    //           error: (err) => {
+    //             patchState(store, {
+    //               isLoading: false,
+    //               error: err.message || 'كود التحقق غير صحيح',
+    //             });
+    //           },
+    //         }),
+    //         catchError(() => of(null)),
+    //       ),
+    //     ),
+    //   ),
+    // ),
+
+    // ─────── تفعيل البريد الإلكتروني بعد التسجيل ───────
+    verifyEmail: rxMethod<string>(  
+      pipe(
+        tap(() => patchState(store, { isLoading: true, error: null, successMessage: null })),
+        switchMap((token) =>
+          authService.verifyEmail(token).pipe(
+            tap({
+              next: (response) => {
+                patchState(store, {
+                  isLoading: false,
+                  successMessage: response.message,
+                });
+                // بعد التفعيل نوجّه المستخدم لصفحة تسجيل الدخول
+                router.navigate(['/auth/login']);
+              },
+              error: (err) => {
+                patchState(store, {
+                  isLoading: false,
+                  error: err.message || 'حدث خطأ أثناء تفعيل البريد الإلكتروني',
+                });
+              },
+            }),
+            catchError(() => of(null)),
+          ),
+        ),
+      ),
+    ),
+
+    // ─────── إعادة إرسال رابط تفعيل البريد الإلكتروني ───────
+    resendVerification: rxMethod<IResendVerificationRequest>(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null, successMessage: null })),
         switchMap((data) =>
-          authService.verifyOtp(data).pipe(
+          authService.resendVerification(data).pipe(
             tap({
               next: (response) => {
                 patchState(store, {
@@ -157,7 +212,7 @@ export const authStore = signalStore(
               error: (err) => {
                 patchState(store, {
                   isLoading: false,
-                  error: err.message || 'كود التحقق غير صحيح',
+                  error: err.message || 'حدث خطأ أثناء إعادة إرسال التحقق',
                 });
               },
             }),
@@ -211,6 +266,22 @@ export const authStore = signalStore(
       patchState(store, { successMessage: null });
     }),
 
+    setLoading: signalMethod<boolean>((isLoading) => {
+      patchState(store, { isLoading });
+    }),
+
+    setError: signalMethod<string | null>((errorMessage) => { 
+      patchState(store, { error: errorMessage });
+    }), 
+
+    setSuccessMessage: signalMethod<string | null>((successMessage) => {
+      patchState(store, { successMessage });
+    }),
+
+    setAuthSession: signalMethod<{ user: IUser; token: string }>((session) => {
+      patchState(store, { user: session.user, token: session.token });
+    }),
+
     updateCurrentUser: rxMethod<Partial<IUser>>(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null, successMessage: null })),
@@ -222,7 +293,7 @@ export const authStore = signalStore(
           }
 
           return authService
-            .updateUser(current.id, {
+            .updateUser(current._id, {
               ...changes,
               updatedAt: new Date(),
             })
@@ -264,7 +335,7 @@ export const authStore = signalStore(
             tap({
               next: (user) => {
                 patchState(store, { user, token, isLoading: false });
-                if (user.accountType === 'organization') {
+                if (store.accountType() === 'organization') {
                   router.navigate(['/organization']);
                 }
               },

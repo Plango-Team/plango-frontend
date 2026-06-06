@@ -91,7 +91,7 @@ export class LandingNavbarComponent {
       return '/admin';
     }
 
-    return user?.accountType === 'organization' ? '/organization' : '/user';
+    return (user as any)?.accountType === 'organization' ? '/organization' : '/user';
   }
 
   fullName(): string {
@@ -100,7 +100,7 @@ export class LandingNavbarComponent {
       return '';
     }
 
-    return user.displayName?.trim() || `${user.firstName} ${user.lastName}`.trim();
+    return user.name;
   }
 
   initials(): string {
@@ -109,15 +109,14 @@ export class LandingNavbarComponent {
       return 'U';
     }
 
-    const sourceName = user.displayName?.trim() || `${user.firstName} ${user.lastName}`.trim();
+    const sourceName = user?.name.trim() || '';
     const parts = sourceName.split(/\s+/).filter(Boolean);
-    const first = parts[0]?.[0] ?? user.firstName?.[0] ?? '';
-    const last = parts[1]?.[0] ?? user.lastName?.[0] ?? '';
+    const first = parts[0] ? parts[0].charAt(0) : '';
+    const last = parts[1]? parts[1].charAt(0) : '';
     const result = `${first}${last}`.trim();
 
     return result ? result.toUpperCase() : 'U';
   }
-
   toggleLocale(): void {
     this.locale.update((current) => {
       const next = current === 'ar' ? 'en' : 'ar';

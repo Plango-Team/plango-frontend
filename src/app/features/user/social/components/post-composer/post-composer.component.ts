@@ -47,7 +47,7 @@ export class PostComposerComponent {
   onSubmit() {
     const user = this.authStore.user();
     if (!user || !this.body.trim()) return;
-    this.socialStore.createPost(this.socialStore.myProfile()?.id ?? user.id, this.body);
+    this.socialStore.createPost(this.socialStore.myProfile()?.id ?? user._id, this.body);
     this.body = '';
   }
 }
