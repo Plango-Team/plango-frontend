@@ -32,17 +32,10 @@ export class MapService {
     )
   }
 
-    searchLocation(query:string): Observable<any>{
-    const url = `${environment.nominatimUrl}/search?format=jsonv2&q=${encodeURIComponent(query)}`;
+  searchLocation(query:string): Observable<any>{
+    const url = `${environment.nominatimUrl}/search?format=jsonv2&q=${encodeURIComponent(query)}&accept-language=ar&limit=5&email=test-plango@gmail.com`;
     return this.http.get<any[]>(url)
   }
-
-  // searchLocation(query: string): Observable<any> {
-  //   const url = `https://api.maptiler.com/geocoding/${encodeURIComponent(query)}.json`;
-  //   return this.http.get<any>(url, {
-  //     params: { key: environment.mapTilerKey, limit: '5', language: 'ar,en' }
-  //   });
-  // }
   
   getAppointments(): Observable<IAppointment[]> {
   if (this.isDevMode) {

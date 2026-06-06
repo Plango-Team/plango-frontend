@@ -7,9 +7,10 @@
       </div>
       <p class="text-xs text-ink-muted">عدّ تنازلي مباشر للمغادرة لكل صديق</p>
     </div> 
-    <button class="flex items-center gap-2 rounded-lg bg-brand px-2 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand/90 transition-all">
+    <button (click)="invitModal.open()" class="flex items-center gap-2 rounded-lg bg-brand px-2 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand/90 transition-all">
         <app-icon [iconName]="'PlusSignIcon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>ادعُ 
     </button>
+    <app-invit-modal #invitModal></app-invit-modal>
   </div>
 
  @if (this.mapStore.trips().length !== 0) {

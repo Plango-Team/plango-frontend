@@ -1,6 +1,8 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs/operators';
 import { SocialStore } from '../../social.store';
 import { authStore } from '../../../../auth/auth.store';
 import { PostCardComponent } from '../../components/post-card/post-card.component';
@@ -230,7 +232,10 @@ export class ProfilePageComponent {
   isEditing = signal(false);
   editForm = { displayName: '', city: '', bio: '' };
 
-  username = input<string>('');
+  username = toSignal(
+    this.route.paramMap.pipe(map((params) => params.get('username') ?? '')),
+    { initialValue: '' },
+  );
 
   profile = computed(() => {
     const un = this.username();

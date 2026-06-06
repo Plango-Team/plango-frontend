@@ -62,8 +62,8 @@ export const SocialStore = signalStore(
     const profileById = (id: string): Profile | null =>
       store.profiles().find((profile) => profile.id === id) ?? null;
 
-    const profileLink = (kind: 'user' | 'org', username: string) =>
-      `${kind === 'org' ? '/organization/profile' : '/user/profile'}/${username}`;
+    const profileLink = (_kind: 'user' | 'org', username: string) =>
+      `/user/profile/${username}`;
 
     const communityLinkFor = (ownerId: string) => {
       const owner = profileById(ownerId);

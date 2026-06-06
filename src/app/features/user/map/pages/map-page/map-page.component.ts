@@ -4,9 +4,10 @@ import { IconComponent } from '../../../../../shared/components/icon/icon.compon
 import { CardComponent } from "../../../../../shared/ui/card/card.component";
 import { MapStore } from '../../map.store';
 import { TripsComponent } from '../../components/trips/trips.component';
+import { InvitModalComponent } from '../../components/invit-modal/invit-modal.component';
 @Component({
   selector: 'app-map-page',
-  imports: [MapComponent, IconComponent, CardComponent, TripsComponent],
+  imports: [MapComponent, IconComponent, CardComponent, TripsComponent,InvitModalComponent],
   templateUrl: './map-page.component.html',
   styleUrl: './map-page.component.css',
 })

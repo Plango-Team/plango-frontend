@@ -4,6 +4,7 @@ import { EventsStore } from '../../events.store';
 import { IEvent } from '../../interfaces/Ievents';
 import { HttpClient } from '@angular/common/http';
 import { IconComponent } from "../../../../../shared/components/icon/icon.component";
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'app-event-modal',
@@ -65,7 +66,7 @@ export class EventModalComponent {
       this.showDropDown = false
       return;
     }
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchTerm)}&accept-language=ar&limit=5&email=test-plango@gmail.com`
+    const url = `${environment.nominatimUrl}/search?format=json&q=${encodeURIComponent(searchTerm)}&accept-language=ar&limit=5&email=test-plango@gmail.com`
     this.http.get<any[]>(url).subscribe({
       next:(data) => {
         this.searchRes = data

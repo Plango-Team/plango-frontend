@@ -4,10 +4,11 @@
     <div class="text-sm text-ink-muted">تتبَع رحلاتك المشتركة و اكتشف الفعاليات حولك</div>
   </div>
   <div class="sm:">
-    <button class="flex items-center justify-center w-full gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand/90 transition-all">
+    <button (click)="invitModal.open()" class="flex items-center justify-center w-full gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand/90 transition-all">
         <app-icon [iconName]="'AddTeamIcon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
         ادعُ أصدقاء
     </button>
+    <app-invit-modal #invitModal></app-invit-modal>
   </div>
 </div> 
 

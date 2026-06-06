@@ -4,6 +4,7 @@ import { inject } from '@angular/core';
 import { MapService } from './services/map.service';
 import polyline from '@mapbox/polyline';
 import { authStore } from '../../auth/auth.store';
+import { InvitService } from './services/invit.service';
 
 
 let watchId : number | null = null;
@@ -30,7 +31,7 @@ export const MapStore = signalStore(
   },
   withState(initialState),
 
-  withMethods((store, mapService = inject(MapService), authstore = inject(authStore)) => ({
+  withMethods((store, mapService = inject(MapService),invitService = inject(InvitService), authstore = inject(authStore)) => ({
     // فنكشن بتجيب اللوكيشن الحالي من المتصفح
     getCurrentLocation() {
       if (!navigator.geolocation) {
@@ -142,6 +143,43 @@ export const MapStore = signalStore(
 
     clearRoute(){
       patchState(store, {currentRoute: null})
+    },
+
+    sendInvites(invitesObject: any) {
+      patchState(store, { isLoading: true, error: null });
+      const currentTripId = store.trips()[0]?.id || 0;
+
+      invitService.sendInvitations(currentTripId, invitesObject).subscribe({
+        next:() => {
+          patchState(store, { isLoading: false });
+        },
+        error: (err) => {
+          patchState(store, { 
+            isLoading: false, 
+            error: err.message
+          });
+        }
+      });
+    },
+
+    acceptTripInvite(inviteId: string) {
+      patchState(store, { isLoading: true, error: null });
+      const currentTripId = store.trips()[0]?.id || 0;
+
+      invitService.acceptInvitation(currentTripId, inviteId).subscribe({
+        next: (response) => {
+          patchState(store, (state) => ({
+            isLoading: false,
+            friends: state.friends ? [...state.friends, response.friend] : [response.friend]
+          }));
+        },
+        error: (err) => {
+          patchState(store, { 
+            isLoading: false, 
+            error: err.message
+          });
+        }
+      });
     }
   })),
 
