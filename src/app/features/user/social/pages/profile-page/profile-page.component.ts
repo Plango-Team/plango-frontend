@@ -22,7 +22,7 @@ type TabKey = 'posts' | 'events' | 'followers' | 'following';
     PostCardComponent,
     PostComposerComponent,
     IconComponent,
-  ],
+  ], 
   template: `
     <div class="px-4 py-6 sm:px-6 lg:px-8">
       @if (!profile()) {
@@ -246,14 +246,14 @@ export class ProfilePageComponent {
   isMe = computed(() => {
     const user = this.authStore.user();
     const p = this.profile();
-    return user && p ? user.id === p.id || user.userName === p.username : false;
+    return user && p ? user._id === p.id || user.username === p.username : false;
   });
 
   followStatus = computed(() => {
     const user = this.authStore.user();
     const p = this.profile();
     if (!user || !p || this.isMe()) return 'none';
-    return this.socialStore.followState(user.id, p.id);
+    return this.socialStore.followState(user._id, p.id);
   });
 
   isPrivateAndNotFollowing = computed(() => {
@@ -279,13 +279,22 @@ export class ProfilePageComponent {
     return p ? this.socialStore.postsBy(p.id) : [];
   });
 
-  profileRouteBase = computed(() => '/user/profile');
+  profileRouteBase = computed(() =>{
+    const user = this.authStore.user();
+    const accountType = user ? (user as any)?.accountType:null;
+    return accountType === 'organization'
+      ? '/organization/profile'
+      : '/user/profile';
+});
 
-  homeRoute = computed(() =>
-    this.authStore.user()?.accountType === 'organization'
+  homeRoute = computed(() =>{
+    
+    const user = this.authStore.user();
+    const accountType = user ? (user as any)?.accountType:null;
+    return accountType === 'organization'
       ? '/organization/dashboard'
-      : '/user/dashboard',
-  );
+      : '/user/dashboard';
+});
 
   tabs = computed(() => {
     const p = this.profile();
@@ -332,9 +341,9 @@ export class ProfilePageComponent {
     const p = this.profile();
     if (!user || !p) return;
     if (this.followStatus() === 'none') {
-      this.socialStore.follow(user.id, p.id);
+      this.socialStore.follow(user._id, p.id);
     } else {
-      this.socialStore.unfollow(user.id, p.id);
+      this.socialStore.unfollow(user._id, p.id);
     }
   }
 

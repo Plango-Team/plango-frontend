@@ -114,10 +114,10 @@ export class TasksPageComponent {
   submitQuick() {
     if (!this.quickAdd.trim()) return;
     const user = this.authStoreInstance.user();
-    if (!user?.id) return;
+    if (!user?._id) return;
     const title = this.quickAdd.trim();
     this.tasksStore.addTask({
-      userId: user.id,
+      userId: user._id,
       title,
       status: 'todo',
       priority: 'medium',
@@ -151,10 +151,10 @@ export class TasksPageComponent {
   submitTask() {
     if (!this.newTaskTitle.trim()) return;
     const user = this.authStoreInstance.user();
-    if (!user?.id) return;
+    if (!user?._id) return;
     const title = this.newTaskTitle.trim();
     this.tasksStore.addTask({
-      userId: user.id,
+      userId: user._id,
       title,
       description: this.newTaskDescription.trim() || undefined,
       appointmentId: this.newTaskAppointmentId === 'none' ? undefined : this.newTaskAppointmentId,

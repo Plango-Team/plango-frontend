@@ -1,1 +1,189 @@
-<p>settings-page works!</p>
+<div class="min-h-screen p-6">
+  
+  <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold">الإعدادات</h1>
+      <p class="text-xs text-ink-muted mt-1">خصّص تجربة PlanGO الذكية</p>
+    </div>
+    <button type="button" class="flex items-center gap-2 bg-[#e0667a] hover:bg-[#d05569] text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-sm">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+      </svg>
+      <span>حفظ التغييرات</span>
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    <div class="bg-ink-2 p-6 rounded-2xl border border-ink-border flex flex-col">
+      <div class="mb-6">
+        <h2 class="text-lg font-bold mb-1">الملف الشخصي</h2>
+        <p class="text-xs text-ink-muted">معلوماتك الأساسية</p>
+      </div>
+      
+      <form (ngSubmit)="onSubmit()" class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold">الاسم</label>
+          <input type="text" name="firstName" [(ngModel)]="name" [placeholder]="this.authStore.user()?.name" class="w-full h-11 bg-ink border border-ink-border rounded-xl px-4 text-sm placeholder:text-ink-muted focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold">البريد</label>
+          <input type="email" name="email" [(ngModel)]="email" [placeholder]="this.authStore.user()?.email" class="w-full h-11 bg-ink border border-ink-border rounded-xl px-4 text-sm placeholder:text-ink-muted focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold">رقم الهاتف</label>
+          <div class="relative flex items-center">
+          <input type="tel" name="phoneNumber" [(ngModel)]="phone" [placeholder]="this.authStore.user()?.phone"class="w-full h-11 bg-ink border border-ink-border rounded-xl px-4 text-sm placeholder:text-ink-muted focus:outline-none">
+          <div class="absolute left-2">
+            @if (this.authStore.user()?.isPhoneVerified) {
+              <button 
+          type="button" 
+          disabled 
+          class="h-7 px-3 text-xs font-bold text-green-500 border border-green-500 rounded-lg flex items-center gap-1 cursor-not-allowed">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          مؤكد
+        </button>
+            }@else {
+        <button 
+          type="button" 
+          (click)="handlePhoneverify()" 
+          class="h-7 px-3 text-xs font-bold text-primary-500 rounded-lg shadow-sm">
+          تأكيد الرقم؟
+        </button> 
+      }
+          </div>
+        </div>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold">المدينة</label>
+          <input type="text" name="city" placeholder="city" class="w-full h-11 bg-ink border border-ink-border rounded-xl px-4 text-sm placeholder:text-ink-muted focus:outline-none">
+        </div>
+        <div class="flex justify-between items-center">
+      <span class="text-sm font-semibold text-ink-muted">أمان الحساب</span>
+      <button 
+        type="button" 
+        (click)="togglePasswordFields()" 
+        class="text-sm font-bold text-primary hover:text-primary-500 transition-all">
+        {{ showPasswordFields() ? 'إلغاء تغيير كلمة المرور' : 'تغيير كلمة المرور؟' }}
+      </button>
+    </div>
+      <div class="text-sm mt-2">
+          @if(errorMessage()){
+            <span class="text-red-500">{{ errorMessage() }}</span>}
+          @if(successMessage()){
+            <span class="text-green-500">{{ successMessage() }}</span>}
+        </div>
+    @if (showPasswordFields()) {
+      <div class="space-y-4 pt-2 transition-all duration-300">
+        <div>
+          <label class="block text-sm font-semibold">كلمة المرور الحالية</label>
+          <input type="password" name="currentPassword" [(ngModel)]="currentPassword" placeholder="••••••••" class="w-full h-11 bg-ink border border-ink-border rounded-xl px-4 text-sm placeholder:text-ink-muted focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold">كلمة المرور الجديدة</label>
+          <input type="password" name="newPassword" [(ngModel)]="newPassword" placeholder="••••••••" class="w-full h-11 bg-ink border border-ink-border rounded-xl px-4 text-sm placeholder:text-ink-muted focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold">تأكيد كلمة المرور الجديدة</label>
+          <input type="password" name="confirmPassword" [(ngModel)]="confirmPassword" placeholder="••••••••" class="w-full h-11 bg-ink border border-ink-border rounded-xl px-4 text-sm placeholder:text-ink-muted focus:outline-none">
+        </div>
+      </div>
+    }
+
+    @if(isChanging()){
+      <div>
+          <label class="block text-sm font-semibold">كلمة المرور الحالية</label>
+          <input type="password" name="currentPassword" [(ngModel)]="savePassword" placeholder="••••••••" class="w-full h-11 bg-ink border border-ink-border rounded-xl px-4 text-sm placeholder:text-ink-muted focus:outline-none">
+        </div>
+    }
+    <div class="pt-4">
+      <button type="submit" class="cursor-pointer w-full h-11 bg-primary text-Primary-500 font-bold rounded-xl hover:bg-primary-dark transition-colors">
+        حفظ التعديلات
+      </button>
+    </div>
+      </form>
+    </div>
+    
+
+    <div class="bg-ink-2 p-6 rounded-2xl border border-ink-border">
+      <div class="mb-6"> 
+        <h2 class="text-lg font-bold mb-1">تفضيلات التنقل</h2>
+        <p class="text-xs text-ink-muted">ضبط محرك المغادرة الذكي</p>
+      </div>
+      
+      <label class="block text-sm mb-3">وسيلة التنقل الافتراضية</label>
+      <div class="grid grid-cols-4 gap-2 mb-6">
+        <button type="button" class="gap-2 rounded-lg bg-ink-fg font-medium text-ink hover:bg-ink-fg/90 transition-all px-2 py-2 text-sm flex flex-col items-center justify-center p-2.5">
+          <span class="text-sm">مشي</span>
+        </button>
+        <button type="button" class="gap-2 rounded-lg bg-ink-fg font-medium text-ink hover:bg-ink-fg/90 transition-all px-2 py-2 text-sm flex flex-col items-center justify-center p-2.5"> 
+          <span class="text-sm">مواصلات</span>
+        </button>
+        <button type="button" class="gap-2 rounded-lg bg-ink-fg font-medium text-ink hover:bg-ink-fg/90 transition-all px-2 py-2 text-sm flex flex-col items-center justify-center p-2.5">     
+          <span class="text-sm">سكوتر</span>
+        </button>
+        <button type="button" class="gap-2 rounded-lg bg-ink-fg font-medium text-ink hover:bg-ink-fg/90 transition-all px-2 py-2 text-sm flex flex-col items-center justify-center p-2.5">
+          <span class="text-sm">سيارة</span>
+        </button>
+      </div>
+
+      <label class="block text-xs text-ink-muted">الوصول قبل الموعد بـ</label>
+      <div class="flex flex-row-reverse gap-2 w-full justify-center">
+        <button type="button" class="flex-1 py-2 px-2 rounded-xl bg-ink-fg text-ink hover:bg-ink-fg/90 transition-all">30 د</button>
+        <button type="button" class="flex-1 py-2 px-2 rounded-xl bg-ink-fg text-ink hover:bg-ink-fg/90 transition-all">15 د</button>
+        <button type="button" class="flex-1 py-2 px-2 rounded-xl bg-ink-fg text-ink hover:bg-ink-fg/90 transition-all">10 د</button>
+        <button type="button" class="flex-1 py-2 px-2 rounded-xl bg-ink-fg text-ink hover:bg-ink-fg/90 transition-all">5 د</button>
+        <button type="button" class="flex-1 py-2 px-2 rounded-xl bg-ink-fg text-ink hover:bg-ink-fg/90 transition-all">بدون</button>
+      </div>
+    </div>
+
+    <div class="bg-ink-2 p-6 rounded-2xl border border-ink-border flex flex-col items-center text-center">
+      <div class="mb-6">
+        <h2 class="text-lg font-bold mb-1">التذكيرات</h2>
+        <p class="text-xs text-ink-muted">متى نُنبّهك قبل الموعد النهائي للمهمة</p>
+      </div>
+      
+      <div class="flex flex-row-reverse gap-3 w-full justify-center">
+        <button type="button" class="flex-1 py-2 px-3 border border-primary-500 text-primary-500 rounded-xl text-xs transition-colors">2 س</button>
+        <button type="button" class="flex-1 py-2 px-3 border border-primary-500 text-primary-500 rounded-xl text-xs transition-colors">1 س</button>
+        <button type="button" class="flex-1 py-2 px-3 border border-primary-500 text-primary-500 rounded-xl text-xs transition-colors">30 د</button>
+        <button type="button" class="flex-1 py-2 px-3 border border-primary-500 text-primary-500 rounded-xl text-xs transition-colors">15 د</button>
+      </div>
+      <p class="text-[11px] text-ink-muted mt-6">تُذكّرك ضمن هذه المدة قبل أي موعد مرتبط بمهمة لم تُنجزها.</p>
+    </div>
+
+    <div class="bg-ink-2 p-6 rounded-2xl border border-ink-border">
+      <h2 class="text-lg font-bold mb-1">اللغة والتقويم</h2>
+      
+      <div class="space-y-4 mt-4">
+        <div>
+          <label class="block text-xs text-ink-muted mb-2">اللغة</label>
+          <div class="flex gap-2">
+            <button type="button" class="flex-1 py-2.5 bg-ink-fg font-medium text-ink hover:bg-ink-fg/90 rounded-xl text-xs">العربية</button>
+            <button type="button" class="flex-1 py-2.5 bg-ink-fg font-medium text-ink hover:bg-ink-fg/90 rounded-xl text-xs">English</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs text-ink-muted mb-2">بداية الأسبوع</label>
+          <div class="flex gap-2">
+            <button type="button" class="flex-1 py-2.5 bg-slate-900 border border-slate-900 rounded-xl text-xs font-medium text-white">السبت</button>
+            <button type="button" class="flex-1 py-2.5 border border-slate-200 rounded-xl text-xs text-slate-500 hover:bg-slate-50 transition-colors">الأحد</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-ink-2 p-6 rounded-2xl border border-ink-border flex flex-col sm:flex-row justify-between sm:items-center gap-4 lg:col-span-2">
+      <div class="mb-6">
+        <h2 class="text-lg font-bold mb-1">الخصوصية</h2>
+        <p class="text-xs text-ink-muted">تحكّم في مشاركة موقعك في الرحلات المشتركة وفي رؤية الأصدقاء لجدولك.</p>
+      </div>
+      <button type="button" class="w-full sm:w-auto border border-slate-200 hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl text-xs font-medium transition-colors whitespace-nowrap">
+        إدارة الأذونات
+      </button>
+    </div>
+
+
+  </div>
+</div>

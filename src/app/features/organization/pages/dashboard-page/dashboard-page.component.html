@@ -31,13 +31,13 @@
               حساب مؤسسة
             </div>
             <h1 class="mt-1.5 font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">
-              {{ currentProfile()?.displayName || authStore.user()?.organizationName }}
+              {{ dashboardTitle() }}
             </h1>
             <a
-              [routerLink]="['/organization/profile', currentProfile()?.username || authStore.user()?.userName]"
+              [routerLink]="['/organization/profile', currentProfile()?.username || authStore.user()?.username]"
               class="text-sm text-ink-muted hover:text-ink-fg"
             >
-              &#64;{{ currentProfile()?.username || authStore.user()?.userName }} · عرض الصفحة العامة
+              &#64;{{ currentProfile()?.username || authStore.user()?.username   }} · عرض الصفحة العامة
             </a>
           </div>
         </div>

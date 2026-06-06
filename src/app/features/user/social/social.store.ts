@@ -34,7 +34,7 @@ export const SocialStore = signalStore(
         const user = auth.user();
         if (!user) return null;
         return (
-          store.profiles().find((profile) => profile.id === user.id || profile.username === user.userName) ??
+          store.profiles().find((profile) => profile.id === user._id || profile.username === user.name) ??
           null
         );
       }),
@@ -47,7 +47,7 @@ export const SocialStore = signalStore(
     const notificationsStore = inject(NotificationsStore);
     const toastService = inject(ToastService);
 
-    const isArabic = () => auth.user()?.preferences?.language !== 'en';
+    const isArabic = () => auth.user();
     const t = (ar: string, en: string) => (isArabic() ? ar : en);
 
     const asEpoch = (value: unknown): number => {
@@ -75,12 +75,12 @@ export const SocialStore = signalStore(
       if (!user) return null;
 
       return {
-        id: user.id,
-        kind: user.accountType === 'organization' ? 'org' : 'user',
-        username: user.userName,
-        displayName: user.displayName?.trim() || `${user.firstName} ${user.lastName}`.trim(),
-        bio: user.bio,
-        privateFollows: user.privateFollows,
+        id: user._id,
+        kind: (user as any).accountType === 'organization' ? 'org' : 'user',
+        username: user.username,
+        displayName: user.name,
+        bio: (user as any).bio,
+        privateFollows: user.isPrivate ?? false,
         createdAt: asEpoch(user.createdAt),
       };
     };

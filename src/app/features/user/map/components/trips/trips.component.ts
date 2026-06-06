@@ -17,7 +17,7 @@ export class TripsComponent {
   authStore = inject(authStore)
   currentUser = computed(() => {
     const user = this.authStore.user();
-    return user ? `${user.firstName} ${user.lastName}`.trim() || user.displayName || 'ضيف' : 'ضيف';
+    return user ? `${user.name}`.trim() || 'ضيف' : 'ضيف';
   });
   frindsArray = signal([
     {

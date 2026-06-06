@@ -96,20 +96,20 @@ export class FeedPageComponent {
 
   posts = computed(() => {
     const user = this.authStore.user();
-    return this.socialStore.feedFor(user?.id ?? null);
+    return this.socialStore.feedFor(user?._id ?? null);
   });
 
   followingIds = computed(() => {
     const user = this.authStore.user();
     if (!user) return new Set<string>();
-    return new Set(this.socialStore.followingOf(user.id).map(f => f.followeeId));
+    return new Set(this.socialStore.followingOf(user._id).map(f => f.followeeId));
   });
 
   suggestedOrgs = computed(() => {
     const user = this.authStore.user();
     const followed = this.followingIds();
     return this.socialStore.profiles()
-      .filter(p => p.kind === 'org' && !followed.has(p.id) && p.id !== user?.id)
+      .filter(p => p.kind === 'org' && !followed.has(p.id) && p.id !== user?._id)
       .slice(0, 4);
   });
 }

@@ -104,7 +104,7 @@ export const MapStore = signalStore(
     },
 
     addMessage(messageText:string){
-    const username = authstore.user().firstName + ' ' + authstore.user().lastName
+    const username = authstore.user().name
       const newMessage : ChatMessage = {
         id: Date.now(),
         sender: username,

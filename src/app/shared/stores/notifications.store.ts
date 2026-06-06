@@ -42,7 +42,7 @@ export const NotificationsStore = signalStore(
   withComputed((store) => {
     const auth = inject(authStore);
 
-    const currentOwnerId = computed(() => auth.user()?.id ?? 'guest');
+    const currentOwnerId = computed(() => auth.user()?._id ?? 'guest');
     const visible = computed(() =>
       store
         .items()

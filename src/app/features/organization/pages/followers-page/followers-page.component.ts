@@ -24,7 +24,7 @@ export class OrganizationFollowersPageComponent {
   readonly currentProfileId = computed(() => {
     const socialProfile = this.socialStore.myProfile();
     if (socialProfile) return socialProfile.id;
-    return this.authStore.user()?.id ?? null;
+    return this.authStore.user()?._id ?? null;
   });
 
   readonly followers = computed(() => {
