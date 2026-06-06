@@ -23,8 +23,9 @@ import { environment } from '../../../../../../environments/environment';
 })
 export class MapComponent implements OnDestroy {
   readonly mapStore = inject(MapStore);
-  // بغير سينتر الخريطة علي حسب لوكيشن اليوزر من خلال ال flyTo
+  mapService = inject(MapService)
   public lastFlyTo: { lng: number; lat: number } | null = null;
+  public searchFlyTo: { lng: number; lat: number } | null = null;
   isMapReady: boolean = false;
   userMarker: Marker | null = null;
   private currentMarkers: Marker[] = [];
@@ -37,6 +38,8 @@ export class MapComponent implements OnDestroy {
     friends: true,
     events: true,
   });
+  searchRes : any[] = []
+    showDropDown = false
 
   constructor() {
     this.mapStore.getCurrentLocation();
@@ -335,6 +338,36 @@ export class MapComponent implements OnDestroy {
       ...prev,
       [key]: !prev[key],
     }));
+  }
+
+  onLocationEnter(searchTerm : string){
+      if(!searchTerm.trim()){
+        this.searchRes = []
+        this.showDropDown = false
+        return;
+      }
+      this.mapService.searchLocation(searchTerm).subscribe({
+        next:(data) => {
+          this.searchRes = data
+          this.showDropDown = data.length > 0
+        },
+        error: (e) => {
+          // console.error('Error searching location:', e);
+          this.searchRes = []
+          this.showDropDown = false
+        }
+      })
+  }
+  
+  selectLocation(loc : any){
+    this.map.flyTo({
+      center:[loc.lng , loc.lat],
+      zoom:14,
+      essential:true,
+      duration:2000
+    })
+      this.searchRes = []
+      this.showDropDown = false
   }
 
   ngOnDestroy(): void {

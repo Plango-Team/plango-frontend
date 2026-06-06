@@ -1,11 +1,25 @@
 <div #mapContainer class="h-full w-full relative">
     <!--search-->
     <div class="absolute top-4 right-6 flex gap-3 z-10">
-      <input type="text" class="relative bg-ink-2 rounded-2xl border border-transparent shadow-xl ring-0 focus:border-gray-600">
+      <input #searchInput (keyup.enter)="onLocationEnter(searchInput.value)" type="text" class="relative bg-ink-2 pr-9 rounded-2xl border border-transparent shadow-xl ring-0 focus:border-gray-600 placeholder:text-xs placeholder:text-ink-muted">
         <div class="flex justify-center items-end gap-1 absolute right-4 top-[30%]">
             <app-icon [iconName]="'Search01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
-            <span class="text-xs text-ink-muted">ابحث عن مكان أو فعالية...</span>
         </div>
+        @if (showDropDown) {
+    <ul class="bg-ink-2 absolute z-9999 w-full mt-14 max-h-44 overflow-y-auto border border-ink-border rounded-lg shadow-lg animate-fade-in">
+      @for (place of searchRes; track place.place_id) {
+        <li>
+          <button 
+            type="button"
+            (click)="selectLocation(place)"
+            class="w-full text-right px-4 py-2.5 text-xs text-ink-muted flex items-center gap-2 transition-colors">
+            <span><app-icon [iconName]="'Location01FreeIcons'" [iconSize]="12" [iconColor]="'#d32e18'"></app-icon></span>
+            <span class="truncate">{{ place.display_name }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+}
     </div> 
     <!--controls-->
     <div class="absolute left-4 top-[2%] flex gap-3 z-10">

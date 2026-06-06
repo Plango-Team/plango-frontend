@@ -2,10 +2,11 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { IconComponent } from "../../../../../shared/components/icon/icon.component";
 import { MapStore } from '../../map.store';
 import { authStore } from '../../../../auth/auth.store';
+import { InvitModalComponent } from '../invit-modal/invit-modal.component';
 
 @Component({
   selector: 'app-trips',
-  imports: [IconComponent], 
+  imports: [IconComponent, InvitModalComponent], 
   templateUrl: './trips.component.html',
   styleUrl: './trips.component.css',
 })

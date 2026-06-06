@@ -98,11 +98,7 @@ export class PostCardComponent {
 
   post = input.required<Post>();
 
-  profileRouteBase = computed(() =>
-    this.authStore.user()?.accountType === 'organization'
-      ? '/organization/profile'
-      : '/user/profile',
-  );
+  profileRouteBase = computed(() => '/user/profile');
 
   activeProfileId = computed(() => this.socialStore.myProfile()?.id ?? this.authStore.user()?.id ?? null);
 
