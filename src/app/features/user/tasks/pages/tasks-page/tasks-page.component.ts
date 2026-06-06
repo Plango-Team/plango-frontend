@@ -3,9 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../../../shared/components/icon/icon.component';
 import { TasksStore } from '../../tasks.store';
-import { AppointmentsStore } from '../../../appointments/appointments.store';
 import { authStore } from '../../../../auth/auth.store';
-import { Task, TaskPriority } from '../../services/task.service';
+import { Task, TaskPriority, TaskStatus, CreateTaskPayload } from '../../services/task.service';
 import { NotificationsStore } from '../../../../../shared/stores/notifications.store';
 import { ToastService } from '../../../../../shared/services/toast.service';
 
@@ -20,8 +19,7 @@ type FilterPriority = 'all' | TaskPriority;
 })
 export class TasksPageComponent {
   tasksStore = inject(TasksStore);
-  appointmentsStore = inject(AppointmentsStore);
-  private authStoreInstance = inject(authStore);
+  private auth = inject(authStore);
   private notificationsStore = inject(NotificationsStore);
   private toastService = inject(ToastService);
 
@@ -29,15 +27,13 @@ export class TasksPageComponent {
   quickAdd = '';
   filterPriority = signal<FilterPriority>('all');
   filterAppt = signal<string>('all');
-  onlyAttached = signal(false);
-  expandedTasks = signal<Set<string>>(new Set());
-  newSubInputs: Record<string, string> = {};
 
   // ─── Create Task Modal State ───────────────────────
   @ViewChild('taskModal') taskModal!: ElementRef<HTMLDialogElement>;
   newTaskTitle = '';
   newTaskDescription = '';
-  newTaskAppointmentId = 'none';
+  newTaskLinkedAppointment = 'none';
+  newTaskDeadline = '';
   newTaskPriority: TaskPriority = 'medium';
 
   priorities: { id: TaskPriority; ar: string; en: string }[] = [
@@ -46,85 +42,90 @@ export class TasksPageComponent {
     { id: 'high', ar: 'عالية', en: 'High' },
   ];
 
-  appointments = computed(() => this.appointmentsStore.appointments());
+  linkableAppointments = computed(() => this.tasksStore.linkableAppointments());
 
   filteredTasks = computed(() => {
     const raw = this.tasksStore.tasks();
     const priority = this.filterPriority();
     const appt = this.filterAppt();
-    const attached = this.onlyAttached();
 
     return [...raw]
-      .sort((a, b) => a.order - b.order)
       .filter(t => priority === 'all' || t.priority === priority)
       .filter(t => {
         if (appt === 'all') return true;
-        if (appt === 'none') return !t.appointmentId;
-        return t.appointmentId === appt;
+        if (appt === 'none') return !t.linkedAppointment;
+        if (typeof t.linkedAppointment === 'object' && t.linkedAppointment) {
+          return t.linkedAppointment._id === appt;
+        }
+        return t.linkedAppointment === appt;
       })
-      .filter(t => attached ? !!t.attachmentName : true);
+      .sort((a, b) => {
+        const dA = a.deadline ? new Date(a.deadline).getTime() : Infinity;
+        const dB = b.deadline ? new Date(b.deadline).getTime() : Infinity;
+        return dA - dB;
+      });
   });
 
   buckets = computed(() => {
     const tasks = this.filteredTasks();
-    const appointments = this.appointments();
-    const overdue: Task[] = [];
+    const now = Date.now();
+    const lated: Task[] = [];
     const soon: Task[] = [];
     const upcoming: Task[] = [];
-    const done: Task[] = [];
+    const completed: Task[] = [];
 
     tasks.forEach(t => {
-      if (t.status === 'done') { done.push(t); return; }
-      const appt = appointments.find(a => a.id === t.appointmentId);
-      if (!appt) { upcoming.push(t); return; }
-      const mins = this.minutesUntil(this.apptDeadline(appt));
-      if (mins < 0) overdue.push(t);
-      else if (mins <= 60) soon.push(t);
-      else upcoming.push(t);
+      if (t.status === 'completed') {
+        completed.push(t);
+        return;
+      }
+      if (t.status === 'lated') {
+        lated.push(t);
+        return;
+      }
+      // status === 'pending'
+      if (t.deadline) {
+        const mins = this.minutesUntil(new Date(t.deadline));
+        if (mins < 0) {
+          lated.push(t);
+        } else if (mins <= 60) {
+          soon.push(t);
+        } else {
+          upcoming.push(t);
+        }
+      } else {
+        upcoming.push(t);
+      }
     });
 
-    return { overdue, soon, upcoming, done };
+    return { lated, soon, upcoming, completed };
   });
 
   stats = computed(() => {
     const b = this.buckets();
     return [
-      { label: 'متأخرة', value: b.overdue.length, accent: 'danger' as const },
+      { label: 'متأخرة', value: b.lated.length, accent: 'danger' as const },
       { label: 'وشيكة', value: b.soon.length, accent: 'brand' as const },
       { label: 'قادمة', value: b.upcoming.length, accent: '' as const },
-      { label: 'مكتملة', value: b.done.length, accent: 'success' as const },
+      { label: 'مكتملة', value: b.completed.length, accent: 'success' as const },
     ];
   });
 
-  unlinkedAppointments = computed(() => {
-    const tasks = this.tasksStore.tasks();
-    return this.appointments().filter(a => !tasks.some(t => t.appointmentId === a.id)).slice(0, 4);
-  });
-
-  allLinked = computed(() => {
-    const tasks = this.tasksStore.tasks();
-    return this.appointments().every(a => tasks.some(t => t.appointmentId === a.id));
-  });
-
   hasActiveFilters = computed(() =>
-    this.filterPriority() !== 'all' || this.filterAppt() !== 'all' || this.onlyAttached()
+    this.filterPriority() !== 'all' || this.filterAppt() !== 'all'
   );
 
   // ─── Actions ───────────────────────────────────────
   submitQuick() {
-    if (!this.quickAdd.trim()) return;
-    const user = this.authStoreInstance.user();
-    if (!user?._id) return;
     const title = this.quickAdd.trim();
+    if (!title) return;
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
     this.tasksStore.addTask({
-      userId: user._id,
       title,
-      status: 'todo',
       priority: 'medium',
-      subtasks: [],
-      order: 0,
-      createdAt: Date.now(),
-    } as Task);
+      deadline: tomorrow.toISOString(),
+    });
     this.notificationsStore.push({
       kind: 'info',
       title: this.ar ? 'تمت إضافة مهمة جديدة' : 'Task added',
@@ -139,7 +140,7 @@ export class TasksPageComponent {
   openAddTask(defaultAppointmentId?: string) {
     this.resetTaskForm();
     if (defaultAppointmentId) {
-      this.newTaskAppointmentId = defaultAppointmentId;
+      this.newTaskLinkedAppointment = defaultAppointmentId;
     }
     this.taskModal.nativeElement.showModal();
   }
@@ -150,24 +151,29 @@ export class TasksPageComponent {
 
   submitTask() {
     if (!this.newTaskTitle.trim()) return;
-    const user = this.authStoreInstance.user();
-    if (!user?._id) return;
-    const title = this.newTaskTitle.trim();
-    this.tasksStore.addTask({
-      userId: user._id,
-      title,
+
+    if (this.newTaskLinkedAppointment === 'none' && !this.newTaskDeadline) {
+      this.toastService.error(
+        this.ar ? 'يرجى تحديد الموعد النهائي للمهمة أو ربطها بموعد' : 'Please specify a deadline or link an appointment'
+      );
+      return;
+    }
+
+    const payload: CreateTaskPayload = {
+      title: this.newTaskTitle.trim(),
       description: this.newTaskDescription.trim() || undefined,
-      appointmentId: this.newTaskAppointmentId === 'none' ? undefined : this.newTaskAppointmentId,
-      status: 'todo',
       priority: this.newTaskPriority,
-      subtasks: [],
-      order: 0,
-      createdAt: Date.now(),
-    } as Task);
+    };
+    if (this.newTaskLinkedAppointment !== 'none') {
+      payload.linkedAppointment = this.newTaskLinkedAppointment;
+    } else if (this.newTaskDeadline) {
+      payload.deadline = new Date(this.newTaskDeadline).toISOString();
+    }
+    this.tasksStore.addTask(payload);
     this.notificationsStore.push({
       kind: 'info',
       title: this.ar ? 'مهمة جديدة مرتبطة بخطتك' : 'New task created',
-      body: title,
+      body: this.newTaskTitle.trim(),
       link: '/user/tasks',
     });
     this.toastService.success(
@@ -180,7 +186,8 @@ export class TasksPageComponent {
   private resetTaskForm() {
     this.newTaskTitle = '';
     this.newTaskDescription = '';
-    this.newTaskAppointmentId = 'none';
+    this.newTaskLinkedAppointment = 'none';
+    this.newTaskDeadline = '';
     this.newTaskPriority = 'medium';
   }
 
@@ -197,78 +204,35 @@ export class TasksPageComponent {
   }
 
   toggleStatus(task: Task) {
-    this.tasksStore.setTaskStatus(task.id!, task.status === 'done' ? 'todo' : 'done');
-  }
-
-  startTask(task: Task) {
-    this.tasksStore.setTaskStatus(task.id!, 'in_progress');
+    this.tasksStore.setTaskStatus(task._id!, task.status === 'completed' ? 'pending' : 'completed');
   }
 
   deleteTask(id: string) {
     this.tasksStore.removeTask(id);
   }
 
-  toggleExpanded(id: string) {
-    this.expandedTasks.update(set => {
-      const next = new Set(set);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  isExpanded(id: string): boolean {
-    return this.expandedTasks().has(id);
-  }
-
-  addSubtask(taskId: string) {
-    const title = this.newSubInputs[taskId];
-    if (!title?.trim()) return;
-    this.tasksStore.addSubtask(taskId, title);
-    this.newSubInputs[taskId] = '';
-    if (!this.isExpanded(taskId)) {
-      this.toggleExpanded(taskId);
-    }
-  }
-
-  toggleSubtask(taskId: string, subId: string) {
-    this.tasksStore.toggleSubtask(taskId, subId);
-  }
-
-  removeSubtask(taskId: string, subId: string) {
-    this.tasksStore.removeSubtask(taskId, subId);
-  }
-
   clearFilters() {
     this.filterPriority.set('all');
     this.filterAppt.set('all');
-    this.onlyAttached.set(false);
   }
 
   // ─── Helpers ───────────────────────────────────────
-  getAppointmentTitle(id: string | undefined): string | null {
-    if (!id) return null;
-    return this.appointments().find(a => a.id === id)?.title ?? null;
+  getLinkedAppointmentTitle(task: Task): string | null {
+    if (!task.linkedAppointment) return null;
+    if (typeof task.linkedAppointment === 'object') return task.linkedAppointment.title;
+    return null;
   }
 
-  getCountdown(task: Task): { text: string; overdue: boolean; soon: boolean } | null {
-    const appt = this.appointments().find(a => a.id === task.appointmentId);
-    if (!appt) return null;
-    const mins = this.minutesUntil(this.apptDeadline(appt));
+  getDeadlineInfo(task: Task): { text: string; overdue: boolean; soon: boolean } | null {
+    if (!task.deadline) return null;
+    const mins = this.minutesUntil(new Date(task.deadline));
+    const apptTitle = this.getLinkedAppointmentTitle(task);
+    const prefix = apptTitle ? `${apptTitle} · ` : '';
     return {
-      text: `${appt.title} · ${this.formatCountdown(mins)}`,
+      text: `${prefix}${this.formatCountdown(mins)}`,
       overdue: mins < 0,
       soon: mins >= 0 && mins <= 60,
     };
-  }
-
-  getSubProgress(task: Task): number {
-    if (!task.subtasks.length) return 0;
-    return Math.round((task.subtasks.filter(s => s.done).length / task.subtasks.length) * 100);
-  }
-
-  getSubDoneCount(task: Task): number {
-    return task.subtasks.filter(s => s.done).length;
   }
 
   getPriorityChip(priority: TaskPriority): { cls: string; label: string } {
@@ -279,11 +243,11 @@ export class TasksPageComponent {
     }
   }
 
-  private apptDeadline(a: { date: string; time: string }): Date {
-    const [h, m] = a.time.split(':').map(Number);
-    const d = new Date(a.date);
-    d.setHours(h || 0, m || 0, 0, 0);
-    return d;
+  formatAppointmentTime(isoDate: string): string {
+    const d = new Date(isoDate);
+    return d.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' }) +
+      ' · ' +
+      d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
   }
 
   private minutesUntil(date: Date): number {

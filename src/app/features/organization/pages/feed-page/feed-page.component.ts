@@ -26,7 +26,9 @@ export class OrganizationFeedPageComponent {
   readonly followingIds = computed(() => {
     const profileId = this.currentProfileId();
     if (!profileId) return new Set<string>();
-    return new Set(this.socialStore.followingOf(profileId).map((edge) => edge.followeeId));
+    return new Set(this.socialStore.followingOf(profileId).map((item) =>
+      typeof item.following === 'object' ? item.following._id : String(item.following)
+    ));
   });
 
   readonly ownPosts = computed(() => {

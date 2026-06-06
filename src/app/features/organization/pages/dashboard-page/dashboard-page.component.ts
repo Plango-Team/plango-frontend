@@ -156,10 +156,9 @@ export class OrganizationDashboardPageComponent {
   });
 
   readonly recentFollowers = computed(() => {
-    const sorted = [...this.followers()].sort((a, b) => b.createdAt - a.createdAt).slice(0, 6);
-
-    return sorted
-      .map((edge) => this.socialStore.findProfile({ id: edge.followerId }))
+    return this.followers()
+      .slice(0, 6)
+      .map((item) => this.socialStore.findProfile({ id: item.follower._id }))
       .filter((profile): profile is Profile => !!profile);
   });
 

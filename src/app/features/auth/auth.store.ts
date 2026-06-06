@@ -324,16 +324,10 @@ export const authStore = signalStore(
       pipe(
         tap(() => patchState(store, { isLoading: true })),
         switchMap(() => {
-          const token = localStorage.getItem('token');
-
-          if (!token) {
-            patchState(store, { isLoading: false, user: null });
-            return of(null);
-          }
-
           return authService.getCurrentUser().pipe(
             tap({
               next: (user) => {
+                const token = localStorage.getItem('token') || null;
                 patchState(store, { user, token, isLoading: false });
                 if (store.accountType() === 'organization') {
                   router.navigate(['/organization']);

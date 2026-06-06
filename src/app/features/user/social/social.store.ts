@@ -1,4 +1,4 @@
-import { computed, inject } from '@angular/core';
+import { computed, effect, inject, untracked } from '@angular/core';
 import {
   patchState,
   signalStore,
@@ -7,19 +7,41 @@ import {
   withMethods,
   withState,
 } from '@ngrx/signals';
+import { forkJoin } from 'rxjs';
 import { authStore } from '../../auth/auth.store';
 import { ToastService } from '../../../shared/services/toast.service';
 import { NotificationsStore } from '../../../shared/stores/notifications.store';
 import { FollowEdge, Post, Profile, SocialService } from './services/social.service';
+import {
+  FollowService,
+  FollowerItem,
+  FollowingItem,
+  PendingRequest,
+} from './services/follow.service';
 
 type SocialState = {
   profiles: Profile[];
   posts: Post[];
   follows: FollowEdge[];
   loaded: boolean;
+  myFollowers: FollowerItem[];
+  myFollowing: FollowingItem[];
+  pendingRequests: PendingRequest[];
+  sentPendingIds: string[];
+  followDataLoaded: boolean;
 };
 
-const initial: SocialState = { profiles: [], posts: [], follows: [], loaded: false };
+const initial: SocialState = {
+  profiles: [],
+  posts: [],
+  follows: [],
+  loaded: false,
+  myFollowers: [],
+  myFollowing: [],
+  pendingRequests: [],
+  sentPendingIds: [],
+  followDataLoaded: false,
+};
 
 export const SocialStore = signalStore(
   { providedIn: 'root' },
@@ -43,12 +65,36 @@ export const SocialStore = signalStore(
 
   withMethods((store) => {
     const svc = inject(SocialService);
+    const followSvc = inject(FollowService);
     const auth = inject(authStore);
     const notificationsStore = inject(NotificationsStore);
     const toastService = inject(ToastService);
 
     const isArabic = () => auth.user();
     const t = (ar: string, en: string) => (isArabic() ? ar : en);
+
+    // Helper to reload follow data (extracted so it can be called within withMethods)
+    const reloadFollowData = () => {
+      const user = auth.user();
+      if (!user) return;
+      forkJoin({
+        followers: followSvc.getFollowers(user._id),
+        following: followSvc.getFollowing(user._id),
+        pending: followSvc.getPendingRequests(),
+      }).subscribe({
+        next: ({ followers, following, pending }) => {
+          patchState(store, {
+            myFollowers: followers ?? [],
+            myFollowing: following ?? [],
+            pendingRequests: pending ?? [],
+            followDataLoaded: true,
+          });
+        },
+        error: () => {
+          patchState(store, { followDataLoaded: true });
+        },
+      });
+    };
 
     const asEpoch = (value: unknown): number => {
       if (value instanceof Date) return value.getTime();
@@ -104,21 +150,34 @@ export const SocialStore = signalStore(
 
     return {
       loadAll() {
-        svc.loadAll().subscribe(({ profiles, posts, follows }) => {
-          ensureAuthProfile(profiles);
-          const authProfile = currentAuthProfile();
-          const nextProfiles =
-            authProfile &&
-            !profiles.some(
-              (profile) =>
-                profile.id === authProfile.id ||
-                profile.username.toLowerCase() === authProfile.username.toLowerCase(),
-            )
-              ? [authProfile, ...profiles]
-              : profiles;
+        svc.loadAll().subscribe({
+          next: ({ profiles, posts, follows }) => {
+            ensureAuthProfile(profiles);
+            const authProfile = currentAuthProfile();
+            const nextProfiles =
+              authProfile &&
+              !profiles.some(
+                (profile) =>
+                  profile.id === authProfile.id ||
+                  profile.username.toLowerCase() === authProfile.username.toLowerCase(),
+              )
+                ? [authProfile, ...profiles]
+                : profiles;
 
-          patchState(store, { profiles: nextProfiles, posts, follows, loaded: true });
+            patchState(store, { profiles: nextProfiles, posts, follows, loaded: true });
+          },
+          error: () => {
+            // Mock API endpoints (/profiles, /posts, /follows) may not exist on production.
+            // Still mark as loaded and create an auth profile locally.
+            const authProfile = currentAuthProfile();
+            const profiles = authProfile ? [authProfile] : [];
+            patchState(store, { profiles, posts: [], follows: [], loaded: true });
+          },
         });
+      },
+
+      loadFollowData() {
+        reloadFollowData();
       },
 
       findProfile(by: { id?: string; username?: string }): Profile | null {
@@ -160,30 +219,39 @@ export const SocialStore = signalStore(
           .sort((a, b) => b.createdAt - a.createdAt);
       },
 
-      followersOf(profileId: string): FollowEdge[] {
-        return store
-          .follows()
-          .filter((edge) => edge.followeeId === profileId && edge.status === 'approved');
+      followersOf(profileId: string): FollowerItem[] {
+        const user = auth.user();
+        if (user && user._id === profileId) {
+          return store.myFollowers();
+        }
+        return [];
       },
 
-      followingOf(profileId: string): FollowEdge[] {
-        return store
-          .follows()
-          .filter((edge) => edge.followerId === profileId && edge.status === 'approved');
+      followingOf(profileId: string): FollowingItem[] {
+        const user = auth.user();
+        if (user && user._id === profileId) {
+          return store.myFollowing();
+        }
+        return [];
       },
 
-      pendingRequestsFor(profileId: string): FollowEdge[] {
-        return store
-          .follows()
-          .filter((edge) => edge.followeeId === profileId && edge.status === 'pending');
+      pendingRequestsFor(profileId: string): PendingRequest[] {
+        const user = auth.user();
+        if (user && user._id === profileId) {
+          return store.pendingRequests();
+        }
+        return [];
       },
 
-      followState(followerId: string | null, followeeId: string): 'none' | 'pending' | 'approved' {
+      followState(followerId: string | null, followeeId: string): 'none' | 'pending' | 'accepted' {
         if (!followerId) return 'none';
-        const edge = store
-          .follows()
-          .find((item) => item.followerId === followerId && item.followeeId === followeeId);
-        return edge?.status ?? 'none';
+        const isFollowing = store.myFollowing().some((f) => {
+          const fid = typeof f.following === 'object' ? f.following._id : f.following;
+          return fid === followeeId;
+        });
+        if (isFollowing) return 'accepted';
+        if (store.sentPendingIds().includes(followeeId)) return 'pending';
+        return 'none';
       },
 
       getAuthor(authorId: string): Profile | null {
@@ -328,47 +396,21 @@ export const SocialStore = signalStore(
       follow(followerId: string, followeeId: string) {
         if (followerId === followeeId) return;
 
-        const existing = store
-          .follows()
-          .find((edge) => edge.followerId === followerId && edge.followeeId === followeeId);
-        if (existing) return;
-
-        const followee = profileById(followeeId);
-        const follower = profileById(followerId);
-        const status: 'pending' | 'approved' =
-          followee?.kind === 'org' || !followee?.privateFollows ? 'approved' : 'pending';
-
-        const edge: FollowEdge = { followerId, followeeId, status, createdAt: Date.now() };
-        svc.createFollow(edge).subscribe({
-          next: (created) => {
-            patchState(store, { follows: [...store.follows(), created] });
-
-            notificationsStore.push({
-              ownerId: followeeId,
-              kind: 'info',
-              title:
-                status === 'pending'
-                  ? t('طلب متابعة جديد', 'New follow request')
-                  : t('متابع جديد', 'New follower'),
-              body: t(
-                `${follower?.displayName ?? 'مستخدم'} يريد متابعتك`,
-                `${follower?.displayName ?? 'Someone'} wants to follow you`,
-              ),
-              link: communityLinkFor(followeeId),
-            });
-
-            if (status === 'pending') {
+        followSvc.followUser(followeeId).subscribe({
+          next: (res) => {
+            if (res.status === 'accepted') {
+              reloadFollowData();
+              toastService.success(
+                t('تمت المتابعة بنجاح', 'Now following'),
+                t('أنت الآن تتابع هذا الحساب.', 'You are now following this account.'),
+              );
+            } else {
+              patchState(store, {
+                sentPendingIds: [...store.sentPendingIds(), followeeId],
+              });
               toastService.info(
                 t('تم إرسال طلب المتابعة', 'Follow request sent'),
                 t('سنُعلمك عند القبول.', 'We will notify you once approved.'),
-              );
-            } else {
-              toastService.success(
-                t('تمت المتابعة بنجاح', 'Now following'),
-                t(
-                  `أنت الآن تتابع ${followee?.displayName ?? 'هذا الحساب'}.`,
-                  `You are now following ${followee?.displayName ?? 'this account'}.`,
-                ),
               );
             }
           },
@@ -382,15 +424,14 @@ export const SocialStore = signalStore(
       },
 
       unfollow(followerId: string, followeeId: string) {
-        const edge = store
-          .follows()
-          .find((item) => item.followerId === followerId && item.followeeId === followeeId);
-        if (!edge?.id) return;
-
-        svc.deleteFollow(edge.id).subscribe({
+        followSvc.unfollowUser(followeeId).subscribe({
           next: () => {
             patchState(store, {
-              follows: store.follows().filter((item) => item.id !== edge.id),
+              myFollowing: store.myFollowing().filter((f) => {
+                const fid = typeof f.following === 'object' ? f.following._id : f.following;
+                return fid !== followeeId;
+              }),
+              sentPendingIds: store.sentPendingIds().filter((id) => id !== followeeId),
             });
             toastService.info(t('تم إلغاء المتابعة', 'Unfollowed'));
           },
@@ -404,33 +445,12 @@ export const SocialStore = signalStore(
       },
 
       approveFollow(followerId: string, followeeId: string) {
-        const edge = store
-          .follows()
-          .find((item) => item.followerId === followerId && item.followeeId === followeeId);
-        if (!edge?.id) return;
+        const request = store.pendingRequests().find((r) => r.follower._id === followerId);
+        if (!request) return;
 
-        const updated: FollowEdge = { ...edge, status: 'approved' };
-        patchState(store, {
-          follows: store.follows().map((item) => (item.id === edge.id ? updated : item)),
-        });
-
-        svc.updateFollow(updated).subscribe({
+        followSvc.acceptFollowRequest(request._id).subscribe({
           next: () => {
-            const followee = profileById(followeeId);
-            notificationsStore.push({
-              ownerId: followerId,
-              kind: 'info',
-              title: t('تم قبول طلب المتابعة', 'Follow request approved'),
-              body: t(
-                `${followee?.displayName ?? 'الحساب'} وافق على طلب متابعتك.`,
-                `${followee?.displayName ?? 'This account'} approved your follow request.`,
-              ),
-              link:
-                followee?.username && followee?.kind
-                  ? profileLink(followee.kind, followee.username)
-                  : '/user/feed',
-            });
-
+            reloadFollowData();
             toastService.success(
               t('تم قبول الطلب', 'Request approved'),
               t('أصبح المستخدم الآن ضمن متابعيك.', 'The follower is now approved.'),
@@ -446,27 +466,13 @@ export const SocialStore = signalStore(
       },
 
       denyFollow(followerId: string, followeeId: string) {
-        const edge = store
-          .follows()
-          .find((item) => item.followerId === followerId && item.followeeId === followeeId);
-        if (!edge?.id) return;
+        const request = store.pendingRequests().find((r) => r.follower._id === followerId);
+        if (!request) return;
 
-        patchState(store, {
-          follows: store.follows().filter((item) => item.id !== edge.id),
-        });
-
-        svc.deleteFollow(edge.id).subscribe({
+        followSvc.rejectFollowRequest(request._id).subscribe({
           next: () => {
-            const followee = profileById(followeeId);
-            notificationsStore.push({
-              ownerId: followerId,
-              kind: 'info',
-              title: t('تم رفض طلب المتابعة', 'Follow request declined'),
-              body: t(
-                `${followee?.displayName ?? 'الحساب'} رفض طلب المتابعة.`,
-                `${followee?.displayName ?? 'This account'} declined your follow request.`,
-              ),
-              link: '/user/network',
+            patchState(store, {
+              pendingRequests: store.pendingRequests().filter((r) => r._id !== request._id),
             });
             toastService.info(t('تم رفض الطلب', 'Request declined'));
           },
@@ -483,7 +489,18 @@ export const SocialStore = signalStore(
 
   withHooks({
     onInit(store) {
-      store.loadAll();
+      const auth = inject(authStore);
+
+      // Reactively load data when user becomes available
+      effect(() => {
+        const user = auth.user();
+        if (user) {
+          untracked(() => {
+            store.loadAll();
+            store.loadFollowData();
+          });
+        }
+      });
     },
   }),
 );

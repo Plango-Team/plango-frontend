@@ -78,19 +78,10 @@
   >
     <option value="all">كل المواعيد</option>
     <option value="none">غير مرتبطة</option>
-    @for (a of appointments(); track a.id) {
-      <option [value]="a.id">{{ a.title }}</option>
+    @for (a of linkableAppointments(); track a._id) {
+      <option [value]="a._id">{{ a.title }} — {{ formatAppointmentTime(a.arrivalTime) }}</option>
     }
   </select>
-
-  <!-- Attachment filter -->
-  <button
-    (click)="onlyAttached.set(!onlyAttached())"
-    class="rounded-full border px-3 py-1.5 text-xs transition"
-    [ngClass]="onlyAttached() ? 'border-brand bg-brand/10 text-brand' : 'border-ink-border bg-ink-2 text-ink-fg hover:bg-ink-3'"
-  >
-    بمرفقات
-  </button>
 
   @if (hasActiveFilters()) {
     <button
@@ -107,20 +98,20 @@
 <div class="grid gap-4 lg:grid-cols-12 px-4 pb-10">
   <!-- Tasks column (8 cols) -->
   <div class="space-y-5 lg:col-span-8">
-    <!-- Overdue -->
+    <!-- Lated -->
     <section>
       <h2 class="mb-2 flex items-center gap-2 text-sm font-medium text-ink-fg">
         <span class="h-2 w-2 rounded-full bg-brand"></span>
         متأخرة — الموعد مرّ
-        <span class="text-ink-muted">· {{ buckets().overdue.length }}</span>
+        <span class="text-ink-muted">· {{ buckets().lated.length }}</span>
       </h2>
-      @if (buckets().overdue.length === 0) {
+      @if (buckets().lated.length === 0) {
         <div class="rounded-2xl border border-dashed border-ink-border bg-ink-2/40 p-6 text-center text-sm text-ink-muted">
           لا مهام متأخرة 🎉
         </div>
       } @else {
         <div class="space-y-2">
-          @for (task of buckets().overdue; track task.id) {
+          @for (task of buckets().lated; track task._id) {
             <ng-container *ngTemplateOutlet="taskCard; context: { $implicit: task }"></ng-container>
           }
         </div>
@@ -140,7 +131,7 @@
         </div>
       } @else {
         <div class="space-y-2">
-          @for (task of buckets().soon; track task.id) {
+          @for (task of buckets().soon; track task._id) {
             <ng-container *ngTemplateOutlet="taskCard; context: { $implicit: task }"></ng-container>
           }
         </div>
@@ -160,27 +151,27 @@
         </div>
       } @else {
         <div class="space-y-2">
-          @for (task of buckets().upcoming; track task.id) {
+          @for (task of buckets().upcoming; track task._id) {
             <ng-container *ngTemplateOutlet="taskCard; context: { $implicit: task }"></ng-container>
           }
         </div>
       }
     </section>
 
-    <!-- Done -->
+    <!-- Completed -->
     <section>
       <h2 class="mb-2 flex items-center gap-2 text-sm font-medium text-ink-fg">
         <span class="h-2 w-2 rounded-full bg-ink-muted"></span>
         مكتملة
-        <span class="text-ink-muted">· {{ buckets().done.length }}</span>
+        <span class="text-ink-muted">· {{ buckets().completed.length }}</span>
       </h2>
-      @if (buckets().done.length === 0) {
+      @if (buckets().completed.length === 0) {
         <div class="rounded-2xl border border-dashed border-ink-border bg-ink-2/40 p-6 text-center text-sm text-ink-muted">
           لم تكتمل مهام بعد
         </div>
       } @else {
         <div class="space-y-2">
-          @for (task of buckets().done; track task.id) {
+          @for (task of buckets().completed; track task._id) {
             <ng-container *ngTemplateOutlet="taskCard; context: { $implicit: task }"></ng-container>
           }
         </div>
@@ -203,34 +194,34 @@
           نُذكّرك قبل ساعة وعند فوات الموعد لتسلّم أو تحدّث الحالة.
         </li>
         <li class="flex gap-2">
-          <app-icon [iconName]="'Attachment01Icon'" [iconSize]="16" [iconColor]="'var(--color-brand)'" class="mt-0.5 shrink-0"></app-icon>
-          ارفع ملف التسليم مباشرة من بطاقة المهمة.
+          <app-icon [iconName]="'Calendar03Icon'" [iconSize]="16" [iconColor]="'var(--color-brand)'" class="mt-0.5 shrink-0"></app-icon>
+          حدّد موعداً نهائياً يدوياً إذا لم تربط بموعد.
         </li>
       </ul>
     </div>
 
-    <!-- Appointments without tasks -->
+    <!-- Linkable appointments -->
     <div class="rounded-2xl border border-ink-border bg-ink-2 p-5 text-ink-fg">
-      <h3 class="font-display text-lg">مواعيد بدون مهام</h3>
+      <h3 class="font-display text-lg">مواعيد يمكن ربطها</h3>
       <p class="mt-1 text-xs text-ink-muted">أضِف مهمة لتربطها بهذه المواعيد.</p>
       <div class="mt-3 space-y-2">
-        @for (a of unlinkedAppointments(); track a.id) {
+        @for (a of linkableAppointments(); track a._id) {
           <div class="flex items-center justify-between gap-2 rounded-lg border border-ink-border bg-ink p-3">
             <div class="min-w-0">
               <div class="truncate text-sm font-medium text-ink-fg">{{ a.title }}</div>
-              <div class="text-[11px] text-ink-muted">{{ a.date }} · {{ a.time }}</div>
+              <div class="text-[11px] text-ink-muted">{{ formatAppointmentTime(a.arrivalTime) }}</div>
             </div>
             <button
-              (click)="addTaskForAppointment(a.id!)"
+              (click)="addTaskForAppointment(a._id)"
               class="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-ink-border bg-transparent text-ink-fg hover:bg-ink-3 transition-colors"
             >
               <app-icon [iconName]="'Add01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
             </button>
           </div>
         }
-        @if (allLinked()) {
+        @if (linkableAppointments().length === 0) {
           <div class="rounded-lg border border-dashed border-ink-border p-4 text-center text-xs text-ink-muted">
-            كل مواعيدك مرتبطة بمهام ✨
+            لا توجد مواعيد قادمة يمكن ربطها
           </div>
         }
       </div>
@@ -245,10 +236,10 @@
   <div
     class="group rounded-xl border bg-ink-2 p-4 transition hover:border-ink-fg/30"
     [ngClass]="{
-      'border-brand/50': getCountdown(task)?.overdue,
-      'border-brand/30': getCountdown(task)?.soon && !getCountdown(task)?.overdue,
-      'border-ink-border': !getCountdown(task)?.overdue && !getCountdown(task)?.soon,
-      'opacity-70': task.status === 'done'
+      'border-brand/50': getDeadlineInfo(task)?.overdue,
+      'border-brand/30': getDeadlineInfo(task)?.soon && !getDeadlineInfo(task)?.overdue,
+      'border-ink-border': !getDeadlineInfo(task)?.overdue && !getDeadlineInfo(task)?.soon,
+      'opacity-70': task.status === 'completed'
     }"
   >
     <div class="flex items-start gap-3">
@@ -256,11 +247,11 @@
       <button
         (click)="toggleStatus(task)"
         class="mt-1 h-4 w-4 shrink-0 rounded border transition"
-        [ngClass]="task.status === 'done'
+        [ngClass]="task.status === 'completed'
           ? 'bg-brand border-brand text-brand-foreground'
           : 'border-ink-border hover:border-ink-fg'"
       >
-        @if (task.status === 'done') {
+        @if (task.status === 'completed') {
           <app-icon [iconName]="'Tick01Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
         }
       </button>
@@ -270,7 +261,7 @@
         <div class="flex flex-wrap items-center gap-2">
           <div
             class="text-sm font-medium"
-            [ngClass]="task.status === 'done' ? 'text-ink-muted line-through' : 'text-ink-fg'"
+            [ngClass]="task.status === 'completed' ? 'text-ink-muted line-through' : 'text-ink-fg'"
           >
             {{ task.title }}
           </div>
@@ -282,25 +273,11 @@
             <app-icon [iconName]="'Flag01Icon'" [iconSize]="10" [iconColor]="'currentColor'"></app-icon>
             {{ getPriorityChip(task.priority).label }}
           </span>
-          <!-- In-progress badge -->
-          @if (task.status === 'in_progress') {
-            <span class="rounded-full border border-ink-border bg-ink px-2 py-0.5 text-[10px] text-ink-muted">
-              قيد التنفيذ
+          <!-- Lated badge -->
+          @if (task.status === 'lated') {
+            <span class="rounded-full border border-brand/40 bg-brand/10 px-2 py-0.5 text-[10px] text-brand">
+              متأخرة
             </span>
-          }
-          <!-- Subtasks toggle -->
-          @if (task.subtasks.length > 0) {
-            <button
-              (click)="toggleExpanded(task.id)"
-              class="inline-flex items-center gap-1 rounded-full border border-ink-border bg-ink px-2 py-0.5 text-[10px] text-ink-muted hover:text-ink-fg"
-            >
-              <app-icon
-                [iconName]="isExpanded(task.id) ? 'ArrowDown01Icon' : 'ArrowRight01Icon'"
-                [iconSize]="10"
-                [iconColor]="'currentColor'"
-              ></app-icon>
-              {{ getSubDoneCount(task) }}/{{ task.subtasks.length }}
-            </button>
           }
         </div>
 
@@ -309,65 +286,23 @@
           <p class="mt-1 text-xs text-ink-muted">{{ task.description }}</p>
         }
 
-        <!-- Subtasks progress bar -->
-        @if (task.subtasks.length > 0) {
-          <div class="mt-2 h-1 w-full overflow-hidden rounded-full bg-ink">
-            <div class="h-full rounded-full bg-brand transition-all" [style.width.%]="getSubProgress(task)"></div>
-          </div>
-        }
-
-        <!-- Subtasks panel -->
-        @if (isExpanded(task.id) && task.subtasks.length > 0) {
-          <div class="mt-3 space-y-1.5">
-            @for (s of task.subtasks; track s.id) {
-              <div class="flex items-center gap-2 rounded-lg border border-ink-border bg-ink px-2 py-1.5 text-xs">
-                <button
-                  (click)="toggleSubtask(task.id, s.id)"
-                  class="h-3.5 w-3.5 shrink-0 rounded border transition"
-                  [ngClass]="s.done ? 'bg-brand border-brand' : 'border-ink-border'"
-                >
-                  @if (s.done) {
-                    <app-icon [iconName]="'Tick01Icon'" [iconSize]="8" [iconColor]="'white'"></app-icon>
-                  }
-                </button>
-                <span [ngClass]="s.done ? 'flex-1 text-ink-muted line-through' : 'flex-1 text-ink-fg'">
-                  {{ s.title }}
-                </span>
-                <button (click)="removeSubtask(task.id, s.id)" class="text-ink-muted hover:text-brand">
-                  <app-icon [iconName]="'Cancel01Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
-                </button>
-              </div>
-            }
-          </div>
-        }
-
-        <!-- Add subtask input -->
-        <form (ngSubmit)="addSubtask(task.id)" class="mt-2 flex items-center gap-1.5">
-          <input
-            [(ngModel)]="newSubInputs[task.id]"
-            [name]="'sub_' + task.id"
-            class="h-7 flex-1 rounded-md border border-ink-border bg-ink px-2 text-xs text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none"
-            placeholder="أضِف مهمة فرعية..."
-          />
-        </form>
-
         <!-- Deadline / link strip -->
         <div class="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
-          @if (getCountdown(task); as cd) {
+          @if (getDeadlineInfo(task); as di) {
             <span
               class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5"
               [ngClass]="{
-                'border-brand/40 bg-brand/10 text-brand': cd.overdue,
-                'border-brand/30 bg-brand/5 text-brand': cd.soon && !cd.overdue,
-                'border-ink-border bg-ink text-ink-muted': !cd.overdue && !cd.soon
+                'border-brand/40 bg-brand/10 text-brand': di.overdue,
+                'border-brand/30 bg-brand/5 text-brand': di.soon && !di.overdue,
+                'border-ink-border bg-ink text-ink-muted': !di.overdue && !di.soon
               }"
             >
               <app-icon
-                [iconName]="cd.overdue ? 'Alert01Icon' : 'TimeQuarter02Icon'"
+                [iconName]="di.overdue ? 'Alert01Icon' : 'TimeQuarter02Icon'"
                 [iconSize]="12"
                 [iconColor]="'currentColor'"
               ></app-icon>
-              {{ cd.text }}
+              {{ di.text }}
             </span>
           } @else {
             <span class="inline-flex items-center gap-1 rounded-full border border-dashed border-ink-border px-2 py-0.5 text-ink-muted">
@@ -375,33 +310,18 @@
               غير مرتبطة بموعد
             </span>
           }
-          @if (task.attachmentName) {
-            <span class="inline-flex items-center gap-1 rounded-full border border-ink-border bg-ink px-2 py-0.5 text-ink-muted">
-              <app-icon [iconName]="'File01Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
-              {{ task.attachmentName }}
-            </span>
-          }
         </div>
       </div>
 
       <!-- Actions -->
       <div class="flex items-center gap-1 opacity-80 transition group-hover:opacity-100">
-        @if (task.status !== 'done' && task.status !== 'in_progress') {
-          <button
-            (click)="startTask(task)"
-            title="ابدأ"
-            class="grid h-8 w-8 place-items-center rounded-lg text-ink-muted hover:bg-ink-3 hover:text-ink-fg transition-colors"
-          >
-            <app-icon [iconName]="'TimeQuarter02Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
-          </button>
-        }
-        @if (task.status === 'done') {
+        @if (task.status === 'completed') {
           <span class="grid h-8 w-8 place-items-center text-success">
             <app-icon [iconName]="'CheckmarkCircle01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
           </span>
         }
         <button
-          (click)="deleteTask(task.id)"
+          (click)="deleteTask(task._id)"
           title="حذف"
           class="grid h-8 w-8 place-items-center rounded-lg text-ink-muted hover:bg-ink-3 hover:text-brand transition-colors"
         >
@@ -439,6 +359,8 @@
           [(ngModel)]="newTaskTitle"
           name="taskTitle"
           required
+          minlength="3"
+          maxlength="120"
           class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
           placeholder="تجهيز عرض التصميم"
         />
@@ -450,7 +372,7 @@
         <textarea
           [(ngModel)]="newTaskDescription"
           name="taskDescription"
-          maxlength="400"
+          maxlength="200"
           class="min-h-[80px] w-full rounded-lg border border-ink-border bg-ink p-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
           placeholder="تفاصيل إضافية..."
         ></textarea>
@@ -463,16 +385,35 @@
           الموعد المرتبط (الموعد النهائي)
         </label>
         <select
-          [(ngModel)]="newTaskAppointmentId"
+          [(ngModel)]="newTaskLinkedAppointment"
           name="taskAppointment"
           class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
         >
           <option value="none">بدون ربط</option>
-          @for (a of appointments(); track a.id) {
-            <option [value]="a.id">{{ a.title }} — {{ a.date }} {{ a.time }}</option>
+          @for (a of linkableAppointments(); track a._id) {
+            <option [value]="a._id">{{ a.title }} — {{ formatAppointmentTime(a.arrivalTime) }}</option>
           }
         </select>
+        @if (newTaskLinkedAppointment !== 'none') {
+          <p class="text-xs text-brand">ربط الموعد يحدد الموعد النهائي تلقائيًا</p>
+        }
       </div>
+
+      <!-- Manual Deadline -->
+      @if (newTaskLinkedAppointment === 'none') {
+        <div class="space-y-1.5">
+          <label class="flex items-center gap-1.5 text-sm font-medium text-ink-fg">
+            <app-icon [iconName]="'Calendar03Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+            الموعد النهائي
+          </label>
+          <input
+            type="datetime-local"
+            [(ngModel)]="newTaskDeadline"
+            name="taskDeadline"
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+        </div>
+      }
 
       <!-- Priority -->
       <div class="space-y-1.5">

@@ -102,7 +102,9 @@ export class FeedPageComponent {
   followingIds = computed(() => {
     const user = this.authStore.user();
     if (!user) return new Set<string>();
-    return new Set(this.socialStore.followingOf(user._id).map(f => f.followeeId));
+    return new Set(this.socialStore.followingOf(user._id).map(f =>
+      typeof f.following === 'object' ? f.following._id : String(f.following)
+    ));
   });
 
   suggestedOrgs = computed(() => {

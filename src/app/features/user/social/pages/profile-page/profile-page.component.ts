@@ -260,18 +260,20 @@ export class ProfilePageComponent {
     const p = this.profile();
     if (!p) return false;
     return (
-      p.kind === 'user' && p.privateFollows && !this.isMe() && this.followStatus() !== 'approved'
+      p.kind === 'user' && p.privateFollows && !this.isMe() && this.followStatus() !== 'accepted'
     );
   });
 
   followers = computed(() => {
     const p = this.profile();
-    return p ? this.socialStore.followersOf(p.id) : [];
+    if (!p) return [];
+    return this.socialStore.followersOf(p.id);
   });
 
   following = computed(() => {
     const p = this.profile();
-    return p ? this.socialStore.followingOf(p.id) : [];
+    if (!p) return [];
+    return this.socialStore.followingOf(p.id);
   });
 
   userPosts = computed(() => {
@@ -308,10 +310,21 @@ export class ProfilePageComponent {
 
   currentPeople = computed(() => {
     const t = this.tab();
-    const list = t === 'followers' ? this.followers() : this.following();
-    return list
-      .map((f) => this.socialStore.getAuthor(t === 'followers' ? f.followerId : f.followeeId))
-      .filter(Boolean) as any[];
+    if (t === 'followers') {
+      return this.followers().map((f) => ({
+        displayName: f.follower?.name ?? '',
+        username: f.follower?.username ?? '',
+      }));
+    } else if (t === 'following') {
+      return this.following().map((f) => {
+        const user = typeof f.following === 'object' ? f.following : null;
+        return {
+          displayName: user?.name ?? '',
+          username: user?.username ?? '',
+        };
+      });
+    }
+    return [];
   });
 
   coverGradient() {

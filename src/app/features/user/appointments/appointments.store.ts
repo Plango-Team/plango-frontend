@@ -1,5 +1,5 @@
 import { patchState, signalStore, withComputed, withMethods, withState, withHooks } from '@ngrx/signals';
-import { computed, inject } from '@angular/core';
+import { computed, effect, inject, untracked } from '@angular/core';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { pipe, switchMap, tap, catchError, of } from 'rxjs';
 import { AppointmentService, Appointment } from '../calendar/services/appointment.service';
@@ -18,7 +18,7 @@ export const AppointmentsStore = signalStore(
     isLoading: false,
     error: null,
   }),
-  withMethods((store, appointmentService = inject(AppointmentService), authStoreInstance = inject(authStore)) => ({
+  withMethods((store, appointmentService = inject(AppointmentService)) => ({
     loadAppointments: rxMethod<string | undefined>(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null })),
@@ -74,9 +74,18 @@ export const AppointmentsStore = signalStore(
     )
   })),
   withHooks({
-    onInit(store, authStoreInstance = inject(authStore)) {
-      const userId = computed(() => authStoreInstance.user()?._id);
-      store.loadAppointments(userId);
+    onInit(store) {
+      const auth = inject(authStore);
+
+      // Reactively load appointments when user becomes available
+      effect(() => {
+        const user = auth.user();
+        if (user) {
+          untracked(() => {
+            store.loadAppointments(user._id);
+          });
+        }
+      });
     }
   })
 );

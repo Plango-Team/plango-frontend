@@ -1,11 +1,11 @@
 <div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between px-4 mt-4">
   <div>
     <div class="text-sm text-ink-muted">
-      صباح الخير، {{ authStore.user()?.name }}
+      {{ greeting() }}، {{ authStore.user()?.name }}
     </div>
     <h1 class="font-display text-2xl tracking-tight sm:text-3xl text-ink-fg">نبض اليوم</h1>
   </div>
-  <div class="text-xs text-ink-muted sm:text-sm">الخميس، 1 مايو 2026</div>
+  <div class="text-xs text-ink-muted sm:text-sm">{{ todayFormatted() }}</div>
 </div>
 
 <div class="grid gap-4 lg:grid-cols-12 px-4 pb-10">
@@ -85,61 +85,80 @@
     </div>
   </div>
 
-  <!-- Today stats -->
+  <!-- Today stats — WIRED TO REAL DATA -->
   <app-card
     class="block lg:col-span-5"
     customClass="flex flex-col justify-center text-ink-fg h-full"
   >
     <div class="flex items-center justify-between gap-2">
       <h3 class="font-display text-lg">إنتاجية اليوم</h3>
-      <span class="text-xs text-success inline-flex items-center gap-1">
-        <app-icon
-          [iconName]="'ArrowUpRight01Icon'"
-          [iconSize]="12"
-          [iconColor]="'currentColor'"
-        ></app-icon>
-        +12%
-      </span>
+      @if (completionPercentage() >= 50) {
+        <span class="text-xs text-success inline-flex items-center gap-1">
+          <app-icon
+            [iconName]="'ArrowUpRight01Icon'"
+            [iconSize]="12"
+            [iconColor]="'currentColor'"
+          ></app-icon>
+          {{ completionPercentage() }}%
+        </span>
+      } @else {
+        <span class="text-xs text-ink-muted inline-flex items-center gap-1">
+          {{ completionPercentage() }}%
+        </span>
+      }
     </div>
     <div class="mt-5 grid grid-cols-3 gap-4">
       <div>
-        <div class="font-display text-2xl tracking-tight sm:text-3xl">4</div>
-        <div class="text-xs text-ink-muted">المواعيد</div>
-        <div class="text-[10px] text-ink-muted/70">من أصل 6</div>
+        <div class="font-display text-2xl tracking-tight sm:text-3xl">{{ totalTasks() }}</div>
+        <div class="text-xs text-ink-muted">إجمالي المهام</div>
+        <div class="text-[10px] text-ink-muted/70">كل المهام</div>
       </div>
       <div>
-        <div class="font-display text-2xl tracking-tight sm:text-3xl text-success">3</div>
+        <div class="font-display text-2xl tracking-tight sm:text-3xl text-success">{{ completedTasks() }}</div>
         <div class="text-xs text-ink-muted">مكتملة</div>
         <div class="text-[10px] text-ink-muted/70">بنجاح</div>
       </div>
       <div>
-        <div class="font-display text-2xl tracking-tight sm:text-3xl text-brand">5</div>
+        <div class="font-display text-2xl tracking-tight sm:text-3xl text-brand">{{ pendingTasks() }}</div>
         <div class="text-xs text-ink-muted">متبقية</div>
         <div class="text-[10px] text-ink-muted/70">مهام</div>
       </div>
     </div>
     <div class="mt-5 h-2 overflow-hidden rounded-full bg-ink-3">
-      <div class="h-full rounded-full bg-ink-fg transition-all" style="width: 60%"></div>
+      <div class="h-full rounded-full bg-ink-fg transition-all" [style.width.%]="completionPercentage()"></div>
     </div>
-    <div class="mt-2 text-xs text-ink-muted">60% من مهام اليوم مكتملة</div>
+    <div class="mt-2 text-xs text-ink-muted">{{ completionPercentage() }}% من مهامك مكتملة</div>
   </app-card>
 
-  <!-- Tasks tile -->
+  <!-- Tasks tile — WIRED TO REAL DATA -->
   <app-card class="block lg:col-span-5" customClass="text-ink-fg h-full">
     <div class="flex items-start gap-3">
       <div class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-ink/10 text-ink-fg">
         <app-icon [iconName]="'Task01Icon'" [iconSize]="20" [iconColor]="'currentColor'"></app-icon>
       </div>
       <div class="flex-1 min-w-0">
-        <h3 class="font-medium">المهام قيد التنفيذ</h3>
-        <p class="mt-1 text-sm text-ink-muted">لديك 5 مهام مرتبطة بمواعيد اليوم</p>
+        <h3 class="font-medium">المهام</h3>
+        <p class="mt-1 text-sm text-ink-muted">
+          @if (pendingTasks() > 0) {
+            لديك {{ pendingTasks() }} مهام معلّقة
+            @if (latedTasks() > 0) {
+              · <span class="text-brand">{{ latedTasks() }} متأخرة</span>
+            }
+          } @else if (totalTasks() > 0) {
+            كل المهام مكتملة 🎉
+          } @else {
+            لا توجد مهام بعد
+          }
+        </p>
         <div class="mt-3 flex flex-wrap items-center gap-2">
-          <button
+          <a
+            routerLink="/user/tasks"
             class="rounded-lg border border-ink-border bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-fg hover:bg-ink-3 transition-all"
           >
             فتح المهام
-          </button>
-          <button
+          </a>
+          <a
+            routerLink="/user/tasks"
             class="flex items-center gap-1 rounded-lg bg-ink-fg px-3 py-1.5 text-xs font-semibold text-ink hover:bg-ink-fg/90 transition-all"
           >
             <app-icon
@@ -148,7 +167,7 @@
               [iconColor]="'currentColor'"
             ></app-icon>
             مهمة سريعة
-          </button>
+          </a>
         </div>
       </div>
     </div>
@@ -234,4 +253,5 @@
       </button>
     </div>
   </app-card>
+
 </div>

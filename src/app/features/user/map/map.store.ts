@@ -1,6 +1,6 @@
 import { signalStore, withState, withMethods, patchState, withHooks } from '@ngrx/signals';
 import { ChatMessage, IAppointment, IRouteResponse, MapState } from './interfaces/Imap';
-import { inject } from '@angular/core';
+import { effect, inject, untracked } from '@angular/core';
 import { MapService } from './services/map.service';
 import polyline from '@mapbox/polyline';
 import { authStore } from '../../auth/auth.store';
@@ -185,8 +185,18 @@ export const MapStore = signalStore(
 
   withHooks({
     onInit(store) {
+      const auth = inject(authStore);
       store.getCurrentLocation();
-      store.loadFullData();
+
+      // Wait for auth before making API calls
+      effect(() => {
+        const user = auth.user();
+        if (user) {
+          untracked(() => {
+            store.loadFullData();
+          });
+        }
+      });
     },
   })
 );

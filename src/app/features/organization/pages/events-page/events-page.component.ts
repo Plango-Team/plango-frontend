@@ -177,12 +177,12 @@ export class OrganizationEventsPageComponent {
     });
     const ownerProfile = this.socialStore.findProfile({ id: profileId });
     const followers = this.socialStore.followersOf(profileId);
-    for (const edge of followers) {
-      const followerProfile = this.socialStore.findProfile({ id: edge.followerId });
+    for (const item of followers) {
+      const followerProfile = this.socialStore.findProfile({ id: item.follower._id });
       if (!ownerProfile || !followerProfile) continue;
 
       this.notificationsStore.push({
-        ownerId: edge.followerId,
+        ownerId: item.follower._id,
         kind: 'event_published',
         title: `New event from ${ownerProfile.displayName}`,
         body: `${eventTitle} · ${eventDate} ${eventTime}`,

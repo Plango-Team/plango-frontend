@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { authStore } from '../../../auth/auth.store';
-import { FollowEdge, Profile } from '../../../user/social/services/social.service';
+import { Profile } from '../../../user/social/services/social.service';
 import { SocialStore } from '../../../user/social/social.store';
+import { PendingRequest } from '../../../user/social/services/follow.service';
 
 type CommunityTab = 'followers' | 'following' | 'requests';
 
@@ -42,8 +43,20 @@ export class OrganizationFollowersPageComponent {
     return profileId ? this.socialStore.pendingRequestsFor(profileId) : [];
   });
 
-  readonly followersProfiles = computed(() => this.edgesToProfiles(this.followers(), 'followerId'));
-  readonly followingProfiles = computed(() => this.edgesToProfiles(this.following(), 'followeeId'));
+  readonly followersProfiles = computed(() =>
+    this.followers()
+      .map((item) => this.socialStore.findProfile({ id: item.follower._id }))
+      .filter((profile): profile is Profile => !!profile)
+  );
+
+  readonly followingProfiles = computed(() =>
+    this.following()
+      .map((item) => {
+        const user = typeof item.following === 'object' ? item.following : null;
+        return user ? this.socialStore.findProfile({ id: user._id }) : null;
+      })
+      .filter((profile): profile is Profile => !!profile)
+  );
 
   readonly visiblePeople = computed(() => {
     const source = this.tab() === 'followers' ? this.followersProfiles() : this.followingProfiles();
@@ -65,7 +78,7 @@ export class OrganizationFollowersPageComponent {
       ] as const,
   );
 
-  followState(profileId: string): 'none' | 'pending' | 'approved' {
+  followState(profileId: string): 'none' | 'pending' | 'accepted' {
     const me = this.currentProfileId();
     if (!me) return 'none';
     return this.socialStore.followState(me, profileId);
@@ -83,21 +96,22 @@ export class OrganizationFollowersPageComponent {
     this.socialStore.unfollow(me, profileId);
   }
 
-  requestProfile(edge: FollowEdge): Profile | null {
-    return this.socialStore.findProfile({ id: edge.followerId });
+  requestProfile(request: PendingRequest): { displayName: string; username: string } {
+    return {
+      displayName: request.follower.name,
+      username: request.follower.username,
+    };
   }
 
-  approve(edge: FollowEdge) {
-    this.socialStore.approveFollow(edge.followerId, edge.followeeId);
+  approve(request: PendingRequest) {
+    const me = this.currentProfileId();
+    if (!me) return;
+    this.socialStore.approveFollow(request.follower._id, me);
   }
 
-  deny(edge: FollowEdge) {
-    this.socialStore.denyFollow(edge.followerId, edge.followeeId);
-  }
-
-  private edgesToProfiles(edges: FollowEdge[], key: 'followerId' | 'followeeId'): Profile[] {
-    return edges
-      .map((edge) => this.socialStore.findProfile({ id: edge[key] }))
-      .filter((profile): profile is Profile => !!profile);
+  deny(request: PendingRequest) {
+    const me = this.currentProfileId();
+    if (!me) return;
+    this.socialStore.denyFollow(request.follower._id, me);
   }
 }

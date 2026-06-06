@@ -32,16 +32,20 @@ export class AppointmentService {
   private apiUrl = `${environment.apiUrl}/appointments`;
 
   getAppointmentsByUser(userId: string): Observable<Appointment[]> {
-    return this.http.get<Appointment[]>(this.apiUrl).pipe(
-      map(appointments => appointments.filter(a => a.userId === userId))
+    return this.http.get<{ status: string; data: { appointments: Appointment[] } }>(this.apiUrl).pipe(
+      map(res => res.data.appointments)
     );
   }
 
   createAppointment(appointment: Appointment): Observable<Appointment> {
-    return this.http.post<Appointment>(this.apiUrl, appointment);
+    return this.http.post<{ status: string; data: { appointment: Appointment } }>(this.apiUrl, appointment).pipe(
+      map(res => res.data.appointment)
+    );
   }
 
   deleteAppointment(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<{ status: string; data: null }>(`${this.apiUrl}/${id}`).pipe(
+      map((): void => void 0)
+    );
   }
 }
