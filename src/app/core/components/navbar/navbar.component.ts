@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Output, computed, ElementRef, HostListener, ViewChild, inject, signal } from '@angular/core';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
 import { authStore } from '../../../features/auth/auth.store';
 import { SocialStore } from '../../../features/user/social/social.store';
@@ -10,6 +10,7 @@ import {
   timeAgoLabel,
 } from '../../../shared/stores/notifications.store';
 import { ToastService } from '../../../shared/services/toast.service';
+import { AuthService } from '../../services/auth/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -20,6 +21,8 @@ import { ToastService } from '../../../shared/services/toast.service';
 export class NavbarComponent {
   public themeService = inject(ThemeService);
   public authStore = inject(authStore);
+  public authService = inject(AuthService);
+  public router = inject(Router)
   public socialStore = inject(SocialStore);
   public notificationsStore = inject(NotificationsStore);
   private toastService = inject(ToastService);
@@ -102,8 +105,6 @@ export class NavbarComponent {
   }
 
   logout() {
-    this.authStore.logOut();
-    this.isMenuOpen.set(false);
-    this.isNotificationsOpen.set(false);
+    this.authStore.logOut()
   }
 }

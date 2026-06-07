@@ -3,10 +3,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { IconComponent } from "../../../shared/components/icon/icon.component";
 import { authStore } from '../auth.store';
+import { FormsModule } from "@angular/forms";
 
 @Component({
   selector: 'app-phone-verify',
-  imports: [IconComponent],
+  imports: [IconComponent, FormsModule],
   templateUrl: './phone-verify.component.html',
   styleUrl: './phone-verify.component.css',
 })
@@ -15,23 +16,46 @@ export class PhoneVerifyComponent {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   store = inject(authStore);
-
+  code = ''
   phone = signal<string>('');
-  err = signal<string>('');
+newPhone = signal<string>('');
+password = signal<string>('');
+mode = signal<string>('confirm_new'); 
+err = signal<string>('');
 
   ngOnInit(): void {
-    this.phone.set(this.route.snapshot.queryParams['phone'] || '');
+    const snapshot = this.route.snapshot.queryParams;
+    this.phone.set(snapshot['phone'] || '');
+    this.newPhone.set(snapshot['newPhone'] || '')
+    this.password.set(snapshot['password'] || '')
+    this.mode.set(snapshot['mode'] || 'confirm_new')
   }
-
-  onConfirmOTP(code : string): void {
-    this.authService.verifyPhone(this.phone(), code).subscribe({
+  onConfirmOTP(): void {
+    const codeValue = this.code.trim() 
+    if(!codeValue)
+      return;
+    if(this.mode() === 'verify_only'){
+      this.authService.verifyPhone(this.phone(), codeValue).subscribe({
       next: (res) => {
-        this.router.navigate(['/user/settings']); 
+        this.store.updateCurrentUser({isPhoneVerified:true})
+        this.router.navigate(['/user/settings'])
       },
       error: (err) => {
         this.err.set(err?.error?.message || 'كود التحقق غير صحيح، حاول مرة أخرى.');
       }
     });
+    }
+    else if(this.mode() === 'confirm_new'){
+      this.authService.confirmPhoneChange(codeValue).subscribe({
+        next:(res) => {
+          this.store.updateCurrentUser({phone:this.phone(),isPhoneVerified : true})
+          this.router.navigate(['/user/settings'])
+        },
+        error:(err) => {
+          this.err.set(err?.error?.message || 'كود تأكيد الرقم الجديد غير صحيح ، حاول مرة أخري')
+        }
+      })
+    }
   }
 
 }

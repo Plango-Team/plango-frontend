@@ -3,10 +3,11 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../../core/services/auth/auth.service';
 import { authStore } from '../../../../auth/auth.store';
 import { Router } from '@angular/router';
+import { DeleteModalComponent } from "../../components/delete-modal/delete-modal.component";
 
 @Component({
   selector: 'app-settings-page',
-  imports: [FormsModule],
+  imports: [FormsModule, DeleteModalComponent],
   templateUrl: './settings-page.component.html',
   styleUrl: './settings-page.component.css',
 })
@@ -15,23 +16,24 @@ export class SettingsPageComponent {
   authService = inject(AuthService);
   authStore = inject(authStore);
   router = inject(Router);
-  savePassword = signal<string>('');
-  currentPassword = signal<string>('');
-  newPassword = signal<string>('');
-  confirmPassword = signal<string>('');
-  email = signal<string>('');
-  name = signal<string>('');
-  phone = signal<string>('');
+  savePassword = '';
+  currentPassword = '';
+  newPassword = '';
+  confirmPassword = '';
+  email = '';
+  name = '';
+  phone = '';
   successMessage = signal<string>('');
   errorMessage = signal<string>('');
   isChanging = computed(() => {
     const currentUser = this.authStore.user();
     if (!currentUser) return false;
     return (
-      this.email().trim() !== currentUser.email ||
-      this.phone().trim() !== currentUser.phone
+      this.email.trim() !== currentUser.email ||
+      this.phone.trim() !== currentUser.phone
     );
   })
+  showPasswordConf= signal<boolean>(false);
 
 
   togglePasswordFields(): void {
@@ -42,9 +44,9 @@ export class SettingsPageComponent {
   }
 
   clearPasswordFields(): void {
-    this.currentPassword.set('');
-    this.newPassword.set('');
-    this.confirmPassword.set('');
+    this.currentPassword = '';
+    this.newPassword='';
+    this.confirmPassword='';
   }
 
   onSubmit(): void {
@@ -52,69 +54,77 @@ export class SettingsPageComponent {
       this.handleChangePassword();
     } 
     if(this.isChanging()) {
+      this.showPasswordConf.set(true);
       const currentUser = this.authStore.user();
       if (!currentUser) return;
-      if(this.phone().trim() !== currentUser.phone){
+      if(this.phone.trim() !== currentUser.phone){
         this.handlePhoneAction();
       }
-      if(this.email().trim() !== currentUser.email){
+      else if(this.email.trim() !== currentUser.email){
         this.handleChangeEmail();
       }
     }
   }
 
   handlePhoneverify():void{
-    if(!this.phone().trim()){
+    const currentUser = this.authStore.user();
+    if (!currentUser) return;
+    if(!this.phone.trim()){
       this.errorMessage.set('يرجى إدخال رقم هاتف صالح!');
       return;
     }
 
-    this.authService.sendVerificationPhoneOTP(this.phone()).subscribe({
+    this.authService.sendVerificationPhoneOTP(currentUser.phone).subscribe({
       next:(res) => {
-        this.router.navigate(['/auth/verify-phone'], { queryParams: { phone: this.phone() } });
+        this.errorMessage.set('')
+        this.router.navigate(['/auth/verify-phone'], { queryParams: { phone: currentUser.phone , mode : 'verify_only' } });
       },
       error:(err)=>{
         this.errorMessage.set(err?.error?.message || 'حدث خطأ أثناء إرسال رمز التحقق.');
       }
     })
-  };
+  }
 
   handlePhoneAction():void{
-      const currentUser = this.authStore.user();
-    if(this.phone().trim() !== currentUser?.phone){
-      if(!this.savePassword()){
-      this.errorMessage.set('يرجى إدخال كلمة المرور الحالية لتأكيد تغيير رقم الهاتف');
+    const currentUser = this.authStore.user();
+    if (!currentUser) return;
+    const cleanNewPhone = this.phone.trim()
+    if(cleanNewPhone === currentUser?.phone){
+      this.errorMessage.set('هذا رقمك الحالي');
       return;
     }
+    if(!this.savePassword){
+      this.errorMessage.set('يرجي إدخال كلمة المرور لتأكيد تغيير الرقم')
+      return;
     }
-    const cleanPhone = this.phone().trim().replace('+','');
 
-    this.authService.requestChangePhone(cleanPhone, this.savePassword()).subscribe({
-      next:(res :any) => {
-        this.router.navigate(['/auth/verify-phone'], { queryParams: { phone: cleanPhone } });
+    this.authService.requestChangePhone(cleanNewPhone , this.savePassword).subscribe({
+      next:() => {
+        this.errorMessage.set('')
+        this.router.navigate(['/auth/verify-phone'], { queryParams: { phone: cleanNewPhone , newPhone : cleanNewPhone , password:this.savePassword,mode:'confirm_new' } });
       },
-      error:(err : any)=>{
+      error:(err)=>{
         this.errorMessage.set(err?.error?.message || 'حدث خطأ أثناء إرسال رمز التحقق.');
       }
-    })
+    });
   }
 
 
   private handleChangePassword(): void {
-    if (this.newPassword() !== this.confirmPassword()) {
+    if (this.newPassword !== this.confirmPassword) {
       this.errorMessage.set('كلمة المرور الجديدة وتأكيدها غير متطابقين!');
       return;
     }
 
-    if (!this.newPassword() || !this.confirmPassword()) {
+    if (!this.newPassword || !this.confirmPassword) {
       this.errorMessage.set('يرجى ملء جميع حقول كلمة المرور!');
       return;
     }
 
     const payload = {
-      currentPassword: this.currentPassword(),
-      newPassword: this.newPassword(),
-      confirmPassword: this.confirmPassword(),
+      currentPassword: this.currentPassword,
+      newPassword: this.newPassword,
+      confirmPassword: this.confirmPassword,
     };
 
     this.authService.changePassword(payload).subscribe({
@@ -132,18 +142,17 @@ export class SettingsPageComponent {
 
 
 private handleChangeEmail(): void {
-  if (!this.currentPassword()) {
+  if (!this.savePassword) {
     this.errorMessage.set('يرجى إدخال كلمة المرور الحالية لتأكيد تغيير البريد الإلكتروني');
     return;
   }
-
   this.authService.requestChangeEmail({
-    newEmail: this.email().trim(),
-    password: this.savePassword()
+    newEmail: this.email.trim(),
+    password: this.savePassword
   }).subscribe({
     next: (res: { message: string }) => {
       this.successMessage.set('تم إرسال رابط التأكيد إلى بريدك الإلكتروني الجديد.');
-      this.savePassword.set('');
+      this.savePassword='';
     },
     error: (err: import('@angular/common/http').HttpErrorResponse) => {
       this.errorMessage.set(err.error?.message || 'فشل طلب تغيير البريد الإلكتروني.');
