@@ -9,13 +9,13 @@
               <h1 class="font-display text-3xl tracking-tight text-ink-foreground">تم إرسال رمز التحقق الي رقمك</h1>
                 <p class="mt-2 text-sm text-ink-muted">
                 أدخل رمز التحقق
-                </p>
+                </p> 
             </div>
 
             <div class="space-y-4">
               <div class="space-y-1.5">
                   <input
-                  #codeRef
+                  [(ngModel)]="code"
                   type="number"
                   name="code"
                   class="h-11 w-full rounded-lg border border-ink-border bg-ink px-3 text-ink-foreground placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand transition-colors"
@@ -26,8 +26,8 @@
                 <span class="text-sm text-primary-500">{{ err() }}</span>
                } 
               <button 
-                type="submit"
-                (click)="onConfirmOTP(codeRef.value)"
+                type="button"
+                (click)="onConfirmOTP()"
                 [disabled]="store.isLoading()"
                 class="mt-6 h-11 w-full rounded-lg bg-brand px-4 text-base font-medium text-white hover:brightness-90 transition-colors disabled:cursor-not-allowed disabled:opacity-70 flex items-center justify-center gap-2"
               >

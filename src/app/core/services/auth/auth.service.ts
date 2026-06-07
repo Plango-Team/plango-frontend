@@ -219,6 +219,10 @@ private buildHomeRoute(user: Pick<IUser, 'role'> & { accountType?: string }): st
     return this.http.post<IMessageResponse>(`${this.authUrl}/phone/confirm-change`,{otp}, { withCredentials: true });
   }
 
+  deleteAccount(password:string): Observable<IMessageResponse>{
+    return this.http.delete<IMessageResponse>(`${this.authUrl}/delete-account`,{body : {password},withCredentials : true})
+  }
+
   getHomeRoute(user: Pick<IUser, 'role'> & { accountType?: string }): string {
   return this.buildHomeRoute(user);
 }
