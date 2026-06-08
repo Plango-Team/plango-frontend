@@ -2,7 +2,6 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { IconComponent } from '../../../../../shared/components/icon/icon.component';
 import { SocialStore } from '../../../social/social.store';
 import { authStore } from '../../../../auth/auth.store';
 
@@ -11,7 +10,7 @@ type NetworkTab = 'followers' | 'following' | 'requests';
 @Component({
   selector: 'app-network-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, IconComponent],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './network-page.component.html',
   styleUrl: './network-page.component.css',
 })

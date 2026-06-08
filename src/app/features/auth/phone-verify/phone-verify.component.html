@@ -16,10 +16,13 @@
               <div class="space-y-1.5">
                   <input
                   [(ngModel)]="code"
-                  type="number"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
                   name="code"
-                  class="h-11 w-full rounded-lg border border-ink-border bg-ink px-3 text-ink-foreground placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand transition-colors"
+                  class="h-11 w-full rounded-lg border border-ink-border bg-ink px-3 text-ink-foreground placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand transition-colors text-center text-lg tracking-[0.3em]"
                   placeholder="xxxxxx"
+                  maxlength="6"
                 />
               </div>
                @if(err()){
