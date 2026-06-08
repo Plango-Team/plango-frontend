@@ -11,12 +11,12 @@ import { FormsModule } from "@angular/forms";
   templateUrl: './phone-verify.component.html',
   styleUrl: './phone-verify.component.css',
 })
-export class PhoneVerifyComponent {
+export class PhoneVerifyComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   store = inject(authStore);
-  code = ''
+  code: string | number = ''
   phone = signal<string>('');
 newPhone = signal<string>('');
 password = signal<string>('');
@@ -31,7 +31,7 @@ err = signal<string>('');
     this.mode.set(snapshot['mode'] || 'confirm_new')
   }
   onConfirmOTP(): void {
-    const codeValue = this.code.trim() 
+    const codeValue = String(this.code ?? '').trim() 
     if(!codeValue)
       return;
     if(this.mode() === 'verify_only'){
