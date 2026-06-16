@@ -3,7 +3,6 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { IconComponent } from '../../../../../shared/components/icon/icon.component';
-import { Appointment } from '../../services/appointment.service';
 import { AppointmentsStore } from '../../../appointments/appointments.store';
 import { authStore } from '../../../../auth/auth.store';
 import { MapStore } from '../../../map/map.store';
@@ -11,11 +10,14 @@ import { LocationComboboxComponent } from '../../../../../shared/components/loca
 import { PlacesService, Place } from '../../../../../shared/services/places.service';
 import { NotificationsStore } from '../../../../../shared/stores/notifications.store';
 import { ToastService } from '../../../../../shared/services/toast.service';
+import { AppointmentPayload } from '../../../appointments/interfaces/IAppointment';
+import { UpdateAppointmentModalComponent } from '../../components/update-appointment-modal/update-appointment-modal.component';
+import { DeletAppModalComponent } from "../../components/delet-app-modal/delet-app-modal.component";
 
 @Component({
   selector: 'app-calendar-page',
   standalone: true,
-  imports: [CommonModule, IconComponent, FormsModule, LocationComboboxComponent],
+  imports: [CommonModule, IconComponent, FormsModule, LocationComboboxComponent, UpdateAppointmentModalComponent, DeletAppModalComponent],
   providers: [DatePipe],
   templateUrl: './calendar-page.component.html',
 })
@@ -44,32 +46,36 @@ export class CalendarPageComponent {
   weekStart = 0;
 
   todayStr = computed(() => this.ymd(new Date()));
-
   newApptTitle = '';
+  newApptDescription = '';
   newApptOrigin = 'Home';
+  newApptOriginFullAddress = '';
   newApptDestination = '';
+  newApptDesFullAddress = '';
   newApptOriginLat: number | null = null;
   newApptOriginLng: number | null = null;
   newApptDestLat: number | null = null;
   newApptDestLng: number | null = null;
-  newApptDate = this.todayStr();
+  newApptDate = this.todayStr(); 
   newApptTime = '10:00';
   newApptTransport = 'car';
   newApptBufferMin = 15;
   newApptPrepMin = 20;
-  newApptNotes = '';
+  repeatUntil = this.todayStr();
+  repeatArr = [{id:'بدون' , text: 'none'},{id: 'يومياً' , text:'daily'},{id: 'إسبوعياً' , text:'weekly'},{id:'شهرياً' , text : 'monthly'}]
+  repeat : boolean | string = false;
   isResolvingCurrentLocation = signal(false);
   isSubmittingAppointment = signal(false);
   apptError = signal<string | null>(null);
 
   transports: { id: string; icon: string; ar: string; en: string }[] = [
-    { id: 'car', icon: 'Car01Icon', ar: 'سيارة', en: 'Car' },
-    { id: 'scooter', icon: 'Bicycle01Icon', ar: 'سكوتر', en: 'Scooter' },
-    { id: 'walk', icon: 'Walking01Icon', ar: 'مشي', en: 'Walk' },
-    { id: 'transit', icon: 'Bus01Icon', ar: 'مواصلات', en: 'Transit' },
+    { id: 'driving', icon: 'Car01Icon', ar: 'سيارة', en: 'Driving' },
+    { id: 'bicycling', icon: 'Bicycle01Icon', ar: 'دراجة', en: 'Bicycling' },
+    { id: 'walking', icon: 'Walking01Icon', ar: 'مشي', en: 'Walking' },
+    { id: 'other', icon: 'Bus01Icon', ar: 'مواصلات', en: 'Other' },
   ];
 
-  buffers = [0, 5, 10, 15, 30];
+  buffers = [0, 5, 10, 15, 30]; 
   prepOptions = [0, 10, 20, 30, 45, 60];
 
   openAddAppointment(defaultDate?: string) {
@@ -104,6 +110,7 @@ export class CalendarPageComponent {
 
     if (!location) {
       this.newApptOrigin = this.ar ? 'موقعي الحالي' : 'Current location';
+      this.newApptOriginFullAddress = this.newApptOrigin
       this.isResolvingCurrentLocation.set(false);
       this.apptError.set(
         this.mapStore.error() ||
@@ -123,6 +130,11 @@ export class CalendarPageComponent {
         this.placesService.reverseGeocode(location.lat, location.lng),
       );
       if (place) this.setPlaceAsOrigin(place);
+      else{
+        this.newApptOriginFullAddress = this.newApptOrigin
+      }
+    }catch (err){
+      this.newApptOriginFullAddress = this.newApptOrigin
     } finally {
       this.isResolvingCurrentLocation.set(false);
     }
@@ -184,30 +196,38 @@ export class CalendarPageComponent {
         return;
       }
 
-      const appt: Appointment = {
-        userId: user._id,
-        title,
-        origin: originPlace.name,
-        destination: destinationPlace.name,
-        originLat: originPlace.lat,
-        originLng: originPlace.lng,
-        destinationLat: destinationPlace.lat,
-        destinationLng: destinationPlace.lng,
-        lat: destinationPlace.lat,
-        lng: destinationPlace.lng,
-        date: this.newApptDate,
-        time: this.newApptTime,
-        transport: this.newApptTransport,
-        bufferMin: this.newApptBufferMin,
-        prepMin: this.newApptPrepMin,
-        notes: this.newApptNotes.trim() || undefined,
+      const isRecurringSelected = this.repeat !== 'none' && this.repeat !== false
+
+      const appt : any = {
+        title:title,
+        description:this.newApptDescription.trim() || '',
+        transportation:this.newApptTransport,
+        arrivalTime: new Date(`${this.newApptDate}T${this.newApptTime}`),
+        startLocation: {
+          addressName: originPlace.name,
+          type: 'Point',
+          coordinates: [Number(originPlace.lng), Number(originPlace.lat)] as [number , number]
+        },
+        destinationLocation: {
+          addressName: destinationPlace.name,
+          type: 'Point',
+          coordinates: [Number(destinationPlace.lng), Number(destinationPlace.lat)] as [number , number]
+        },
+        arrivalBuffer:Number(this.newApptBufferMin),
+        preparationTime : Number(this.newApptPrepMin),
+        isRecurring:isRecurringSelected
       };
 
+      if(isRecurringSelected){
+        appt.repeatType = this.repeat;
+        appt.repeatUntil = new Date(`${this.repeatUntil}`).toISOString()
+      }
+console.log(JSON.stringify(appt,null,2))
       this.appointmentsStore.addAppointment(appt);
       this.notificationsStore.push({
         kind: 'appointment_added',
         title: this.ar ? 'تمت إضافة موعد جديد' : 'Appointment added',
-        body: `${appt.title} · ${appt.date} ${appt.time}`,
+        body: `${title} · ${this.newApptDate} ${this.newApptTime}`,
         link: '/user/calendar',
       });
       this.toastService.success(
@@ -215,6 +235,9 @@ export class CalendarPageComponent {
         this.ar ? 'تم حفظ الموعد وإضافته إلى التقويم.' : 'Your appointment is now in calendar.',
       );
       this.closeAddAppointment();
+    }catch(err){
+      this.apptError.set(
+        this.ar ? 'فشل انشاء الموعد، حاول مرة أخري' : 'Failed to create Appointment, Please try again')
     } finally {
       this.isSubmittingAppointment.set(false);
     }
@@ -224,8 +247,14 @@ export class CalendarPageComponent {
     const d = this.drawerDay();
     if (!d) return [];
     return this.appointments()
-      .filter((appointment) => appointment.date === d)
-      .sort((a, b) => a.time.localeCompare(b.time));
+      .filter((appointment) =>{
+        if(!appointment.arrivalTime) return false;
+        const appDateStr = new Date(appointment.arrivalTime).toISOString().split('T')[0];
+        return appDateStr === d
+      }).sort((a, b) =>{
+        return new Date(a.arrivalTime).getTime() - new Date(b.arrivalTime).getTime()
+      }
+      )
   }
 
   get drawerTitleLabel() {
@@ -274,15 +303,21 @@ export class CalendarPageComponent {
     this.weekDays().forEach((d, i) => {
       const ds = this.ymd(d);
       const items = appts
-        .filter((appointment) => appointment.date === ds)
-        .map((appointment) => {
-          const [h, mn] = appointment.time.split(':').map(Number);
+        .filter((appointment) =>{
+          if(!appointment.arrivalTime) return false;
+          const appDateStr = new Date(appointment.arrivalTime).toISOString().split('T')[0];
+          return appDateStr === ds
+        }).map((appointment) => {
+          const dateObj = new Date(appointment.arrivalTime)
+          const h = dateObj.getHours()
+          const mn = dateObj.getMinutes()
           const start = (h || 0) + (mn || 0) / 60;
+          const bufferHours = (appointment.arrivalBuffer || 0) / 60
           return {
             start,
             dur: 1,
             title: appointment.title,
-            buffer: appointment.bufferMin / 60,
+            buffer: bufferHours,
             brand: ds === today,
           };
         })
@@ -304,7 +339,10 @@ export class CalendarPageComponent {
       return {
         date: d,
         ds,
-        count: appts.filter((appointment) => appointment.date === ds).length,
+        count: appts.filter((appointment) =>{
+          if(!appointment.arrivalTime) return false;
+          const appDateStr = new Date(appointment.arrivalTime).toISOString().split('T')[0]
+          return appDateStr === ds}).length,
       };
     });
   });
@@ -361,23 +399,27 @@ export class CalendarPageComponent {
     this.newApptTransport = 'car';
     this.newApptBufferMin = 15;
     this.newApptPrepMin = 20;
-    this.newApptNotes = '';
+    this.newApptDescription = '';
     this.apptError.set(null);
     this.isResolvingCurrentLocation.set(false);
   }
 
   private setPlaceAsOrigin(place: Place) {
+    console.log(place)
     this.placesService.savePlace(place);
     this.newApptOrigin = place.name;
     this.newApptOriginLat = place.lat;
     this.newApptOriginLng = place.lng;
+    this.newApptOriginFullAddress = (place as any).formattedAddress || place.name
   }
 
   private setPlaceAsDestination(place: Place) {
+    console.log(place)
     this.placesService.savePlace(place);
     this.newApptDestination = place.name;
     this.newApptDestLat = place.lat;
     this.newApptDestLng = place.lng;
+    this.newApptDesFullAddress = (place as any).formattedAddress || place.name
   }
 
   private async resolveAppointmentPlace(
@@ -419,4 +461,5 @@ export class CalendarPageComponent {
   private hasUsableCoordinates(lat: number | null, lng: number | null): lat is number {
     return Number.isFinite(lat) && Number.isFinite(lng) && (lat !== 0 || lng !== 0);
   }
+
 }

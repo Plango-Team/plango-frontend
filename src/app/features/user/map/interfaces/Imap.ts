@@ -61,7 +61,6 @@ export interface MapState {
     lng: number;
     lat: number
   } | null;
-  appointments: IAppointment[] | null;
   currentRoute: number[][] | null;
   routeData: IRouteResponse | null;
   isLoading: boolean;

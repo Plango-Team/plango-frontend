@@ -120,8 +120,8 @@
               <button 
                 type="button" 
                 (click)="removeInvitee($index)"
+                [disabled]="invitData.invitees.length === 1"
                 class="p-2 text-ink-muted rounded-lg hover:bg-ink-3 transition-colors"
-                [class]="invitData.invitees.length == 0? 'disabled': ''"
               >
                 <app-icon [iconName]="'Delete02FreeIcons'" [iconSize]="16"></app-icon>
               </button>
@@ -130,6 +130,22 @@
         </div>
       </div>
 
+
+@if (appStore.error()) {
+  <div class="text-xs text-red-500 bg-red-50 p-2 rounded-lg mt-2">
+    {{ appStore.error() }}
+  </div>
+}
+
+@if (appStore.invitationWarnings()) {
+  <div class="text-xs text-amber-600 bg-amber-50 p-2 rounded-lg mt-2">
+    <ul>
+      @for (warning of appStore.invitationWarnings(); track warning) {
+        <li>⚠️ {{ warning }}</li>
+      }
+    </ul>
+  </div>
+}
 
       <div class="mt-6 flex justify-end gap-3 pt-2"> <!--------close---------->
         <button

@@ -33,7 +33,7 @@ service = inject(AuthService)
   onSubmit(){
     this.showPassword.set(true)
   }
-  deleteAccount():void{
+  deleteAccount():void{ 
     if(!this.password.trim()){
       this.err.set('برجاء أدخل كلمة المرور بشكل صحيح')
       return;

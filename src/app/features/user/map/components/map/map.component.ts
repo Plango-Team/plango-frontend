@@ -14,6 +14,7 @@ import { IAppointment } from '../../interfaces/Imap';
 import { IconComponent } from '../../../../../shared/components/icon/icon.component';
 import { MapService } from '../../services/map.service';
 import { environment } from '../../../../../../environments/environment';
+import { AppointmentsStore } from '../../../appointments/appointments.store';
 
 @Component({
   selector: 'app-map',
@@ -24,6 +25,7 @@ import { environment } from '../../../../../../environments/environment';
 export class MapComponent implements OnDestroy {
   readonly mapStore = inject(MapStore);
   mapService = inject(MapService)
+  appStore = inject(AppointmentsStore)
   public lastFlyTo: { lng: number; lat: number } | null = null;
   public searchFlyTo: { lng: number; lat: number } | null = null;
   isMapReady: boolean = false;
@@ -69,7 +71,7 @@ export class MapComponent implements OnDestroy {
 
     effect(() => {
       const currentLayers = this.layers();
-      const appointments = this.mapStore.appointments();
+      const appointments = this.mapStore.sortedAppointments();
       const friends = this.mapStore.friends();
       const events = this.mapStore.events();
       const location = this.mapStore.userLocation();
@@ -138,7 +140,7 @@ export class MapComponent implements OnDestroy {
   }
 
   addMarkers() {
-    const appointments = this.mapStore.appointments();
+    const appointments = this.mapStore.sortedAppointments();
     if (!appointments || !this.map) return;
     this.currentMarkers.forEach((m) => m.remove());
     this.currentMarkers = [];
@@ -165,8 +167,10 @@ export class MapComponent implements OnDestroy {
   <span class="text-[10px] font-bold text-black bg-white/80 px-2 py-0.5 rounded-full backdrop-blur-sm">
     ${app.title} 
   </span>`;
+  const coords = app.destinationLocation?.coordinates;
+  if(!coords || coords.length < 2) return;
       const marker = new Marker({ element: el, anchor: 'bottom' })
-        .setLngLat([app.lng, app.lat])
+        .setLngLat([coords[0], coords[1]])
         .addTo(this.map);
       marker.getElement().addEventListener('click', () => {
         this.loadRouteForAppointment(app);
@@ -249,15 +253,16 @@ export class MapComponent implements OnDestroy {
     });
   }
 
-  loadRouteForAppointment(appointment: IAppointment) {
+  loadRouteForAppointment(appointment: any) {
     this.mapStore.clearRoute();
-    const userLoc = this.mapStore.userLocation();
-    if (userLoc) {
-      this.mapStore.loadRoute(
-        { lat: userLoc.lat, lng: userLoc.lng },
-        { lat: appointment.lat, lng: appointment.lng },
-      );
-    }
+    this.mapStore.loadRouteFromAppointment(appointment)
+    // const userLoc = this.mapStore.userLocation();
+    // if (userLoc) {
+    //   this.mapStore.loadRoute(
+    //     { lat: userLoc.lat, lng: userLoc.lng },
+    //     { lat: appointment.lat, lng: appointment.lng },
+    //   );
+    // }
   }
 
   drawRouteOnMap(coordinates: number[][]) {
@@ -371,7 +376,7 @@ export class MapComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.mapStore.clearLocationTracking();
+    // this.mapStore.clearLocationTracking();
     this.map.remove();
   }
 }

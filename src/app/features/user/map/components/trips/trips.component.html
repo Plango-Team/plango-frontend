@@ -7,7 +7,7 @@
       </div>
       <p class="text-xs text-ink-muted">عدّ تنازلي مباشر للمغادرة لكل صديق</p>
     </div> 
-    <button (click)="invitModal.open()" class="flex items-center gap-2 rounded-lg bg-brand px-2 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand/90 transition-all">
+    <button (click)="invitModal.open(mapStore.sortedAppointments()[0]._id)" class="flex items-center gap-2 rounded-lg bg-brand px-2 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand/90 transition-all">
         <app-icon [iconName]="'PlusSignIcon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>ادعُ 
     </button>
     <app-invit-modal #invitModal></app-invit-modal>
@@ -18,16 +18,16 @@
     <div class="rounded-xl bg-ink p-4 mb-3 border border-ink-border">
     <div class="flex items-start justify-between">
       <div class="flex flex-col gap-2">
-        <h2 class="text-lg lg:text-sm">{{trip.tripTitle || 'null'}}</h2>       
+        <h2 class="text-lg lg:text-sm">{{mapStore.sortedAppointments()[0].title}}</h2>       
         <div class="flex items-center gap-1.5 text-xs lg:truncate text-ink-muted">
         <app-icon [iconName]="'Location01FreeIcons'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
-          {{trip.location}}
+          {{mapStore.sortedAppointments()[0].destinationLocation.addressName}}
         </div>
         
-        <div class="flex items-center gap-1.5 text-xs text-ink-muted">       
+        <!-- <div class="flex items-center gap-1.5 text-xs text-ink-muted">       
         <app-icon [iconName]="'Clock02Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
-          بدأ منذ {{trip.startTime}} د
-        </div>
+          بدأ منذ {{mapStore.sortedAppointments()[0].}} د
+        </div> -->
       </div>
       
       <div class="flex flex-col items-end gap-1.5">
@@ -45,7 +45,7 @@
             
             </span>
         </div>
-        <span class="text-sm lg:text-xs">{{trip.appointmentTime}}</span>
+        <span class="text-sm lg:text-xs">{{trip.arrivalTime}}</span>
         <div class="mt-2 flex items-center gap-1.5 bg-(--success-bg) text-success text-[8px] px-2.5 w-fit lg:px-0 lg:w-10 lg:gap-0 py-1 xl:w-fit xl:px-2 rounded-full ">
             قادم {{comingCount()}} / {{frindsArray().length}}
         </div>

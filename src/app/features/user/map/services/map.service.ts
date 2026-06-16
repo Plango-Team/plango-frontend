@@ -6,47 +6,45 @@ import { IAppointment, IRouteResponse ,Friend, ITrip,ChatMessage} from '../inter
 import polyline from '@mapbox/polyline';
 import { authStore } from '../../../auth/auth.store';
 
+export interface IRouteRes{
+  success : boolean;
+  data :{
+    transport_mode:string;
+    duration:number;
+    distance:number;
+    polyline:string
+  };
+}
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root', 
 })
 export class MapService {
   private http = inject(HttpClient)
   authstore = inject(authStore)
   private isDevMode = true // بعد ميخلصوا الباك هنخليها فولس 
 
-  getRoute(origin: {lat: number , lng: number}, destination: {lat: number , lng: number}) : Observable<IRouteResponse> {
-    if(this.isDevMode){
-      const mockPoly =  polyline.encode([[origin.lat,origin.lng],[destination.lat,destination.lng]])
-      return of<IRouteResponse>({
-        success: true,
-        data: {
-          transport_mode: 'car',
-          duration: 600,
-          distance: 2000,
-          polyline: mockPoly
-        }
-      }).pipe(delay(800));
-    }
-    return this.http.post<IRouteResponse>(`${environment.apiUrl}/routes/preview`,
-      {origin, destination , transport_mode:'car'}
-    )
-  }
+  // getRoute(origin: {lat: number , lng: number}, destination: {lat: number , lng: number}) : Observable<IRouteResponse> {
+  //   if(this.isDevMode){
+  //     const mockPoly =  polyline.encode([[origin.lat,origin.lng],[destination.lat,destination.lng]])
+  //     return of<IRouteResponse>({
+  //       success: true,
+  //       data: {
+  //         transport_mode: 'car',
+  //         duration: 600,
+  //         distance: 2000,
+  //         polyline: mockPoly
+  //       }
+  //     }).pipe(delay(800));
+  //   }
+  //   return this.http.post<IRouteResponse>(`${environment.apiUrl}/routes/preview`,
+  //     {origin, destination , transport_mode:'car'}
+  //   )
+  // }
 
-  searchLocation(query:string): Observable<any>{
+searchLocation(query:string): Observable<any>{
     const url = `${environment.nominatimUrl}/search?format=jsonv2&q=${encodeURIComponent(query)}&accept-language=ar&limit=5&email=test-plango@gmail.com`;
     return this.http.get<any[]>(url)
   }
-  
-  getAppointments(): Observable<IAppointment[]> {
-  if (this.isDevMode) {
-    const mockAppointments : IAppointment[] = [
-      { id: '1', title: 'جامعة المنيا', lng: 30.7450, lat: 28.1130 ,transport_mode: 'car' , appointmenttime:'10:00',states:'نشط'},
-      { id: '2', title: 'نادي المنيا', lng: 30.7520, lat: 28.1050 ,transport_mode: 'car' , appointmenttime:'04:00',states:'غير نشط' }
-    ];
-    return of(mockAppointments).pipe(delay(500));
-  }
-  return this.http.get<IAppointment[]>(`${environment.apiUrl}/appointments`);
-}
 
 getTripInfo(): Observable<ITrip>{
   if (this.isDevMode) {

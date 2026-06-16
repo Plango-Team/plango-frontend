@@ -8,7 +8,7 @@
         @if (showDropDown) {
     <ul class="bg-ink-2 absolute z-9999 w-full mt-14 max-h-44 overflow-y-auto border border-ink-border rounded-lg shadow-lg animate-fade-in">
       @for (place of searchRes; track place.place_id) {
-        <li>
+        <li>  
           <button 
             type="button"
             (click)="selectLocation(place)"

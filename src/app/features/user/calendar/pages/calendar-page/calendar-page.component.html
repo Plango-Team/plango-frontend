@@ -227,38 +227,61 @@
             </div>
           } @else {
             <div class="space-y-2">
-              @for (a of dayAppts; track a.id) {
+              @for (a of dayAppts; track $index) {
                 <div
                   class="rounded-xl border border-ink-border bg-ink p-3 transition-all hover:bg-ink/60 cursor-pointer"
                 >
                   <div class="flex items-start justify-between gap-2">
                     <div class="min-w-0">
-                      <div class="truncate font-medium text-ink-fg">{{ a.title }}</div>
+                      <div class="truncate flex gap-2 font-medium text-ink-fg">{{ a.title }} 
+                          <span>
+                          <button class="cursor-pointer" (click)="updateModal.openUpdateAppointment(a)">
+                            <app-icon
+                            [iconName]="'PencilEdit02Icon'"
+                            [iconSize]="12"
+                            [iconColor]="'currentColor'"
+                          ></app-icon>
+                          <app-update-appointment-modal #updateModal></app-update-appointment-modal>
+                          </button>
+                        </span>
+                        <span>
+                            <button class="cursor-pointer" (click)="deledtAppModal.open(a._id)">
+                            <app-icon
+                            [iconName]="'Delete02Icon'"
+                            [iconSize]="12"
+                            [iconColor]="'currentColor'"
+                          ></app-icon>
+                          <app-delet-app-modal #deledtAppModal></app-delet-app-modal>
+                          </button>
+                        </span>
+                      </div>
                       <div class="mt-1 flex items-center gap-2 text-[11px] text-ink-muted">
-                        <span class="flex items-center gap-1"
+                          <span class="flex items-center gap-1"
                           ><app-icon
                             [iconName]="'TimeQuarter02Icon'"
                             [iconSize]="12"
                             [iconColor]="'currentColor'"
                           ></app-icon>
-                          {{ a.time }}</span
+                          {{ a.arrivalTime | date:'HH:mm a' }}</span
                         >
-                        @if (a.destination) {
+                        @if (a.destinationLocation?.addressName) {
                           <span class="flex items-center gap-1"
                             ><app-icon
                               [iconName]="'Location01Icon'"
                               [iconSize]="12"
                               [iconColor]="'currentColor'"
                             ></app-icon>
-                            {{ a.destination }}</span
+                            {{ a.destinationLocation.addressName }}</span
                           >
                         }
+                        
+                        
                       </div>
                     </div>
                     <span
                       class="rounded-full border border-ink-border bg-ink-2 px-2 py-0.5 text-[10px] text-ink-muted whitespace-nowrap"
                     >
-                      {{ a.bufferMin }} {{ ar ? 'دقيقة تنقل' : 'm travel' }}
+                      {{ a.estimatedTravelTime }} {{ ar ? 'دقيقة تنقل' : 'm travel' }}
                     </span>
                   </div>
                 </div>
@@ -403,7 +426,7 @@
           }
         </div>
       </div>
-
+ 
       <!-- Buffer selection -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-ink-fg">{{
@@ -454,11 +477,49 @@
         </p>
       </div>
 
+      <!--Repeat time-->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-ink-fg">{{
+          ar ? 'التكرار' : 'Repeat'
+        }}</label>
+        <div class="grid grid-cols-4 gap-2">
+          @for (r of repeatArr; track r.id) {
+            <button
+              type="button"
+              (click)="repeat = r.text"
+              class="rounded-lg border py-2 text-xs transition"
+              [ngClass]="
+                repeat === r.text
+                  ? 'border-ink-fg bg-ink-fg text-ink'
+                  : 'border-ink-border bg-ink text-ink-muted hover:bg-ink-3'
+              "
+            >
+              {{ r.id }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!--Repeat Until-->
+      @if (repeat !== false && repeat !== 'none') {
+        <div class="space-y-1.5">
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-ink-fg">{{ ar ? 'تكرار حتي' : 'Repeat Until' }}</label>
+          <input
+            type="date"
+            [(ngModel)]="repeatUntil"
+            name="date"
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+        </div>
+      </div>
+      }
+
       <!-- Notes -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-ink-fg">{{ ar ? 'ملاحظات' : 'Notes' }}</label>
         <textarea
-          [(ngModel)]="newApptNotes"
+          [(ngModel)]="newApptDescription"
           name="notes"
           maxlength="400"
           class="min-h-[72px] w-full rounded-lg border border-ink-border bg-ink p-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
