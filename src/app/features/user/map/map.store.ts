@@ -1,17 +1,17 @@
-import { signalStore, withState, withMethods, patchState, withHooks } from '@ngrx/signals';
+import { signalStore, withState, withMethods, patchState, withHooks, withComputed } from '@ngrx/signals';
 import { ChatMessage, IAppointment, IRouteResponse, MapState } from './interfaces/Imap';
-import { effect, inject, untracked } from '@angular/core';
+import { computed, effect, inject, untracked } from '@angular/core';
 import { MapService } from './services/map.service';
 import polyline from '@mapbox/polyline';
 import { authStore } from '../../auth/auth.store';
 import { InvitService } from './services/invit.service';
+import { AppointmentsStore } from '../appointments/appointments.store';
 
 
 let watchId : number | null = null;
 
 const initialState: MapState = {
   userLocation: null,
-  appointments: null,
   currentRoute: null,
   routeData: null,
   isLoading: false,
@@ -30,6 +30,24 @@ export const MapStore = signalStore(
     providedIn: 'root',
   },
   withState(initialState),
+
+  withComputed((store, appointmentStore = inject(AppointmentsStore)) => ({
+    sortedAppointments: computed(() => {
+      const list = appointmentStore.appointments() || [];
+      return [...list].sort((a, b) => {
+        return new Date(a.arrivalTime).getTime() - new Date(b.arrivalTime).getTime();
+      });
+    }),
+    nextAppointment: computed(() => {
+      const list = appointmentStore.appointments() || [];
+      if (list.length === 0) return null;
+      
+      const sorted = [...list].sort((a, b) => 
+        new Date(a.arrivalTime).getTime() - new Date(b.arrivalTime).getTime()
+      );
+      return sorted[0];
+    })
+  })),
 
   withMethods((store, mapService = inject(MapService),invitService = inject(InvitService), authstore = inject(authStore)) => ({
     // فنكشن بتجيب اللوكيشن الحالي من المتصفح
@@ -71,11 +89,29 @@ export const MapStore = signalStore(
       }
     },
 
+    loadRouteFromAppointment(appointment: any) {
+      if (!appointment || !appointment.polyline) {
+        patchState(store, { error: 'لا يوجد مسار مسجل لهذا الميعاد' });
+        return;
+      }
+
+      try {
+        patchState(store, { isLoading: true });
+        const decodedPoly = polyline.decode(appointment.polyline);
+        const coordinates = decodedPoly.map(p => [p[1], p[0]]);
+        
+        patchState(store, { 
+          currentRoute: coordinates, 
+          isLoading: false, 
+          error: null 
+        });
+      } catch (e) {
+        patchState(store, { isLoading: false, error: 'فشل في قراءة مسار الميعاد' });
+      }
+    },
+
     loadFullData() {
     patchState(store, { isLoading: true });
-    mapService.getAppointments().subscribe(data => {
-      patchState(store, { appointments: data, isLoading: false });
-    });
     mapService.getTripInfo().subscribe(info => {
       patchState(store, {trips: [info]}); 
     });
@@ -124,63 +160,46 @@ export const MapStore = signalStore(
       })
     },
 
-    loadRoute(origin: {lat:number,lng:number},destination:{lat:number,lng:number}){
-      patchState(store,{isLoading:true});
-      mapService.getRoute(origin,destination).subscribe({
-        next: (response) => {
-          // بفكه علشان بيكون راجع سترينج مش احداثيات
-          const decodedPoly = polyline.decode(response.data.polyline)
-          // بعكسه علشان الديكود بيرجع [lat,lng] واحنا عاوزيين العكس
-          const coordinates = decodedPoly.map(p => [p[1], p[0]]);
-          patchState(store, {currentRoute:coordinates,routeData:response,isLoading:false});
-        },
-        error:(e) => {
-          // error msg
-          patchState(store, {isLoading:false})
-        } 
-      })
-    },
+    // loadRoute(origin: {lat:number,lng:number},destination:{lat:number,lng:number}){
+    //   patchState(store,{isLoading:true});
+    //   mapService.getRoute(origin,destination).subscribe({
+    //     next: (response) => {
+    //       // بفكه علشان بيكون راجع سترينج مش احداثيات
+    //       const decodedPoly = polyline.decode(response.data.polyline)
+    //       // بعكسه علشان الديكود بيرجع [lat,lng] واحنا عاوزيين العكس
+    //       const coordinates = decodedPoly.map(p => [p[1], p[0]]);
+    //       patchState(store, {currentRoute:coordinates,routeData:response,isLoading:false});
+    //     },
+    //     error:(e) => {
+    //       // error msg
+    //       patchState(store, {isLoading:false})
+    //     } 
+    //   })
+    // },
 
     clearRoute(){
       patchState(store, {currentRoute: null})
     },
 
-    sendInvites(invitesObject: any) {
-      patchState(store, { isLoading: true, error: null });
-      const currentTripId = store.trips()[0]?.id || 0;
+    // acceptTripInvite(inviteId: string) {
+    //   patchState(store, { isLoading: true, error: null });
+    //   const currentTripId = store.trips()[0]?.id || 0;
 
-      invitService.sendInvitations(currentTripId, invitesObject).subscribe({
-        next:() => {
-          patchState(store, { isLoading: false });
-        },
-        error: (err) => {
-          patchState(store, { 
-            isLoading: false, 
-            error: err.message
-          });
-        }
-      });
-    },
-
-    acceptTripInvite(inviteId: string) {
-      patchState(store, { isLoading: true, error: null });
-      const currentTripId = store.trips()[0]?.id || 0;
-
-      invitService.acceptInvitation(currentTripId, inviteId).subscribe({
-        next: (response) => {
-          patchState(store, (state) => ({
-            isLoading: false,
-            friends: state.friends ? [...state.friends, response.friend] : [response.friend]
-          }));
-        },
-        error: (err) => {
-          patchState(store, { 
-            isLoading: false, 
-            error: err.message
-          });
-        }
-      });
-    }
+    //   invitService.acceptInvitation(currentTripId, inviteId).subscribe({
+    //     next: (response) => {
+    //       patchState(store, (state) => ({
+    //         isLoading: false,
+    //         friends: state.friends ? [...state.friends, response.friend] : [response.friend]
+    //       }));
+    //     },
+    //     error: (err) => {
+    //       patchState(store, { 
+    //         isLoading: false, 
+    //         error: err.message
+    //       });
+    //     }
+    //   });
+    // }
   })),
 
   withHooks({

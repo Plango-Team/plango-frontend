@@ -1,28 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment';
-
-export interface Appointment {
-  id?: string;
-  userId: string;
-  date: string;
-  time: string;
-  title: string;
-  origin?: string;
-  destination?: string;
-  originLat?: number;
-  originLng?: number;
-  destinationLat?: number;
-  destinationLng?: number;
-  lat?: number;
-  lng?: number;
-  transport?: string;
-  bufferMin: number;
-  prepMin?: number;
-  notes?: string;
-}
+import { Appointment, AppointmentPayload, AppointmentResponce } from '../../appointments/interfaces/IAppointment';
 
 @Injectable({
   providedIn: 'root'
@@ -37,15 +18,24 @@ export class AppointmentService {
     );
   }
 
-  createAppointment(appointment: Appointment): Observable<Appointment> {
-    return this.http.post<{ status: string; data: { appointment: Appointment } }>(this.apiUrl, appointment).pipe(
-      map(res => res.data.appointment)
-    );
+  createAppointment(appointment: AppointmentPayload): Observable<AppointmentResponce> {
+    return this.http.post<AppointmentResponce>(this.apiUrl, appointment);
+  }
+
+  updateAppointment(id: string,appointment: AppointmentPayload): Observable<AppointmentResponce> {
+    return this.http.put<AppointmentResponce>(`${this.apiUrl}/${id}`,appointment);
   }
 
   deleteAppointment(id: string): Observable<void> {
-    return this.http.delete<{ status: string; data: null }>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.delete<{ status: string; message: string }>(`${this.apiUrl}/${id}`).pipe(
+      map((): void => void 0)
+    );
+  }
+
+  deleteSerialAppointment(Sid: string): Observable<any> {
+    return this.http.delete<{ status: string; message: string ; data : { result :{deletedCount : number}}}>(`${this.apiUrl}/series/${Sid}`).pipe(
       map((): void => void 0)
     );
   }
 }
+

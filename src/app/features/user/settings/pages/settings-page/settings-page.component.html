@@ -5,13 +5,15 @@
       <h1 class="text-2xl font-bold text-ink-fg">الإعدادات</h1>
       <p class="text-xs text-ink-muted mt-1">خصّص تجربة PlanGO الذكية</p>
     </div>
-    <button (click)="deleteModal.open()" type="button" class="flex items-center gap-2 bg-primary-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-sm hover:bg-primary-600">
+    <div>
+      <button (click)="deleteModal.open()" type="button" class="flex items-center gap-2 bg-primary-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-sm hover:bg-primary-600">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
       </svg>
       <span>حذف الحساب</span>
     </button>
     <app-delete-modal #deleteModal></app-delete-modal>
+    </div>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -52,18 +54,11 @@
 
         <!-- Phone -->
         <div>
-          <label class="block text-sm font-semibold text-ink-fg mb-1.5">رقم الهاتف</label>
-          <div class="relative flex items-center">
-            <input
-              type="tel"
-              name="phone"
-              [(ngModel)]="phone"
-              [placeholder]="authStore.user()?.phone || 'رقم الهاتف'"
-              class="w-full h-11 bg-ink border border-ink-border rounded-xl px-4 pe-24 text-sm text-ink-fg placeholder:text-ink-muted focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors"
-            >
-            <div class="absolute left-2">
+          <div class="flex justify-between items-center">
+            <label class="block text-sm font-semibold text-ink-fg mb-1.5">رقم الهاتف</label>
+          <div class="">
               @if (authStore.user()?.isPhoneVerified) {
-                <span class="h-7 px-3 text-xs font-bold text-emerald-500 border border-emerald-500/40 bg-emerald-500/10 rounded-lg flex items-center gap-1">
+                <span class="h-5 px-2 text-xs font-bold text-emerald-500 border border-emerald-500/40 bg-emerald-500/10 rounded-lg flex items-center gap-1">
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                   مؤكد
                 </span>
@@ -71,12 +66,21 @@
                 <button
                   type="button"
                   (click)="handlePhoneVerify()"
-                  class="h-7 px-3 text-xs font-bold text-brand hover:text-brand/80 rounded-lg transition-colors"
+                  class="h-5 px-3 text-xs font-bold text-brand hover:text-brand/80 rounded-lg transition-colors"
                 >
                   تأكيد الرقم؟
                 </button>
               }
             </div>
+          </div>
+          <div class="flex items-center">
+            <input
+              type="tel"
+              name="phone"
+              [(ngModel)]="phone"
+              [placeholder]="authStore.user()?.phone || 'رقم الهاتف'"
+              class="w-full h-11 bg-ink border border-ink-border rounded-xl px-4 pe-24 text-sm text-ink-fg placeholder:text-ink-muted focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors"
+            >
           </div>
         </div>
 

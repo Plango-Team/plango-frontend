@@ -1,0 +1,55 @@
+<dialog
+  #deleteModal 
+  class="backdrop:bg-black/50 backdrop:backdrop-blur-sm bg-transparent p-0 m-auto shadow-none outline-none overflow-visible w-full max-w-lg z-100"
+  (cancel)="close()" > <!--------------- close-------------------> 
+>
+  <div
+    class="relative w-full bg-ink-2 border border-ink-border overflow-visible rounded-xl shadow-elevated p-6 animate-fade-in-up max-h-[90vh]"
+  >
+    <div class="mb-4">
+        <h2 class="font-display text-2xl text-ink-fg">
+    ادخل وسيلة التنقل
+      </h2>
+    </div>
+
+<div class="space-y-1.5">
+        <label class="text-sm font-medium text-ink-fg">{{ ar ? 'وسيلة التنقل' : 'Transport' }}</label>
+        <div class="grid grid-cols-4 gap-2">
+          @for (t of transports; track t.id) {
+            <button
+              type="button"
+              (click)="transportation = t.id"
+              class="flex flex-col items-center gap-1 rounded-lg border px-2 py-3 text-xs transition"
+              [ngClass]="transportation === t.id
+                ? 'border-ink-fg bg-ink-fg text-ink'
+                : 'border-ink-border bg-ink text-ink-muted hover:bg-ink-3 hover:text-ink-fg'"
+            >
+              <app-icon [iconName]="$any(t.icon)" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+              {{ ar ? t.ar : t.en }}
+            </button>
+          }
+        </div>
+      </div>
+@if (err()) {
+<div class="text-primary-500 text-sm text-center">{{err()}}</div>
+}@if (success()) {
+<div class="text-success text-sm text-center">{{success()}}</div>
+}
+      <div class="mt-6 flex justify-end gap-3 pt-2"> <!--------close---------->
+        <button
+          type="button"
+          (click)="close()" 
+          class="rounded-lg border border-ink-border bg-transparent px-4 py-2 text-sm font-medium text-ink-fg hover:bg-ink-3 transition-colors"
+        >
+          {{'إلغاء'}}
+        </button>
+            <button
+        (click)="onAcceptInvite(appID)"
+          type="submit"
+          class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
+        >
+          تأكيد
+        </button>
+      </div>
+    </div>
+</dialog> 

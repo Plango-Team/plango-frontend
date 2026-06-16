@@ -5,6 +5,7 @@ import { CardComponent } from "../../../../../shared/ui/card/card.component";
 import { MapStore } from '../../map.store';
 import { TripsComponent } from '../../components/trips/trips.component';
 import { InvitModalComponent } from '../../components/invit-modal/invit-modal.component';
+import { AppointmentsStore } from '../../../appointments/appointments.store';
 @Component({
   selector: 'app-map-page',
   imports: [MapComponent, IconComponent, CardComponent, TripsComponent,InvitModalComponent],
@@ -13,6 +14,7 @@ import { InvitModalComponent } from '../../components/invit-modal/invit-modal.co
 })
 export class MapPageComponent {
   mapStore = inject(MapStore)
+  appStore = inject(AppointmentsStore)
   isFullScreen = signal(false)
   @ViewChild(MapComponent)
   mapComponent!:MapComponent;

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../../../shared/components/icon/icon.component';
 import { MapStore } from '../../map.store';
 import { environment } from '../../../../../../environments/environment';
+import { AppointmentsStore } from '../../../appointments/appointments.store';
 
 @Component({
   selector: 'app-invit-modal',
@@ -12,8 +13,10 @@ import { environment } from '../../../../../../environments/environment';
   styleUrl: './invit-modal.component.css',
 })
 export class InvitModalComponent {
-  store = inject(MapStore)
+  appStore = inject(AppointmentsStore)
+  mapStore = inject(MapStore)
     http = inject(HttpClient)
+    appId = ''
   
     searchRes : any[] = []
     showDropDown = false
@@ -35,7 +38,8 @@ export class InvitModalComponent {
   
     
     @ViewChild('invitModal') invitModal!: ElementRef<HTMLDialogElement>;
-    open(){
+    open(appId:string){
+      this.appId = appId
       this.invitModal.nativeElement.showModal();
     }
     close(){
@@ -45,27 +49,20 @@ export class InvitModalComponent {
       if(this.date && this.time){
         const fullDate = `${this.date}T${this.time}:00`;
         this.invitData.date = new Date(fullDate);
-        this.invitData.invitees.filter(i => i.inviteeUsarname.trim() !== "")
-        if(this.invitData.title.trim()){
-        this.store.sendInvites(this.invitData)
-        this.invitData = {
-      title:'',
-      location:'',
-      date:new Date(),
-      arrive:0,
-      invitees:[
-        {
-        inviteeUsarname:'',
-        }
-      ]
-        }
-    this.close()
       }
-      }
+        const usernamesToSend = this.invitData.invitees.map(i => i.inviteeUsarname.trim()).filter(
+          username => username !== '');
+          if(usernamesToSend.length > 0 && this.invitData.title.trim()){
+            this.appStore.sendInvitations({
+              appointmentId:this.appId,
+              usernames:usernamesToSend
+            });
+            // this.close()
+          }
     }
 
     addInvitee(){
-      this.invitData.invitees.push({inviteeUsarname:""})
+      this.invitData.invitees.push({inviteeUsarname:''})
     }
 
     removeInvitee(index:number){
@@ -95,6 +92,6 @@ export class InvitModalComponent {
     selectLocation(loc : any){
       this.invitData.location = loc.display_name;
       this.searchRes = []
-      this.showDropDown = false
+      this.showDropDown = false 
   }
 } 
