@@ -42,7 +42,11 @@ export class AuthService {
     name: displayName,
     email: backendUser.email ?? '',
     role: backendUser.role ?? 'user',
+    accountType:
+      backendUser.accountType ??
+      (backendUser.role === 'org' ? 'organization' : 'personal'),
     location: backendUser.location ?? backendUser.city ?? 'Cairo',
+    bio: backendUser.bio,
     username: backendUser.username ?? backendUser.userName ?? displayName.toLowerCase().replace(/\s+/g, '_'),
     isPrivate: backendUser.isPrivate ?? backendUser.privateFollows ?? false,
     provider: backendUser.provider ?? 'local',
@@ -65,7 +69,7 @@ private buildHomeRoute(user: Pick<IUser, 'role'> & { accountType?: string }): st
     return '/admin';
   }
 
-  return user.accountType === 'organization' ? '/organization' : '/user';
+  return user.role === 'org' || user.accountType === 'organization' ? '/organization' : '/user';
 }
 
   /**
@@ -96,11 +100,11 @@ private buildHomeRoute(user: Pick<IUser, 'role'> & { accountType?: string }): st
       name: userData.displayName ?? `${userData.firstName} ${userData.lastName}`.trim(),
       email: userData.email,
       password: userData.password,
-      role: 'user',
+      role: userData.accountType === 'organization' ? 'org' : 'user',
       username: userData.username,
       location: userData.city,
       bio: userData.bio,
-      isPrivate: userData.privateFollows ?? false,
+      isPrivate: userData.isPrivate ?? false,
     };
 
     return this.http.post<ISignUpResponse>(`${this.authUrl}/register`, payload).pipe(

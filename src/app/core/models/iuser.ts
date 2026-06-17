@@ -10,7 +10,9 @@ export interface IUser {
     _id:                         string;
     name:                        string;
     email:                       string;
-    role:                        string;
+    role:                        'user' | 'org' | 'admin';
+    accountType:                 AccountType;
+    bio?:                        string;
     location:                    string;
     username:                    string;
     isPrivate:                   boolean;
@@ -155,7 +157,7 @@ export interface ISignUpRequest {
   password: string;
   city: string;
   bio?: string;
-  privateFollows?: boolean;
+  isPrivate?: boolean;
   organizationName?: string;
   organizationDescription?: string;
   preferences: {

@@ -4,6 +4,7 @@ import { FlowbiteService } from './core/services/flowbite/flowbite.service';
 import { initFlowbite } from 'flowbite/lib/esm/components';
 import { authStore } from './features/auth/auth.store';
 import { ToastOutletComponent } from './shared/components/toast-outlet/toast-outlet.component';
+import { NotificationsStore } from './shared/stores/notifications.store';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +15,7 @@ import { ToastOutletComponent } from './shared/components/toast-outlet/toast-out
 export class App {
   protected readonly title = signal('plango-frontend');
   private authStore = inject(authStore);
+  private notificationsStore = inject(NotificationsStore);
   // flowbite تاني
   constructor(private flowbiteService: FlowbiteService) {
     this.authStore.initAuth();

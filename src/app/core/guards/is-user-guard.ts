@@ -16,7 +16,7 @@ export const isUserGuard: CanActivateFn = (route, state) => {
       if (user.role === 'admin') {
       return router.parseUrl('/admin');
     }
-    if (user && (user as any).accountType === 'organization') {
+    if (user.role === 'org') {
       return router.parseUrl('/organization'); 
     }
     return true;

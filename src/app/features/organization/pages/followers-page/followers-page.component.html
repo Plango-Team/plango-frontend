@@ -95,6 +95,14 @@
                   {{ profile.displayName }}
                 </div>
                 <div class="truncate text-xs text-ink-muted">&#64;{{ profile.username }}</div>
+                <div class="mt-1 flex gap-1">
+                  <span class="rounded-full border border-ink-border px-2 py-0.5 text-[10px] text-ink-muted">
+                    {{ profile.kind === 'org' ? 'مؤسسة' : 'شخصي' }}
+                  </span>
+                  <span class="rounded-full border border-ink-border px-2 py-0.5 text-[10px] text-ink-muted">
+                    {{ profile.isPrivate ? 'خاص' : 'عام' }}
+                  </span>
+                </div>
               </a>
 
               @if (tab() === 'followers') {
@@ -109,7 +117,7 @@
                   [class.bg-ink]="followState(profile.id) !== 'none'"
                   [class.text-ink-fg]="followState(profile.id) !== 'none'"
                 >
-                  {{ followState(profile.id) === 'none' ? 'متابعة' : 'إلغاء' }}
+                  {{ followLabel(profile) }}
                 </button>
               }
             </div>

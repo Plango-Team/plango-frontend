@@ -11,7 +11,7 @@ export const isOrganizationGuard: CanActivateFn = () => {
     return router.parseUrl('/admin');
   }
 
-  if ((user as any)?.accountType === 'organization') {
+  if (user?.role === 'org') {
     return true;
   }
 

@@ -6,12 +6,13 @@ import { IconComponent } from "../../../../../shared/components/icon/icon.compon
 import { authStore } from '../../../../auth/auth.store';
 import { TasksStore } from '../../../tasks/tasks.store';
 import { AppointmentsStore } from '../../../appointments/appointments.store';
-import { AcceptInvitePayload } from '../../../map/services/invit.service';
 import { MapStore } from '../../../map/map.store';
 import { SetLocationModalComponent } from "../../components/set-location-modal/set-location-modal.component";
+import { DashboardEventsComponent } from "../../components/dashboard-events/dashboard-events.component";
+import { Appointment } from '../../../appointments/interfaces/IAppointment';
 
 @Component({
-  imports: [DashboardAppointmentsComponent, CardComponent, IconComponent, RouterModule, SetLocationModalComponent],
+  imports: [DashboardAppointmentsComponent, CardComponent, IconComponent, RouterModule, SetLocationModalComponent, DashboardEventsComponent],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.css',
 })
@@ -20,6 +21,13 @@ export class DashboardPageComponent {
   appStore = inject(AppointmentsStore)
   mapStore = inject(MapStore)
   public tasksStore = inject(TasksStore);
+  nextAppointment = computed(() => this.mapStore.nextAppointment());
+  sharedAppointments = computed(() =>
+    this.appStore
+      .appointments()
+      .filter((appointment) => (appointment.participants?.length ?? 0) > 0)
+      .slice(0, 3),
+  );
 
   // ─── Real Task Stats ─────────────────────────────────
   totalTasks = computed(() => this.tasksStore.tasks().length);
@@ -40,6 +48,18 @@ export class DashboardPageComponent {
     const total = this.totalTasks();
     if (total === 0) return 0;
     return Math.round((this.completedTasks() / total) * 100);
+  });
+
+  departureInMinutes = computed(() => {
+    const appointment = this.nextAppointment();
+    if (!appointment) return null;
+    const departure = appointment.actualDepartureTime
+      ? new Date(appointment.actualDepartureTime)
+      : new Date(
+          new Date(appointment.arrivalTime).getTime() -
+            (appointment.estimatedTravelTime ?? 0) * 60_000,
+        );
+    return Math.floor((departure.getTime() - Date.now()) / 60_000);
   });
 
   // ─── Today's date formatted in Arabic ─────────────────
@@ -73,6 +93,40 @@ formatDate(arrivalTime: string | Date): string {
   if (!arrivalTime) return '';
   const dateObj = new Date(arrivalTime);
   return dateObj.toISOString().split('T')[0]; 
+}
+
+destinationLabel(appointment: Appointment): string {
+  return (
+    appointment.destinationLocation?.addressName ||
+    appointment.destinationLocation?.fullAddress ||
+    appointment.destinationLocation?.fullAddres ||
+    'الموقع غير محدد'
+  );
+}
+
+distanceLabel(appointment: Appointment): string {
+  const meters = appointment.distanceInMeters ?? 0;
+  if (!meters) return 'غير متاح';
+  return `${(meters / 1000).toFixed(1)} كم`;
+}
+
+travelTimeLabel(appointment: Appointment): string {
+  const minutes = Math.round(appointment.estimatedTravelTime ?? 0);
+  return minutes ? `${minutes} دقيقة` : 'غير متاح';
+}
+
+departureTimeLabel(appointment: Appointment): string {
+  const departure = appointment.actualDepartureTime
+    ? new Date(appointment.actualDepartureTime)
+    : new Date(
+        new Date(appointment.arrivalTime).getTime() -
+          (appointment.estimatedTravelTime ?? 0) * 60_000,
+      );
+  return this.formatTime(departure);
+}
+
+participantCount(appointment: Appointment): number {
+  return appointment.participants?.filter((participant) => participant.receiverId).length ?? 0;
 }
 getMinutesRemaining(arrivalTime:string | Date) : number{
   if (!arrivalTime) return -1;

@@ -2,8 +2,12 @@ export interface Appointment {
     _id:                 string;
     title:               string;
     description:         string;
-    userId:              string;
-    eventId:             null;
+    userId:              string | {
+      _id: string;
+      name?: string;
+      username?: string;
+    };
+    eventId:             string | null;
     transportation:      string;
     estimatedTravelTime: number;
     arrivalTime:         Date;
@@ -24,6 +28,13 @@ export interface Appointment {
     isCompleted:         boolean;
     Status:              string;
     travelHours:         number;
+    participants?:       Array<{
+      receiverId?: {
+        _id: string;
+        name: string;
+        username: string;
+      };
+    }>;
 }
 
 export interface AppointmentPayload {
@@ -40,9 +51,11 @@ export interface AppointmentPayload {
 }
 export interface Location {
     addressName: string;
+    fullAddress?: string;
     fullAddres?: string;
     type:        string;
     coordinates: number[];
+    placeId?: string;
 }
 
 export interface AppointmentResponce {

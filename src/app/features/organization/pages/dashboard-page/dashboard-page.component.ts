@@ -1,206 +1,177 @@
+import { DatePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { authStore } from '../../../auth/auth.store';
-import { SocialStore } from '../../../user/social/social.store';
-import { PostComposerComponent } from '../../../user/social/components/post-composer/post-composer.component';
-import { PostCardComponent } from '../../../user/social/components/post-card/post-card.component';
+import { EventCategory, EventStatus } from '../../../user/events/interfaces/Ievents';
 import { Profile } from '../../../user/social/services/social.service';
-import {
-  AttendanceStatus,
-  OrganizationAttendance,
-  OrganizationEvent,
-} from '../../services/organization-events.service';
+import { SocialStore } from '../../../user/social/social.store';
+import { OrganizationEvent } from '../../services/organization-events.service';
 import { OrganizationEventsStore } from '../../stores/organization-events.store';
 
-type StatusMeta = { label: string; chipClass: string; barClass: string };
+type DashboardEventStatus = EventStatus | 'ended';
 
 @Component({
   selector: 'app-organization-dashboard-page',
   standalone: true,
-  imports: [RouterLink, PostComposerComponent, PostCardComponent],
+  imports: [RouterLink, DatePipe],
   templateUrl: './dashboard-page.component.html',
+  styleUrl: './dashboard-page.component.css',
 })
 export class OrganizationDashboardPageComponent {
   readonly authStore = inject(authStore);
   readonly socialStore = inject(SocialStore);
-  readonly organizationEventsStore = inject(OrganizationEventsStore);
-
-  readonly statusMeta: Record<AttendanceStatus, StatusMeta> = {
-    confirmed: {
-      label: 'مؤكد',
-      chipClass: 'border-ink-border bg-ink-3 text-ink-fg',
-      barClass: 'bg-ink-fg/70',
-    },
-    en_route: {
-      label: 'في الطريق',
-      chipClass: 'border-brand/40 bg-brand/10 text-brand',
-      barClass: 'bg-brand',
-    },
-    arrived: {
-      label: 'وصل',
-      chipClass: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300',
-      barClass: 'bg-emerald-500',
-    },
-    at_risk: {
-      label: 'متأخر محتمل',
-      chipClass: 'border-amber-500/40 bg-amber-500/10 text-amber-300',
-      barClass: 'bg-amber-500',
-    },
-    declined: {
-      label: 'اعتذر',
-      chipClass: 'border-ink-border bg-ink text-ink-muted',
-      barClass: 'bg-ink-3',
-    },
-  };
+  readonly eventsStore = inject(OrganizationEventsStore);
 
   readonly currentProfile = computed<Profile | null>(() => {
-    const fromSocial = this.socialStore.myProfile();
-    if (fromSocial) return fromSocial;
+    const profile = this.socialStore.myProfile();
+    if (profile) return profile;
 
     const user = this.authStore.user();
     if (!user) return null;
-
     return {
       id: user._id,
-      kind: (user as any).accountType === 'organization' ? 'org' : 'user',
+      kind: user.role === 'org' ? 'org' : 'user',
       username: user.username,
       displayName: user.name,
-      bio: (user as any).bio,
-      privateFollows: (user as any).privateFollows,
-      createdAt: this.asEpoch(user.createdAt),
+      bio: user.bio,
+      city: user.location,
+      isPrivate: user.isPrivate,
+      createdAt: new Date(user.createdAt).getTime(),
     };
   });
 
-  readonly isOrganization = computed(() => (this.authStore.user() as any)?.accountType === 'organization');
-
-  readonly orgEvents = computed(() => {
-    const profile = this.currentProfile();
-    if (!profile) return [];
-
-    return this.organizationEventsStore
-      .eventsForOwner(profile.id)
-      .sort((a, b) => this.eventTimestamp(b) - this.eventTimestamp(a));
-  });
-
-  readonly allAttendances = computed(() => {
-    const ids = new Set(this.orgEvents().map((event) => event.id).filter(Boolean) as string[]);
-
-    return this.organizationEventsStore
-      .attendances()
-      .filter((attendance) => ids.has(attendance.eventId));
-  });
-
-  readonly dashboardTitle = computed(() => {  
-    const profile = this.socialStore.myProfile();
-    const user = this.authStore.user();
-    return profile?.displayName || (user as any)?.organizationName || '';
+  readonly currentProfileId = computed(
+    () => this.currentProfile()?.id ?? this.authStore.user()?._id ?? null,
+  );
+  readonly isOrganization = computed(() => this.authStore.user()?.role === 'org');
+  readonly events = computed(() => this.eventsStore.events());
+  readonly posts = computed(() => {
+    const profileId = this.currentProfileId();
+    return profileId ? this.socialStore.postsBy(profileId) : [];
   });
   readonly followers = computed(() => {
-    const profile = this.currentProfile();
-    return profile ? this.socialStore.followersOf(profile.id) : [];
+    const profileId = this.currentProfileId();
+    return profileId ? this.socialStore.followersOf(profileId) : [];
   });
 
-  readonly ownPosts = computed(() => {
-    const profile = this.currentProfile();
-    return profile ? this.socialStore.postsBy(profile.id) : [];
+  readonly summary = computed(() => {
+    const events = this.events();
+    const posts = this.posts();
+    const now = Date.now();
+    const totalLikes = posts.reduce((total, post) => total + post.likeCount, 0);
+
+    return {
+      followers: this.followers().length,
+      events: events.length,
+      activeEvents: events.filter(
+        (event) => event.isActive && new Date(event.endDate).getTime() >= now,
+      ).length,
+      upcomingEvents: events.filter(
+        (event) => event.isActive && new Date(event.startDate).getTime() > now,
+      ).length,
+      posts: posts.length,
+      totalLikes,
+      averageLikes: posts.length ? Math.round((totalLikes / posts.length) * 10) / 10 : 0,
+    };
   });
 
-  readonly totalLikes = computed(() =>
-    this.ownPosts().reduce((sum, post) => sum + post.likes.length, 0),
+  readonly monthlyActivity = computed(() => {
+    const now = new Date();
+    const months = Array.from({ length: 6 }, (_, index) => {
+      const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+      return {
+        key: `${date.getFullYear()}-${date.getMonth()}`,
+        label: new Intl.DateTimeFormat('ar-EG', { month: 'short' }).format(date),
+        start: date.getTime(),
+        end: new Date(date.getFullYear(), date.getMonth() + 1, 1).getTime(),
+        events: 0,
+        posts: 0,
+      };
+    });
+
+    for (const event of this.events()) {
+      const timestamp = event.createdAt ? new Date(event.createdAt).getTime() : Number.NaN;
+      const month = months.find((item) => timestamp >= item.start && timestamp < item.end);
+      if (month) month.events += 1;
+    }
+
+    for (const post of this.posts()) {
+      const month = months.find(
+        (item) => post.createdAt >= item.start && post.createdAt < item.end,
+      );
+      if (month) month.posts += 1;
+    }
+
+    const maximum = Math.max(1, ...months.flatMap((month) => [month.events, month.posts]));
+    return months.map((month) => ({
+      ...month,
+      eventHeight: month.events ? Math.max(10, (month.events / maximum) * 100) : 0,
+      postHeight: month.posts ? Math.max(10, (month.posts / maximum) * 100) : 0,
+    }));
+  });
+
+  readonly statusBreakdown = computed(() => {
+    const statuses: Array<{
+      key: DashboardEventStatus;
+      label: string;
+      color: string;
+    }> = [
+      { key: 'ongoing', label: 'جارية الآن', color: '#10b981' },
+      { key: 'upcoming', label: 'قادمة', color: '#7c3aed' },
+      { key: 'ended', label: 'انتهت', color: '#64748b' },
+      { key: 'inactive', label: 'موقوفة', color: '#f59e0b' },
+    ];
+    const total = Math.max(1, this.events().length);
+
+    return statuses.map((status) => {
+      const count = this.events().filter(
+        (event) => this.eventStatus(event) === status.key,
+      ).length;
+      return { ...status, count, percentage: Math.round((count / total) * 100) };
+    });
+  });
+
+  readonly categoryBreakdown = computed(() => {
+    const counts = new Map<EventCategory, number>();
+    for (const event of this.events()) {
+      counts.set(event.category, (counts.get(event.category) ?? 0) + 1);
+    }
+    const total = Math.max(1, this.events().length);
+
+    return [...counts.entries()]
+      .map(([category, count]) => ({
+        category,
+        count,
+        percentage: Math.round((count / total) * 100),
+      }))
+      .sort((a, b) => b.count - a.count);
+  });
+
+  readonly recentEvents = computed(() =>
+    [...this.events()]
+      .sort(
+        (a, b) =>
+          new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+      )
+      .slice(0, 5),
   );
 
   readonly topPosts = computed(() =>
-    [...this.ownPosts()].sort((a, b) => b.likes.length - a.likes.length).slice(0, 3),
+    [...this.posts()]
+      .sort((a, b) => b.likeCount - a.likeCount || b.createdAt - a.createdAt)
+      .slice(0, 4),
   );
 
-  readonly totalRsvps = computed(() => this.allAttendances().length);
-
-  readonly onTrackCount = computed(() =>
-    this.allAttendances().filter((attendance) => {
-      const status = this.organizationEventsStore.liveStatus(attendance);
-      return status === 'confirmed' || status === 'en_route' || status === 'arrived';
-    }).length,
+  readonly isLoading = computed(
+    () =>
+      this.eventsStore.loading() ||
+      (this.socialStore.postsLoading() && !this.socialStore.loaded()),
   );
 
-  readonly onTrackPercent = computed(() => {
-    const total = this.totalRsvps();
-    return total ? Math.round((this.onTrackCount() / total) * 100) : 0;
-  });
-
-  readonly attendanceBreakdown = computed(() => {
-    const total = this.totalRsvps();
-    const statuses: AttendanceStatus[] = ['confirmed', 'en_route', 'arrived', 'at_risk', 'declined'];
-
-    return statuses.map((status) => {
-      const count = this.allAttendances().filter(
-        (attendance) => this.organizationEventsStore.liveStatus(attendance) === status,
-      ).length;
-
-      return {
-        status,
-        count,
-        percent: total ? (count / total) * 100 : 0,
-      };
-    });
-  });
-
-  readonly upcomingEvents = computed(() => {
-    const now = Date.now();
-
-    return this.orgEvents()
-      .map((event) => ({ event, ts: this.eventTimestamp(event) }))
-      .filter((item) => item.ts >= now - 6 * 60 * 60 * 1000)
-      .sort((a, b) => a.ts - b.ts)
-      .slice(0, 4)
-      .map((item) => item.event);
-  });
-
-  readonly recentFollowers = computed(() => {
-    return this.followers()
-      .slice(0, 6)
-      .map((item) => this.socialStore.findProfile({ id: item.follower._id }))
-      .filter((profile): profile is Profile => !!profile);
-  });
-
-  readonly topVenues = computed(() => {
-    const counts = this.orgEvents().reduce(
-      (map, event) => map.set(event.place, (map.get(event.place) ?? 0) + 1),
-      new Map<string, number>(),
-    );
-
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
-  });
-
-  readonly growthSeries = computed(() => {
-    const followersCount = this.followers().length;
-    return Array.from({ length: 7 }, (_, i) => {
-      const base = Math.max(0, followersCount - (6 - i));
-      const jitter = (i * 7 + followersCount) % 4;
-      return base + jitter;
-    });
-  });
-
-  readonly growthMax = computed(() => Math.max(1, ...this.growthSeries()));
-  readonly weekDelta = computed(() => this.growthSeries()[6] - this.growthSeries()[0]);
-
-  attendeesFor(eventId: string): OrganizationAttendance[] {
-    return this.organizationEventsStore
-      .attendancesForEvent(eventId)
-      .sort((a, b) => b.updatedAt - a.updatedAt);
-  }
-
-  attendeeName(attendeeId: string): string {
-    const profile = this.socialStore.findProfile({ id: attendeeId });
-    return profile?.displayName ?? attendeeId;
-  }
-
-  attendeeUsername(attendeeId: string): string | null {
-    const profile = this.socialStore.findProfile({ id: attendeeId });
-    return profile?.username ?? null;
-  }
-
-  liveStatus(attendance: OrganizationAttendance): AttendanceStatus {
-    return this.organizationEventsStore.liveStatus(attendance);
+  refresh(): void {
+    this.eventsStore.loadAll();
+    this.socialStore.loadAll();
+    this.socialStore.loadFollowData();
   }
 
   initials(name: string): string {
@@ -213,18 +184,52 @@ export class OrganizationDashboardPageComponent {
       .toUpperCase();
   }
 
-  private eventTimestamp(event: OrganizationEvent): number {
-    const ts = new Date(`${event.date}T${event.time}:00`).getTime();
-    return Number.isNaN(ts) ? 0 : ts;
+  eventStatus(event: OrganizationEvent): DashboardEventStatus {
+    if (!event.isActive) return 'inactive';
+    const now = Date.now();
+    if (new Date(event.endDate).getTime() < now) return 'ended';
+    if (new Date(event.startDate).getTime() <= now) return 'ongoing';
+    return 'upcoming';
   }
 
-  private asEpoch(value: unknown): number {
-    if (value instanceof Date) return value.getTime();
-    if (typeof value === 'string' || typeof value === 'number') {
-      const ts = new Date(value).getTime();
-      if (!Number.isNaN(ts)) return ts;
+  statusLabel(status: DashboardEventStatus): string {
+    const labels: Record<DashboardEventStatus, string> = {
+      inactive: 'موقوفة',
+      expired: 'انتهت',
+      ended: 'انتهت',
+      upcoming: 'قادمة',
+      ongoing: 'جارية',
+    };
+    return labels[status];
+  }
+
+  statusClasses(status: DashboardEventStatus): string {
+    if (status === 'ongoing') {
+      return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300';
     }
-    return Date.now();
+    if (status === 'upcoming') {
+      return 'border-brand/30 bg-brand/10 text-brand';
+    }
+    if (status === 'inactive') {
+      return 'border-amber-500/30 bg-amber-500/10 text-amber-300';
+    }
+    return 'border-ink-border bg-ink text-ink-muted';
+  }
+
+  categoryLabel(category: EventCategory): string {
+    const labels: Record<EventCategory, string> = {
+      music: 'موسيقى',
+      sports: 'رياضة',
+      education: 'تعليم',
+      technology: 'تقنية',
+      photography: 'تصوير',
+      art: 'فن',
+      other: 'أخرى',
+    };
+    return labels[category];
+  }
+
+  locationLabel(event: OrganizationEvent): string {
+    return event.location.addressName || event.location.fullAddress || 'الموقع غير محدد';
   }
 }
-

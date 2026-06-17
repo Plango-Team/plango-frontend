@@ -1,21 +1,23 @@
+import { DatePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { authStore } from '../../../auth/auth.store';
 import { SocialStore } from '../../../user/social/social.store';
 import { PostComposerComponent } from '../../../user/social/components/post-composer/post-composer.component';
 import { PostCardComponent } from '../../../user/social/components/post-card/post-card.component';
-import { OrganizationEventsStore } from '../../stores/organization-events.store';
+import { EventsStore } from '../../../user/events/events.store';
+import { IEvent } from '../../../user/events/interfaces/Ievents';
 
 @Component({
   selector: 'app-organization-feed-page',
   standalone: true,
-  imports: [RouterLink, PostComposerComponent, PostCardComponent],
+  imports: [RouterLink, DatePipe, PostComposerComponent, PostCardComponent],
   templateUrl: './feed-page.component.html',
 })
 export class OrganizationFeedPageComponent {
   readonly authStore = inject(authStore);
   readonly socialStore = inject(SocialStore);
-  readonly organizationEventsStore = inject(OrganizationEventsStore);
+  readonly eventsStore = inject(EventsStore);
 
   readonly currentProfileId = computed(() => {
     const socialProfile = this.socialStore.myProfile();
@@ -42,35 +44,45 @@ export class OrganizationFeedPageComponent {
 
     const followed = this.followingIds();
     return this.socialStore
-      .posts()
+      .feedFor(profileId)
       .filter((post) => post.authorId !== profileId && followed.has(post.authorId))
       .sort((a, b) => b.createdAt - a.createdAt);
   });
 
   readonly totalLikes = computed(() =>
-    this.ownPosts().reduce((sum, post) => sum + post.likes.length, 0),
+    this.ownPosts().reduce((sum, post) => sum + post.likeCount, 0),
   );
 
   readonly upcomingFromNetwork = computed(() => {
     const followed = this.followingIds();
 
-    return this.organizationEventsStore
+    return this.eventsStore
       .events()
-      .filter((event) => followed.has(event.ownerId))
-      .sort((a, b) => this.eventTimestamp(a) - this.eventTimestamp(b))
+      .filter((event) => {
+        const ownerId =
+          typeof event.companyId === 'string' ? event.companyId : event.companyId._id;
+        return followed.has(ownerId) && new Date(event.endDate).getTime() >= Date.now();
+      })
+      .sort(
+        (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+      )
       .slice(0, 4);
   });
 
-  ownerDisplayName(ownerId: string): string {
-    return this.socialStore.findProfile({ id: ownerId })?.displayName ?? 'مستخدم';
+  ownerDisplayName(event: IEvent): string {
+    if (typeof event.companyId !== 'string') return event.companyId.name;
+    return this.socialStore.findProfile({ id: event.companyId })?.displayName ?? 'مؤسسة';
   }
 
-  ownerUsername(ownerId: string): string | null {
+  ownerUsername(event: IEvent): string | null {
+    if (typeof event.companyId !== 'string' && event.companyId.username) {
+      return event.companyId.username;
+    }
+    const ownerId = typeof event.companyId === 'string' ? event.companyId : event.companyId._id;
     return this.socialStore.findProfile({ id: ownerId })?.username ?? null;
   }
 
-  private eventTimestamp(event: { date: string; time: string }): number {
-    const ts = new Date(`${event.date}T${event.time}:00`).getTime();
-    return Number.isNaN(ts) ? 0 : ts;
+  locationLabel(event: IEvent): string {
+    return event.location.addressName || event.location.fullAddress || 'الموقع غير محدد';
   }
 }

@@ -10,33 +10,39 @@ import { authStore } from '../auth.store';
   styleUrl: './confirm-email-change.component.css',
 })
 export class ConfirmEmailChangeComponent {
-private route = inject(ActivatedRoute);
-store = inject(authStore)
+  private readonly route = inject(ActivatedRoute);
+  readonly store = inject(authStore);
   private router = inject(Router);
   private authService = inject(AuthService);
-  loading = signal<boolean>(true)
-  errMassege = signal<string>('')
+  readonly token = signal('');
+  readonly loading = signal(true);
+  readonly errorMessage = signal('');
 
   ngOnInit(): void {
-    // لقط التوكن من الـ URL
-    const token = this.route.snapshot.queryParams['token'];
+    const token = this.route.snapshot.queryParamMap.get('token') ?? '';
+    this.token.set(token);
 
-    if (token) {
-      this.authService.confirmEmailChange(token).subscribe({
-        next: (res:{message:string}) => {
-          this.loading.set(false)
-          this.store.logOut()
-          this.router.navigate(['/auth/login']); 
-        },
-        error: (err) => {
-          this.loading.set(false)
-          this.errMassege.set(err?.error?.message || 'رابط التأكيد غير صحيح او منتهي الصلاحية')
-        }
-      });
+    if (!token) {
+      this.loading.set(false);
+      return;
     }
+
+    this.authService.confirmEmailChange(token).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.store.logOut();
+        this.router.navigate(['/auth/login']);
+      },
+      error: (error) => {
+        this.loading.set(false);
+        this.errorMessage.set(
+          error?.error?.message || 'رابط التأكيد غير صحيح أو منتهي الصلاحية',
+        );
+      },
+    });
   }
 
-  goToLogin() {
+  goToLogin(): void {
     this.router.navigate(['/auth/login']);
   }
 }

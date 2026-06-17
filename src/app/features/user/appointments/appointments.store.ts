@@ -1,7 +1,7 @@
 import { patchState, signalStore, withComputed, withMethods, withState, withHooks } from '@ngrx/signals';
 import { computed, effect, inject, untracked } from '@angular/core';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { pipe, switchMap, tap, catchError, of, EMPTY } from 'rxjs';
+import { pipe, switchMap, tap, catchError, of, EMPTY, forkJoin } from 'rxjs';
 import { AppointmentService } from '../calendar/services/appointment.service';
 import { authStore } from '../../auth/auth.store';
 import { Appointment, AppointmentPayload } from './interfaces/IAppointment';
@@ -24,28 +24,70 @@ export const AppointmentsStore = signalStore(
     invitationWarnings:null,
     pendingInvites:[]
   }),
-  withMethods((store, appointmentService = inject(AppointmentService),invitService=inject(InvitService)) => ({
+  withMethods((store, appointmentService = inject(AppointmentService),invitService=inject(InvitService), auth = inject(authStore)) => {
+    const enrichAppointments = (appointments: Appointment[]) => {
+      if (!appointments.length) {
+        return of([] as Appointment[]);
+      }
+
+      return forkJoin(
+        appointments.map((appointment) =>
+          appointmentService.getAppointmentById(appointment._id).pipe(
+            catchError(() => of(appointment)),
+          ),
+        ),
+      );
+    };
+
+    const loadAppointmentsWithDetails = (userId: string) =>
+      appointmentService.getAppointmentsByUser(userId).pipe(
+        switchMap((appointments) => enrichAppointments(appointments)),
+      );
+
+    return ({
     loadAppointments: rxMethod<string | undefined>(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null })),
         switchMap((userId) => {
           if (!userId) {
             patchState(store, { isLoading: false, appointments: [] });
-            return of(null);
+            return of([] as Appointment[]);
           }
-          return appointmentService.getAppointmentsByUser(userId).pipe(
+          return loadAppointmentsWithDetails(userId).pipe(
             tap({
               next: (appointments) => patchState(store, { appointments, isLoading: false }),
               error: (err) => patchState(store, { error: err.message, isLoading: false }),
             }),
-            catchError(() => {
-               patchState(store, { error: 'Failed to load appointments', isLoading: false });
-               return of(null);
+            catchError((err) => {
+               patchState(store, { error: err.error?.message || err.message || 'Failed to load appointments', isLoading: false });
+               return of([] as Appointment[]);
             })
           );
         })
       )
     ), 
+    upsertAppointment(appointment: Appointment) {
+      const appointments = store.appointments();
+      const exists = appointments.some((item) => item._id === appointment._id);
+      patchState(store, {
+        appointments: exists
+          ? appointments.map((item) => (item._id === appointment._id ? appointment : item))
+          : [...appointments, appointment],
+      });
+    },
+    reloadAppointmentsNow() {
+      const user = auth.user();
+      if (!user) return;
+      patchState(store, { isLoading: true, error: null });
+      loadAppointmentsWithDetails(user._id).subscribe({
+        next: (appointments) => patchState(store, { appointments, isLoading: false }),
+        error: (err) =>
+          patchState(store, {
+            error: err.error?.message || err.message || 'Failed to load appointments',
+            isLoading: false,
+          }),
+      });
+    },
     addAppointment: rxMethod<AppointmentPayload>(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null })),
@@ -210,6 +252,17 @@ acceptInvitation: rxMethod<{ appointmentId: string; payload: AcceptInvitePayload
                 pendingInvites: updatedPending,
                 isLoading: false
               });
+              const user = auth.user();
+              if (user) {
+                patchState(store, { isLoading: true });
+                loadAppointmentsWithDetails(user._id).subscribe({
+                  next: (appointments) => patchState(store, { appointments, isLoading: false }),
+                  error: (err) => patchState(store, {
+                    error: err.error?.message || err.message || 'Failed to load appointments',
+                    isLoading: false
+                  }),
+                });
+              }
 
             }
           },
@@ -269,7 +322,8 @@ declineInvitation: rxMethod<string>(
     )
   )
 ),
-  })),
+    });
+  }),
   withHooks({
     onInit(store) {
       const auth = inject(authStore);

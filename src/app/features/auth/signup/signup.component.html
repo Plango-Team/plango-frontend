@@ -315,14 +315,14 @@
                   <button
                     type="button"
                     class="flex w-full items-center gap-3 rounded-xl border border-ink-border bg-ink p-3 text-start hover:bg-ink-3"
-                    (click)="privateFollows.set(!privateFollows())"
+                    (click)="isPrivate.set(!isPrivate())"
                   >
                     <div
                       class="grid h-9 w-9 place-items-center rounded-lg"
-                      [class.bg-brand]="privateFollows()"
-                      [class.text-brand-foreground]="privateFollows()"
-                      [class.bg-ink-3]="!privateFollows()"
-                      [class.text-ink-muted]="!privateFollows()"
+                      [class.bg-brand]="isPrivate()"
+                      [class.text-brand-foreground]="isPrivate()"
+                      [class.bg-ink-3]="!isPrivate()"
+                      [class.text-ink-muted]="!isPrivate()"
                     >
                       <svg
                         class="h-4 w-4"
@@ -331,7 +331,7 @@
                         stroke="currentColor"
                         stroke-width="2"
                       >
-                        @if (privateFollows()) {
+                        @if (isPrivate()) {
                           <path d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path>
                           <path d="M6 10V8a6 6 0 1 1 12 0v2"></path>
                           <rect x="4" y="10" width="16" height="10" rx="2"></rect>
@@ -344,11 +344,11 @@
                     </div>
                     <div class="flex-1">
                       <div class="text-sm font-medium text-ink-foreground">
-                        {{ privateFollows() ? 'حساب خاص — يحتاج موافقة' : 'حساب عام' }}
+                        {{ isPrivate() ? 'حساب خاص — يحتاج موافقة' : 'حساب عام' }}
                       </div>
                       <div class="text-xs text-ink-muted">
                         {{
-                          privateFollows()
+                          isPrivate()
                             ? 'فقط من توافق عليهم يرون نشاطك'
                             : 'يمكن لأي شخص أن يتابعك'
                         }}

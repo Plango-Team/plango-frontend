@@ -3,15 +3,15 @@
     <div
       class="inline-flex items-center rounded-full border border-brand/40 bg-brand/10 px-2.5 py-0.5 text-[11px] font-medium text-brand"
     >
-      خلاصة المؤسسة
+      الرئيسية
     </div>
-    <h1 class="mt-1 font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">صوت مؤسستك</h1>
-    <p class="text-sm text-ink-muted">أرسل تحديثات، تابع المجتمع، وقِس التفاعل مع متابعيك.</p>
+    <h1 class="mt-1 font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">آخر المنشورات</h1>
+    <p class="text-sm text-ink-muted">انشر أخبار المؤسسة وتابع منشورات الحسابات التي تهمك.</p>
   </div>
 
   <div class="mb-6 grid gap-3 sm:grid-cols-3">
     <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
-      <div class="text-xs text-ink-muted">البثوث</div>
+      <div class="text-xs text-ink-muted">المنشورات</div>
       <div class="mt-2 font-display text-3xl tabular-nums text-ink-fg">{{ ownPosts().length }}</div>
     </article>
     <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
@@ -29,19 +29,19 @@
   <div class="grid gap-6 lg:grid-cols-12">
     <section class="space-y-4 lg:col-span-8">
       <div>
-        <h2 class="mb-2 font-display text-lg text-ink-fg">بث جديد لمتابعيك</h2>
+        <h2 class="mb-2 font-display text-lg text-ink-fg">منشور جديد</h2>
         <app-post-composer
           placeholder="أعلن عن فعالية، شارك خبر، أو أطلق تحديثاً جديداً..."
         ></app-post-composer>
       </div>
 
       <div>
-        <h2 class="mb-3 font-display text-lg text-ink-fg">بثوثك الأخيرة</h2>
+        <h2 class="mb-3 font-display text-lg text-ink-fg">منشورات المؤسسة الأخيرة</h2>
         @if (ownPosts().length === 0) {
           <div
             class="rounded-2xl border border-dashed border-ink-border bg-ink-2 p-8 text-center text-sm text-ink-muted"
           >
-            لا توجد بثوث بعد. ابدأ بمشاركة أول تحديث.
+            لا توجد منشورات بعد. ابدأ بمشاركة أول خبر أو تحديث.
           </div>
         } @else {
           <div class="space-y-3">
@@ -66,6 +66,16 @@
               <app-post-card [post]="post"></app-post-card>
             }
           </div>
+          @if (socialStore.hasMorePosts()) {
+            <button
+              type="button"
+              (click)="socialStore.loadMorePosts()"
+              [disabled]="socialStore.postsLoadingMore()"
+              class="mt-4 rounded-full border border-ink-border bg-ink-2 px-5 py-2 text-xs text-ink-fg hover:bg-ink-3 disabled:opacity-50"
+            >
+              {{ socialStore.postsLoadingMore() ? 'جارٍ التحميل...' : 'تحميل المزيد' }}
+            </button>
+          }
         }
       </div>
     </section>
@@ -77,21 +87,23 @@
           <p class="text-xs text-ink-muted">لا توجد فعاليات قادمة حالياً.</p>
         } @else {
           <div class="space-y-2">
-            @for (event of upcomingFromNetwork(); track event.id) {
+            @for (event of upcomingFromNetwork(); track event._id) {
               <article class="rounded-xl border border-ink-border bg-ink p-3 text-xs">
                 <div class="font-medium text-ink-fg">{{ event.title }}</div>
-                <div class="mt-1 text-ink-muted">{{ event.date }} · {{ event.time }}</div>
-                <div class="mt-1 text-ink-muted">{{ event.place }}</div>
-                @if (ownerUsername(event.ownerId); as username) {
+                <div class="mt-1 text-ink-muted">
+                  {{ event.startDate | date: 'd MMM، h:mm a' }}
+                </div>
+                <div class="mt-1 text-ink-muted">{{ locationLabel(event) }}</div>
+                @if (ownerUsername(event); as username) {
                   <a
                     [routerLink]="['/organization/profile', username]"
                     class="mt-2 inline-flex text-brand hover:underline"
                   >
-                    {{ ownerDisplayName(event.ownerId) }}
+                    {{ ownerDisplayName(event) }}
                   </a>
                 } @else {
                   <span class="mt-2 inline-flex text-ink-muted">{{
-                    ownerDisplayName(event.ownerId)
+                    ownerDisplayName(event)
                   }}</span>
                 }
               </article>
@@ -107,7 +119,7 @@
             routerLink="/organization/posts"
             class="rounded-lg border border-ink-border bg-ink px-3 py-2 text-xs text-ink-fg hover:bg-ink-3"
           >
-            إدارة البثوث
+            إدارة منشورات المؤسسة
           </a>
           <a
             routerLink="/organization/followers"

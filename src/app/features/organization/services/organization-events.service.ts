@@ -1,89 +1,60 @@
-import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin, Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import {
+  CreateEventInput,
+  IEvent,
+} from '../../user/events/interfaces/Ievents';
 
-export type AttendanceStatus = 'confirmed' | 'en_route' | 'arrived' | 'at_risk' | 'declined';
-export type OrganizationEventCategory = 'tech' | 'art' | 'music' | 'photo' | 'culture' | 'sport';
+export type OrganizationEvent = IEvent;
+export type CreateOrganizationEventInput = CreateEventInput;
+export type UpdateOrganizationEventInput = Partial<CreateEventInput>;
 
-export interface OrganizationEvent {
-  id?: string;
-  ownerId: string;
-  title: string;
-  host: string;
-  date: string;
-  time: string;
-  place: string;
-  category: OrganizationEventCategory;
-  price: string;
-  description?: string;
-  distanceKm?: number;
-  createdAt: number;
-}
-
-export type CreateOrganizationEventInput = Omit<OrganizationEvent, 'id' | 'createdAt'>;
-
-export interface OrganizationAttendance {
-  id?: string;
-  eventId: string;
-  attendeeId: string;
-  status: AttendanceStatus;
-  travelMin: number;
-  departureAt: number;
-  updatedAt: number;
+interface ApiResponse<T> {
+  status: string;
+  message?: string;
+  data: T;
 }
 
 @Injectable({ providedIn: 'root' })
 export class OrganizationEventsService {
   private readonly http = inject(HttpClient);
-  private readonly api = environment.apiUrl;
+  private readonly api = `${environment.apiUrl}/events`;
 
   getEvents(): Observable<OrganizationEvent[]> {
-    return this.http.get<OrganizationEvent[]>(`${this.api}/orgEvents`);
+    return this.http
+      .get<ApiResponse<{ results: number; events: OrganizationEvent[] }>>(
+        `${this.api}/company/my-events`,
+      )
+      .pipe(map((response) => response.data.events));
   }
 
   createEvent(event: CreateOrganizationEventInput): Observable<OrganizationEvent> {
-    return this.http.post<OrganizationEvent>(`${this.api}/orgEvents`, {
-      ...event,
-      createdAt: Date.now(),
-    });
+    return this.http
+      .post<ApiResponse<{ event: OrganizationEvent }>>(this.api, event)
+      .pipe(map((response) => response.data.event));
   }
 
-  updateEvent(event: OrganizationEvent): Observable<OrganizationEvent> {
-    return this.http.put<OrganizationEvent>(`${this.api}/orgEvents/${event.id}`, event);
+  updateEvent(
+    id: string,
+    changes: UpdateOrganizationEventInput,
+  ): Observable<OrganizationEvent> {
+    return this.http
+      .patch<ApiResponse<{ event: OrganizationEvent }>>(`${this.api}/${id}`, changes)
+      .pipe(map((response) => response.data.event));
   }
 
   deleteEvent(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.api}/orgEvents/${id}`);
+    return this.http.delete(`${this.api}/${id}`).pipe(map((): void => void 0));
   }
 
-  getAttendances(): Observable<OrganizationAttendance[]> {
-    return this.http.get<OrganizationAttendance[]>(`${this.api}/orgAttendances`);
-  }
-
-  createAttendance(
-    attendance: Omit<OrganizationAttendance, 'id' | 'updatedAt'>,
-  ): Observable<OrganizationAttendance> {
-    return this.http.post<OrganizationAttendance>(`${this.api}/orgAttendances`, {
-      ...attendance,
-      updatedAt: Date.now(),
-    });
-  }
-
-  updateAttendance(attendance: OrganizationAttendance): Observable<OrganizationAttendance> {
-    return this.http.put<OrganizationAttendance>(
-      `${this.api}/orgAttendances/${attendance.id}`,
-      attendance,
-    );
-  }
-
-  loadAll(): Observable<{
-    events: OrganizationEvent[];
-    attendances: OrganizationAttendance[];
-  }> {
-    return forkJoin({
-      events: this.getEvents(),
-      attendances: this.getAttendances(),
-    });
+  toggleEventStatus(id: string): Observable<OrganizationEvent> {
+    return this.http
+      .patch<ApiResponse<{ event: OrganizationEvent }>>(
+        `${this.api}/${id}/toggle-status`,
+        {},
+      )
+      .pipe(map((response) => response.data.event));
   }
 }

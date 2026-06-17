@@ -1,140 +1,81 @@
 <dialog
-  #eventtModal 
-  class="backdrop:bg-black/50 backdrop:backdrop-blur-sm bg-transparent p-0 m-auto shadow-none outline-none overflow-visible w-full max-w-lg z-100"
-  (cancel)="close()" > <!--------------- close-------------------> 
+  #eventModal
+  class="m-auto w-full max-w-lg overflow-visible bg-transparent p-0 shadow-none outline-none backdrop:bg-black/55 backdrop:backdrop-blur-sm"
+  (cancel)="close()"
 >
-  <form (ngSubmit)="onSubmit()"
-    class="relative w-full bg-ink-2 border border-ink-border overflow-visible rounded-xl shadow-elevated p-6 animate-fade-in-up max-h-[90vh]"
+  <form
+    (ngSubmit)="onSubmit()"
+    class="max-h-[90vh] overflow-y-auto rounded-2xl border border-ink-border bg-ink-2 p-6 shadow-elevated"
   >
-    <div class="mb-4">
-      <h2 class="font-display text-2xl text-ink-fg">
-        {{ 'إنشاء فعالية' }}
-      </h2>
-      <p class="text-sm text-ink-muted mt-1">
-        {{'شارك فعاليتك مع مجتمع PlanGo القريب منك.' }}
-      </p>
-    </div>
+    <h2 class="font-display text-2xl text-ink-fg">إضافة الفعالية إلى جدولك</h2>
+    @if (selectedEvent(); as event) {
+      <p class="mt-1 text-sm text-ink-muted">{{ event.title }}</p>
+    }
 
-    <div class="space-y-4"> 
+    <div class="mt-6 space-y-4">
       <div class="space-y-1.5">
-        <label class="text-sm font-medium text-ink-fg">{{ 'عنوان الفعالية'}}</label>
-        <input
-          [(ngModel)]="eventData.title"
-          name="title"
-          required
-          class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          [placeholder]="'مؤتمر تصميم تجربة المستخدم'"
-        />
-      </div>
-
-      <div class="grid grid-cols-2 gap-3">  
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-ink-fg">{{'المنظّم'}}</label>
-          <input
-            type="text"
-            [(ngModel)]="eventData.organizer"
-            name="organizer"
-            required
-            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          />
-        </div>
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-ink-fg">{{'السعر' }}</label>
-          <input
-            type="text"
-            [(ngModel)]="eventData.priceType"
-            name="priceType"
-            required
-            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          />
-        </div>
-      </div>
-
-      <div class="relative space-y-1.5">
-        <label class="text-sm font-medium text-ink-fg">{{'المكان' }}</label>
-        <input
-          type="text"
-          [(ngModel)]="eventData.location"
-          (input)="onLocationInput(eventData.location)"
-          name="location"
-          class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          [placeholder]="'اختر مكاناً او اضف جديداً'"
-        />
-           @if (showDropDown) {
-    <ul class="bg-ink-2 absolute z-9999 w-full mt-1 max-h-44 overflow-y-auto border border-ink-border rounded-lg shadow-lg animate-fade-in">
-      @for (place of searchRes; track place.place_id) {
-        <li>
-          <button 
+        <div class="flex items-center justify-between gap-3">
+          <label class="text-sm font-medium text-ink-fg">نقطة الانطلاق</label>
+          <button
             type="button"
-            (click)="selectLocation(place)"
-            class="w-full text-right px-4 py-2.5 text-xs text-ink-muted flex items-center gap-2 transition-colors">
-            <span><app-icon [iconName]="'Location01FreeIcons'" [iconSize]="12" [iconColor]="'#d32e18'"></app-icon></span>
-            <span class="truncate">{{ place.display_name }}</span>
+            (click)="useCurrentLocation()"
+            [disabled]="resolvingLocation()"
+            class="text-xs font-medium text-brand disabled:opacity-50"
+          >
+            {{ resolvingLocation() ? 'جارٍ تحديد الموقع...' : 'استخدم موقعي الحالي' }}
           </button>
-        </li>
-      }
-    </ul>
-}
-      </div>
-</div>
-
-      <div class="grid grid-cols-2 gap-3">  
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-ink-fg">{{'التاريخ'}}</label>
-          <input
-            type="date"
-            [(ngModel)]="date"
-            name="date"
-            required
-            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          />
         </div>
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-ink-fg">{{'الوقت' }}</label>
-          <input
-            type="time"
-            [(ngModel)]="time"
-            name="time"
-            required
-            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          />
-        </div>
+        <app-location-combobox
+          [value]="originName"
+          placeholder="ابحث عن نقطة الانطلاق"
+          [allowCreate]="false"
+          (valueChange)="onOriginNameChange($event)"
+          (placeSelected)="onPlaceSelected($event)"
+        ></app-location-combobox>
       </div>
 
       <div class="space-y-1.5">
-        <label class="text-sm font-medium text-ink-fg">{{ 'الفئة'
-        }}</label>
-        <div class="grid grid-cols-5 gap-2">
-          @for (cat of categories; track cat) {
+        <label class="text-sm font-medium text-ink-fg">طريقة التنقل</label>
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          @for (transport of transports; track transport.id) {
             <button
               type="button"
-              (click)="eventData.category = cat"
-              class="rounded-lg border py-2 text-xs transition"
+              (click)="transportation = transport.id"
+              class="rounded-lg border px-3 py-2 text-xs transition"
               [class]="
-                eventData.category === cat
+                transportation === transport.id
                   ? 'border-brand bg-brand/10 text-brand'
                   : 'border-ink-border bg-ink text-ink-muted hover:bg-ink-3'
               "
-            > {{cat}}
+            >
+              {{ transport.label }}
             </button>
           }
         </div>
       </div>
 
-      <div class="mt-6 flex justify-end gap-3 pt-2"> <!--------close---------->
-        <button
-          type="button"
-          (click)="close()" 
-          class="rounded-lg border border-ink-border bg-transparent px-4 py-2 text-sm font-medium text-ink-fg hover:bg-ink-3 transition-colors"
-        >
-          {{'إلغاء'}}
-        </button>
-        <button
-          type="submit"
-          class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
-        >
-          {{'نشر فعالية'}}
-        </button>
-      </div>
-    </form>
-</dialog> 
+      @if (error()) {
+        <p class="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+          {{ error() }}
+        </p>
+      }
+    </div>
+
+    <div class="mt-6 flex justify-end gap-3">
+      <button
+        type="button"
+        (click)="close()"
+        class="rounded-lg border border-ink-border px-4 py-2 text-sm text-ink-fg hover:bg-ink-3"
+      >
+        إلغاء
+      </button>
+      <button
+        type="submit"
+        [disabled]="!!store.joiningEventId() || selectedEventStarted()"
+        class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 disabled:opacity-50"
+      >
+        {{ store.joiningEventId() ? 'جارٍ الإضافة...' : 'إضافة إلى الجدول' }}
+      </button>
+    </div>
+  </form>
+</dialog>

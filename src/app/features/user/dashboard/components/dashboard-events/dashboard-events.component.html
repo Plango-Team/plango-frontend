@@ -1,25 +1,36 @@
-<section class="mt-8 bg-(--card-bg) py-4 rounded-[10px] shadow-lg shadow-(--main-shadow-color)">
-  <div class="px-3 pb-4">
-    <h2 class="text-2xl font-bold text-(--fg-color)">الفعاليات المشترك بها</h2>
+<section>
+  <div class="mb-4 flex items-center justify-between gap-3">
+    <div>
+      <h2 class="font-display text-lg text-ink-fg">فعاليات قادمة</h2>
+      <p class="text-xs text-ink-muted">اكتشف فعاليات جديدة وأضفها إلى جدولك.</p>
+    </div>
+    <a routerLink="/user/events" class="text-xs font-medium text-brand hover:underline">كل الفعاليات</a>
   </div>
 
-  <div class="flex flex-col gap-1">
-    @for (event of events(); track event.id) {
-        <div class="bg-(--box-bg) m-3 my-1 rounded-2xl">
-        <div class="flex items-center justify-between p-5">
-            <span class="text-lg font-bold text-(--fg-color)">{{ event.title }}</span>
-            <span class="text-xs text-(--muted-fg) mt-0.5">{{ event.date }} ، {{event.location}}</span>
+  @if (eventsStore.isLoading()) {
+    <div class="grid gap-3 md:grid-cols-3">
+      @for (item of [1, 2, 3]; track item) {
+        <div class="h-32 animate-pulse rounded-xl bg-ink-3"></div>
+      }
+    </div>
+  } @else {
+    <div class="grid gap-3 md:grid-cols-3">
+      @for (event of events(); track event._id) {
+        <a
+          routerLink="/user/events"
+          class="rounded-xl border border-ink-border bg-ink p-4 transition hover:bg-ink-3"
+        >
+          <div class="text-[11px] font-medium text-brand">
+            {{ event.startDate | date: 'd MMM، h:mm a' }}
+          </div>
+          <h3 class="mt-2 line-clamp-2 text-sm font-semibold text-ink-fg">{{ event.title }}</h3>
+          <p class="mt-2 truncate text-xs text-ink-muted">{{ locationLabel(event) }}</p>
+        </a>
+      } @empty {
+        <div class="md:col-span-3 rounded-xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted">
+          لا توجد فعاليات قادمة حالياً.
         </div>
-        <div class="flex justify-evenly w-full mb-3">
-        <button class="btn-main-red p-1 rounded-[5px] w-[45%]">رؤية علي الخريطة</button>
-        <button class="btn-main-white p-1 rounded-[5px] w-[45%]">دعوة الأصدقاء</button>
-        </div>
-        </div>
-    } @empty {
-      <div class="flex items-center justify-center gap-2 text-center py-10 rounded-2xl border border-dashed border-gray-200">
-        <app-icon [iconName]="'SearchSlash'" [iconColor]="'#d32e18'"></app-icon>
-        <p class="text-primary-500 text-lg">لا توجد فعاليات مشترك بها قادمة</p>
-      </div>
-    }
-  </div>
+      }
+    </div>
+  }
 </section>
