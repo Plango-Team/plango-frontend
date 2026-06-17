@@ -1,0 +1,14 @@
+.angular/
+dist/
+node_modules/
+.vercel/
+.env
+.env.*
+!.env.example
+backend/
+docs/
+*.log
+*.err.log
+*.out.log
+Annotation*.png
+.vscode/

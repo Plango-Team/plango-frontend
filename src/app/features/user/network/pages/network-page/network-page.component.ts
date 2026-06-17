@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { SocialStore } from '../../../social/social.store';
 import { authStore } from '../../../../auth/auth.store';
 
-type NetworkTab = 'followers' | 'following' | 'requests';
+type NetworkTab = 'discover' | 'followers' | 'following' | 'requests';
 
 @Component({
   selector: 'app-network-page',
@@ -17,7 +17,7 @@ type NetworkTab = 'followers' | 'following' | 'requests';
 export class NetworkPageComponent {
   socialStore = inject(SocialStore);
   auth = inject(authStore);
-  activeTab = signal<NetworkTab>('followers');
+  activeTab = signal<NetworkTab>('discover');
   searchQuery = signal('');
 
   stats = computed(() => ({
@@ -27,6 +27,12 @@ export class NetworkPageComponent {
   }));
 
   tabs = computed(() => [
+    {
+      key: 'discover' as NetworkTab,
+      label: 'اكتشف',
+      count: this.socialStore.profiles().filter((profile) => profile.id !== this.auth.user()?._id)
+        .length,
+    },
     { key: 'followers' as NetworkTab, label: 'المتابعون', count: this.stats().followers },
     { key: 'following' as NetworkTab, label: 'أتابعهم', count: this.stats().following },
     { key: 'requests' as NetworkTab, label: 'طلبات', count: this.stats().pending },
@@ -69,6 +75,24 @@ export class NetworkPageComponent {
     });
   });
 
+  discoverProfiles = computed(() => {
+    const myId = this.auth.user()?._id;
+    const query = this.searchQuery().trim().toLowerCase();
+    return this.socialStore
+      .profiles()
+      .filter((profile) => profile.id !== myId)
+      .filter(
+        (profile) =>
+          !query ||
+          profile.displayName.toLowerCase().includes(query) ||
+          profile.username.toLowerCase().includes(query),
+      )
+      .sort((a, b) => {
+        if (a.kind !== b.kind) return a.kind === 'user' ? -1 : 1;
+        return a.displayName.localeCompare(b.displayName, 'ar');
+      });
+  });
+
   selectTab(tab: NetworkTab) {
     this.activeTab.set(tab);
   }
@@ -81,6 +105,27 @@ export class NetworkPageComponent {
     const myId = this.auth.user()?._id;
     if (!myId) return;
     this.socialStore.unfollow(myId, userId);
+  }
+
+  toggleFollow(userId: string) {
+    const myId = this.auth.user()?._id;
+    if (!myId || myId === userId) return;
+    if (this.socialStore.followState(myId, userId) === 'none') {
+      this.socialStore.follow(myId, userId);
+    } else {
+      this.socialStore.unfollow(myId, userId);
+    }
+  }
+
+  followLabel(userId: string, isPrivate: boolean): string {
+    const state = this.socialStore.followState(this.auth.user()?._id ?? null, userId);
+    if (state === 'accepted') return 'إلغاء المتابعة';
+    if (state === 'pending') return 'إلغاء الطلب';
+    return isPrivate ? 'طلب متابعة' : 'متابعة';
+  }
+
+  isPrivate(userId: string): boolean {
+    return this.socialStore.findProfile({ id: userId })?.isPrivate ?? false;
   }
 
   acceptRequest(followerId: string) {

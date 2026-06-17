@@ -2,6 +2,7 @@ import { Component, inject, computed } from '@angular/core';
 import { IconComponent } from '../../../../../shared/components/icon/icon.component';
 import { RouterLink } from "@angular/router";
 import { AppointmentsStore } from '../../../appointments/appointments.store';
+import { Appointment } from '../../../appointments/interfaces/IAppointment';
 
 @Component({
   selector: 'app-dashboard-appointments',
@@ -13,11 +14,28 @@ export class DashboardAppointmentsComponent {
   private appointmentStore = inject(AppointmentsStore);
 
   upcomingAppointments = computed(() => {
-    return this.appointmentStore.appointments().slice()
+    const now = Date.now();
+    return this.appointmentStore.appointments()
+      .filter((appointment) => {
+        return !appointment.isCompleted && new Date(appointment.arrivalTime).getTime() >= now;
+      })
       .sort((a, b) => {
         return new Date(a.arrivalTime).getTime() - new Date(b.arrivalTime).getTime()
       }).slice(0, 3);
   });
+
+  sourceLabel(appointment: Appointment): string {
+    return appointment.eventId ? 'فعالية' : 'موعد';
+  }
+
+  destinationLabel(appointment: Appointment): string {
+    return (
+      appointment.destinationLocation?.addressName ||
+      appointment.destinationLocation?.fullAddress ||
+      appointment.destinationLocation?.fullAddres ||
+      'الموقع غير محدد'
+    );
+  }
 
   getMinutesRemaining(arrivalTime:string | Date) : number{
   if (!arrivalTime) return -1;

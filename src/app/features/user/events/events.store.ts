@@ -1,21 +1,33 @@
-import { signalStore, withState, withComputed, withMethods, patchState, withHooks } from '@ngrx/signals';
-import { computed, inject } from '@angular/core';
-import { EventsState, IEvent } from './interfaces/Ievents';
+import { computed, effect, inject } from '@angular/core';
+import {
+  patchState,
+  signalStore,
+  withComputed,
+  withHooks,
+  withMethods,
+  withState,
+} from '@ngrx/signals';
+import { firstValueFrom } from 'rxjs';
+import { ToastService } from '../../../shared/services/toast.service';
+import {
+  AddEventToScheduleInput,
+  EventCategory,
+  EventPriceFilter,
+  EventsState,
+} from './interfaces/Ievents';
 import { EventService } from './services/event.service';
+import { AppointmentsStore } from '../appointments/appointments.store';
 
 const initialState: EventsState = {
-  events: null,
+  events: [],
   isLoading: false,
   error: null,
+  joiningEventId: null,
+  scheduledEventIds: [],
   filters: {
-    selectedCategory: 'الكل',
-    selectedPrice: 'كل الأسعار',
+    selectedCategory: 'all',
+    selectedPrice: 'all',
   },
-  counters: {
-    totalEvents: 0,
-    interestedTotal: 0,
-    goingTotal: 0,
-  }
 };
 
 export const EventsStore = signalStore(
@@ -23,84 +35,134 @@ export const EventsStore = signalStore(
   withState(initialState),
 
   withComputed(({ events, filters }) => ({
-    // فلترة بناء على التصنيف والسعر
     filteredEvents: computed(() => {
-      const { selectedCategory, selectedPrice } = filters();
-        return events().filter(event => {
-        const matchesCategory = selectedCategory === 'الكل' || event.category === selectedCategory;
-        const matchesPrice = selectedPrice === 'كل الأسعار' || event.priceType === selectedPrice;
-        return matchesCategory && matchesPrice;
+      const currentFilters = filters();
+      return events().filter((event) => {
+        const categoryMatches =
+          currentFilters.selectedCategory === 'all' ||
+          event.category === currentFilters.selectedCategory;
+        const price = event.price ?? 0;
+        const priceMatches =
+          currentFilters.selectedPrice === 'all' ||
+          (currentFilters.selectedPrice === 'free' ? price === 0 : price > 0);
+        return categoryMatches && priceMatches;
       });
     }),
-    
     totalCount: computed(() => events().length),
-    interestedCount: computed(() => events().filter(ev => ev.isInterested).length),
-    goingCount: computed(() => events().filter(ev => ev.isGoing).length),
+    upcomingCount: computed(
+      () => events().filter((event) => new Date(event.startDate).getTime() > Date.now()).length,
+    ),
+    ongoingCount: computed(
+      () =>
+        events().filter((event) => {
+          const now = Date.now();
+          return (
+            new Date(event.startDate).getTime() <= now &&
+            new Date(event.endDate).getTime() >= now
+          );
+        }).length,
+    ),
   })),
 
-  withMethods((store , eventService = inject(EventService)) => ({
+  withMethods((store) => {
+    const eventService = inject(EventService);
+    const appointmentsStore = inject(AppointmentsStore);
+    const toast = inject(ToastService);
 
-    loadEvents() {
-    patchState(store, { isLoading: true });
-    eventService.getEvents().subscribe(data => {
-      const sortedEvents = [...data].sort((a,b) => {
-        return new Date(a.date).getTime() - new Date(b.date).getTime()
-      })
-      patchState(store, { events: sortedEvents, isLoading: false });
-    });
-    },
+    return {
+      loadEvents() {
+        if (store.isLoading()) return;
+        patchState(store, { isLoading: true, error: null });
+        eventService.getEvents().subscribe({
+          next: (events) => {
+            patchState(store, {
+              events: [...events].sort(
+                (a, b) =>
+                  new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+              ),
+              isLoading: false,
+            });
+          },
+          error: () => {
+            patchState(store, {
+              isLoading: false,
+              error: 'تعذر تحميل الفعاليات. حاول مرة أخرى.',
+            });
+          },
+        });
+      },
 
-    updateCategory(category: string): void {
-      patchState(store, {
-        filters: { ...store.filters(), selectedCategory: category }
-      });
-    },
+      updateCategory(category: 'all' | EventCategory) {
+        patchState(store, {
+          filters: { ...store.filters(), selectedCategory: category },
+        });
+      },
 
-    updatePriceFilter(price: string): void {
-      patchState(store, {
-        filters: { ...store.filters(), selectedPrice: price }
-      });
-    },
+      updatePriceFilter(price: EventPriceFilter) {
+        patchState(store, {
+          filters: { ...store.filters(), selectedPrice: price },
+        });
+      },
 
-    toggleInterest(eventId: number): void {
-      patchState(store, (state) => ({
-        events: state.events.map(event => 
-          event.id === eventId 
-            ? { ...event, isInterested: !event.isInterested } 
-            : event
-        )
-      }));
-    },
+      async addToSchedule(eventId: string, input: AddEventToScheduleInput): Promise<boolean> {
+        if (store.joiningEventId()) return false;
+        const event = store.events().find((item) => item._id === eventId);
+        if (store.scheduledEventIds().includes(eventId)) {
+          toast.info('هذه الفعالية موجودة بالفعل في جدولك.');
+          return false;
+        }
+        if (event && new Date(event.startDate).getTime() <= Date.now()) {
+          toast.error(
+            'لا يمكن إضافة فعالية بدأت بالفعل',
+            'المواعيد لا تقبل وقت وصول في الماضي. اختر فعالية قادمة.',
+          );
+          return false;
+        }
 
-   toggleGoing(eventId: number): void {
-    patchState(store, (state) => ({
-      events: state.events.map((event) =>
-        event.id === eventId 
-          ? { ...event, isGoing: !event.isGoing } 
-          : event
-      ),
-    }));
-   },
+        patchState(store, { joiningEventId: eventId, error: null });
 
-  addEvent(newEvent: IEvent): void {
-  patchState(store, (state) => ({
-    events: [
-      ...state.events, 
-      {
-        ...newEvent,
-        id: state.events.length + 1, 
-        isGoing: false,              
-        isInterested: false
-      }
-    ]
-  }));
-  }
+        try {
+          const appointment = await firstValueFrom(eventService.addToSchedule(eventId, input));
+          appointmentsStore.upsertAppointment(appointment);
+          patchState(store, {
+            joiningEventId: null,
+            scheduledEventIds: [...new Set([...store.scheduledEventIds(), eventId])],
+          });
+          toast.success('تمت إضافة الفعالية إلى جدولك', 'ستظهر الآن ضمن مواعيدك القادمة.');
+          return true;
+        } catch (error: any) {
+          patchState(store, { joiningEventId: null });
+          const code = error?.error?.code;
+          const message =
+            code === 'DUPLICATE_FIELD'
+              ? 'يوجد موعد آخر في نفس وقت هذه الفعالية.'
+              : code === 'INTERNAL_ERROR'
+                ? 'تعذر إنشاء الموعد من الخادم. تحقق أن الفعالية قادمة وأن الموقع صالح.'
+                : error?.error?.message;
+          toast.error(
+            'تعذر إضافة الفعالية',
+            message || 'تحقق من نقطة الانطلاق وطريقة التنقل ثم حاول مرة أخرى.',
+          );
+          return false;
+        }
+      },
+    };
+  }),
 
-  })),
+  withHooks((store) => {
+    const appointmentsStore = inject(AppointmentsStore);
 
-  withHooks({
-    onInit(store) {
-      store.loadEvents();
-    },
-  })
+    return {
+      onInit() {
+        store.loadEvents();
+        effect(() => {
+          const eventIds = appointmentsStore
+            .appointments()
+            .map((appointment) => appointment.eventId)
+            .filter((eventId): eventId is string => typeof eventId === 'string' && !!eventId);
+          patchState(store, { scheduledEventIds: [...new Set(eventIds)] });
+        });
+      },
+    };
+  }),
 );

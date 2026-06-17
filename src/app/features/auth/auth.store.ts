@@ -22,6 +22,7 @@ import { catchError, of, pipe, switchMap, tap } from 'rxjs';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { PushNotificationService } from '../../shared/services/push-notification.service';
 
 export type AuthState = {
   user: IUser | null;
@@ -46,10 +47,14 @@ export const authStore = signalStore(
   } as AuthState),
   withComputed((store) => ({
     isAuthenticated: computed(() => !!store.user()),
-    accountType: computed(() => store.accountType() ?? null),
     isOrganization: computed(() => store.accountType() === 'organization'),
   })),
-  withMethods((store, authService = inject(AuthService), router = inject(Router)) => ({
+  withMethods((
+    store,
+    authService = inject(AuthService),
+    router = inject(Router),
+    pushNotifications = inject(PushNotificationService),
+  ) => ({
     goToHome: signalMethod<void>(() => {
       const user = store.user();
       if (!user) {
@@ -71,6 +76,7 @@ export const authStore = signalStore(
                 patchState(store, {
                   user: response.user,
                   token: response.token,
+                  accountType: response.user.accountType,
                   isLoading: false,
                 });
                 localStorage.setItem('token', response.token);
@@ -252,8 +258,15 @@ export const authStore = signalStore(
 
     // ─────── تسجيل الخروج ───────
     logOut: signalMethod<void>(() => {
+      void pushNotifications.deleteCurrentToken();
       localStorage.removeItem('token');
-      patchState(store, { user: null, token: null, successMessage: null, error: null });
+      patchState(store, {
+        user: null,
+        token: null,
+        accountType: null,
+        successMessage: null,
+        error: null,
+      });
       router.navigate(['/']);
     }),
 
@@ -279,7 +292,21 @@ export const authStore = signalStore(
     }),
 
     setAuthSession: signalMethod<{ user: IUser; token: string }>((session) => {
-      patchState(store, { user: session.user, token: session.token });
+      patchState(store, {
+        user: session.user,
+        token: session.token,
+        accountType: session.user.accountType,
+      });
+    }),
+
+    patchCurrentUser: signalMethod<Partial<IUser>>((changes) => {
+      const current = store.user();
+      if (!current) return;
+      const user = { ...current, ...changes };
+      patchState(store, {
+        user,
+        accountType: user.accountType,
+      });
     }),
 
     updateCurrentUser: rxMethod<Partial<IUser>>(
@@ -328,14 +355,24 @@ export const authStore = signalStore(
             tap({
               next: (user) => {
                 const token = localStorage.getItem('token') || null;
-                patchState(store, { user, token, isLoading: false });
+                patchState(store, {
+                  user,
+                  token,
+                  accountType: user.accountType,
+                  isLoading: false,
+                });
                 if (store.accountType() === 'organization') {
                   router.navigate(['/organization']);
                 }
               },
               error: () => {
                 localStorage.removeItem('token');
-                patchState(store, { user: null, token: null, isLoading: false });
+                patchState(store, {
+                  user: null,
+                  token: null,
+                  accountType: null,
+                  isLoading: false,
+                });
                 router.navigate(['/auth/login']);
               },
             }),

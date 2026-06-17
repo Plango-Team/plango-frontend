@@ -1,11 +1,11 @@
 import { signalStore, withState, withMethods, patchState, withHooks, withComputed } from '@ngrx/signals';
-import { ChatMessage, IAppointment, IRouteResponse, MapState } from './interfaces/Imap';
+import { MapState } from './interfaces/Imap';
 import { computed, effect, inject, untracked } from '@angular/core';
-import { MapService } from './services/map.service';
 import polyline from '@mapbox/polyline';
 import { authStore } from '../../auth/auth.store';
-import { InvitService } from './services/invit.service';
 import { AppointmentsStore } from '../appointments/appointments.store';
+import { EventsStore } from '../events/events.store';
+import { Appointment } from '../appointments/interfaces/IAppointment';
 
 
 let watchId : number | null = null;
@@ -13,16 +13,9 @@ let watchId : number | null = null;
 const initialState: MapState = {
   userLocation: null,
   currentRoute: null,
-  routeData: null,
   isLoading: false,
   error: null,
   userHeading: null,
-  events: [
-    { id: 101, title: 'ورشة', lat: 28.1130, lng: 30.7450 },
-    { id: 102, title: 'معرض الفن', lat: 27.9350, lng: 30.8350 }
-  ],
-  friends:null,
-  trips:[],
 };
 
 export const MapStore = signalStore(
@@ -31,25 +24,39 @@ export const MapStore = signalStore(
   },
   withState(initialState),
 
-  withComputed((store, appointmentStore = inject(AppointmentsStore)) => ({
-    sortedAppointments: computed(() => {
+  withComputed((_store, appointmentStore = inject(AppointmentsStore), eventsStore = inject(EventsStore)) => {
+    const sortedAppointments = computed(() => {
       const list = appointmentStore.appointments() || [];
-      return [...list].sort((a, b) => {
+      const now = Date.now();
+      return [...list]
+      .filter((appointment) => !appointment.isCompleted && new Date(appointment.arrivalTime).getTime() >= now)
+      .sort((a, b) => {
         return new Date(a.arrivalTime).getTime() - new Date(b.arrivalTime).getTime();
       });
-    }),
-    nextAppointment: computed(() => {
-      const list = appointmentStore.appointments() || [];
-      if (list.length === 0) return null;
-      
-      const sorted = [...list].sort((a, b) => 
-        new Date(a.arrivalTime).getTime() - new Date(b.arrivalTime).getTime()
-      );
-      return sorted[0];
-    })
-  })),
+    });
+    const mapEvents = computed(() => {
+      const now = Date.now();
+      return eventsStore
+        .events()
+        .filter((event) => {
+          const coords = event.location?.coordinates;
+          return (
+            event.isActive &&
+            new Date(event.endDate).getTime() >= now &&
+            Array.isArray(coords) &&
+            coords.length >= 2
+          );
+        });
+    });
 
-  withMethods((store, mapService = inject(MapService),invitService = inject(InvitService), authstore = inject(authStore)) => ({
+    return {
+      sortedAppointments,
+      nextAppointment: computed(() => sortedAppointments()[0] ?? null),
+      mapEvents,
+    };
+  }),
+
+  withMethods((store) => ({
     // فنكشن بتجيب اللوكيشن الحالي من المتصفح
     getCurrentLocation() {
       if (!navigator.geolocation) {
@@ -89,7 +96,7 @@ export const MapStore = signalStore(
       }
     },
 
-    loadRouteFromAppointment(appointment: any) {
+    loadRouteFromAppointment(appointment: Appointment) {
       if (!appointment || !appointment.polyline) {
         patchState(store, { error: 'لا يوجد مسار مسجل لهذا الميعاد' });
         return;
@@ -110,109 +117,23 @@ export const MapStore = signalStore(
       }
     },
 
-    loadFullData() {
-    patchState(store, { isLoading: true });
-    mapService.getTripInfo().subscribe(info => {
-      patchState(store, {trips: [info]}); 
-    });
-    mapService.getFriends().subscribe(data => {
-      patchState(store, { friends: data, isLoading: false });
-    });
-    },
-
-    toggleTripMenu(index: number) {
-      patchState(store,(state) => {
-        const updatedTrips = [...(state.trips ?? [])]
-        if(updatedTrips[index]){
-          updatedTrips[index] = {
-            ...updatedTrips[index],
-            showTripMenu: !updatedTrips[index].showTripMenu
-          }
-        }
-        return {trips:updatedTrips}
-      })
-    },
-
-    deleteTrip(index:number){
-      patchState(store, (state) => ({
-        trips:(state.trips ?? []).filter((_,i) => i !== index)
-      }))
-    },
-
-    addMessage(messageText:string){
-    const username = authstore.user().name
-      const newMessage : ChatMessage = {
-        id: Date.now(),
-        sender: username,
-        text: messageText,
-        time: new Date().toLocaleTimeString('ar-EG',{hour:'numeric',minute:'numeric',hour12:true}),
-      };
-      patchState(store,(state) => {
-        const updatedTrips = [...state.trips];
-        if(updatedTrips[0]){
-          updatedTrips[0] = {
-            ...updatedTrips[0],chatMessages:[...
-              (updatedTrips[0].chatMessages || []),newMessage
-            ]
-          }
-        }
-        return {trips:updatedTrips}
-      })
-    },
-
-    // loadRoute(origin: {lat:number,lng:number},destination:{lat:number,lng:number}){
-    //   patchState(store,{isLoading:true});
-    //   mapService.getRoute(origin,destination).subscribe({
-    //     next: (response) => {
-    //       // بفكه علشان بيكون راجع سترينج مش احداثيات
-    //       const decodedPoly = polyline.decode(response.data.polyline)
-    //       // بعكسه علشان الديكود بيرجع [lat,lng] واحنا عاوزيين العكس
-    //       const coordinates = decodedPoly.map(p => [p[1], p[0]]);
-    //       patchState(store, {currentRoute:coordinates,routeData:response,isLoading:false});
-    //     },
-    //     error:(e) => {
-    //       // error msg
-    //       patchState(store, {isLoading:false})
-    //     } 
-    //   })
-    // },
-
     clearRoute(){
       patchState(store, {currentRoute: null})
     },
-
-    // acceptTripInvite(inviteId: string) {
-    //   patchState(store, { isLoading: true, error: null });
-    //   const currentTripId = store.trips()[0]?.id || 0;
-
-    //   invitService.acceptInvitation(currentTripId, inviteId).subscribe({
-    //     next: (response) => {
-    //       patchState(store, (state) => ({
-    //         isLoading: false,
-    //         friends: state.friends ? [...state.friends, response.friend] : [response.friend]
-    //       }));
-    //     },
-    //     error: (err) => {
-    //       patchState(store, { 
-    //         isLoading: false, 
-    //         error: err.message
-    //       });
-    //     }
-    //   });
-    // }
   })),
 
   withHooks({
     onInit(store) {
       const auth = inject(authStore);
+      const eventsStore = inject(EventsStore);
       store.getCurrentLocation();
 
       // Wait for auth before making API calls
       effect(() => {
         const user = auth.user();
-        if (user) {
-          untracked(() => {
-            store.loadFullData();
+            if (user) {
+              untracked(() => {
+            eventsStore.loadEvents();
           });
         }
       });

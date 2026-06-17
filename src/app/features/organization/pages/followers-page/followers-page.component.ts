@@ -96,6 +96,13 @@ export class OrganizationFollowersPageComponent {
     this.socialStore.unfollow(me, profileId);
   }
 
+  followLabel(profile: Profile): string {
+    const state = this.followState(profile.id);
+    if (state === 'accepted') return 'إلغاء المتابعة';
+    if (state === 'pending') return 'إلغاء الطلب';
+    return profile.isPrivate ? 'طلب متابعة' : 'متابعة';
+  }
+
   requestProfile(request: PendingRequest): { displayName: string; username: string } {
     return {
       displayName: request.follower.name,

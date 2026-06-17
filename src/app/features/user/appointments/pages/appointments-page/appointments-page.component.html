@@ -1,1 +1,220 @@
-<p>appointments-page works!</p>
+<div class="px-4 py-6 sm:px-6 lg:px-8" dir="rtl">
+  <header class="flex flex-col gap-4 border-b border-ink-border pb-6 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <div class="text-sm text-brand">المواعيد والفعاليات</div>
+      <h1 class="mt-1 font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">
+        جدولك المتصل بالخريطة
+      </h1>
+      <p class="mt-2 max-w-2xl text-sm text-ink-muted">
+        كل موعد هنا قادم من الخادم. الفعاليات التي تضيفها للجدول تظهر كمواعيد جاهزة للتتبع والدعوات.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <button
+        type="button"
+        (click)="refresh()"
+        [disabled]="appointmentStore.isLoading()"
+        class="rounded-full border border-ink-border px-4 py-2 text-xs font-semibold text-ink-fg transition hover:bg-ink-2 disabled:opacity-50"
+      >
+        {{ appointmentStore.isLoading() ? 'جارٍ التحديث...' : 'تحديث' }}
+      </button>
+      <a
+        routerLink="/user/calendar"
+        class="rounded-full bg-brand px-4 py-2 text-xs font-semibold text-brand-foreground transition hover:bg-brand/90"
+      >
+        موعد جديد
+      </a>
+      <a
+        routerLink="/user/events"
+        class="rounded-full border border-ink-border px-4 py-2 text-xs font-semibold text-ink-fg transition hover:bg-ink-2"
+      >
+        تصفح الفعاليات
+      </a>
+    </div>
+  </header>
+
+  @if (appointmentStore.error()) {
+    <div class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/25 bg-amber-500/5 px-4 py-3">
+      <p class="text-xs text-amber-200">{{ appointmentStore.error() }}</p>
+      <button type="button" (click)="refresh()" class="text-xs font-medium text-amber-100 hover:underline">
+        إعادة المحاولة
+      </button>
+    </div>
+  }
+
+  <section class="mt-6 grid gap-px overflow-hidden rounded-2xl border border-ink-border bg-ink-border sm:grid-cols-3">
+    <div class="bg-ink-2 p-5">
+      <span class="text-xs text-ink-muted">المواعيد القادمة</span>
+      <strong class="mt-2 block font-display text-3xl text-ink-fg">{{ upcomingAppointments().length }}</strong>
+      <small class="text-xs text-ink-muted">جاهزة للخريطة والدعوات</small>
+    </div>
+    <div class="bg-ink-2 p-5">
+      <span class="text-xs text-ink-muted">من الفعاليات</span>
+      <strong class="mt-2 block font-display text-3xl text-brand">{{ eventAppointments().length }}</strong>
+      <small class="text-xs text-ink-muted">أضيفت عبر زر الجدولة</small>
+    </div>
+    <div class="bg-ink-2 p-5">
+      <span class="text-xs text-ink-muted">دعوات بانتظارك</span>
+      <strong class="mt-2 block font-display text-3xl text-ink-fg">{{ appointmentStore.pendingInvites().length }}</strong>
+      <small class="text-xs text-ink-muted">قبول الدعوة يضيفها لجدولك</small>
+    </div>
+  </section>
+
+  <div class="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,1fr)]">
+    <section class="rounded-2xl border border-ink-border bg-ink-2">
+      <div class="flex items-center justify-between gap-3 border-b border-ink-border p-5 sm:px-6">
+        <div>
+          <h2 class="font-display text-xl text-ink-fg">القادم</h2>
+          <p class="mt-1 text-xs text-ink-muted">مرتبة حسب أقرب وقت وصول.</p>
+        </div>
+        <a routerLink="/user/map" class="text-xs font-medium text-brand hover:underline">الخريطة</a>
+      </div>
+
+      @if (appointmentStore.isLoading() && upcomingAppointments().length === 0) {
+        <div class="space-y-3 p-5 sm:p-6">
+          @for (item of [1, 2, 3]; track item) {
+            <div class="h-28 animate-pulse rounded-xl bg-ink"></div>
+          }
+        </div>
+      } @else if (upcomingAppointments().length === 0) {
+        <div class="p-10 text-center">
+          <h3 class="font-display text-xl text-ink-fg">لا توجد مواعيد قادمة</h3>
+          <p class="mt-2 text-sm text-ink-muted">أنشئ موعداً أو أضف فعالية إلى جدولك.</p>
+          <div class="mt-5 flex flex-wrap justify-center gap-2">
+            <a routerLink="/user/calendar" class="rounded-full bg-brand px-4 py-2 text-xs font-semibold text-brand-foreground">
+              إضافة موعد
+            </a>
+            <a routerLink="/user/events" class="rounded-full border border-ink-border px-4 py-2 text-xs font-semibold text-ink-fg">
+              فعاليات
+            </a>
+          </div>
+        </div>
+      } @else {
+        <div class="divide-y divide-ink-border">
+          @for (appointment of upcomingAppointments(); track appointment._id) {
+            <article class="grid gap-4 p-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-6">
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h3 class="truncate text-base font-semibold text-ink-fg">{{ appointment.title }}</h3>
+                  <span [class]="'rounded-full border px-2 py-0.5 text-[10px] ' + sourceClasses(appointment)">
+                    {{ sourceLabel(appointment) }}
+                  </span>
+                </div>
+                <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-muted">
+                  <span>{{ appointment.arrivalTime | date: 'EEEE، d MMM y - h:mm a' }}</span>
+                  <span>{{ destinationLabel(appointment) }}</span>
+                </div>
+                <div class="mt-4 grid gap-2 text-xs sm:grid-cols-4">
+                  <div class="rounded-xl bg-ink p-3">
+                    <span class="text-ink-muted">المسافة</span>
+                    <strong class="mt-1 block text-ink-fg">{{ distanceLabel(appointment) }}</strong>
+                  </div>
+                  <div class="rounded-xl bg-ink p-3">
+                    <span class="text-ink-muted">الطريق</span>
+                    <strong class="mt-1 block text-ink-fg">{{ travelTimeLabel(appointment) }}</strong>
+                  </div>
+                  <div class="rounded-xl bg-ink p-3">
+                    <span class="text-ink-muted">التنقل</span>
+                    <strong class="mt-1 block text-ink-fg">{{ transportLabel(appointment.transportation) }}</strong>
+                  </div>
+                  <div class="rounded-xl bg-ink p-3">
+                    <span class="text-ink-muted">المشاركون</span>
+                    <strong class="mt-1 block text-ink-fg">{{ participantCount(appointment) }}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap gap-2 sm:flex-col">
+                <button
+                  type="button"
+                  (click)="openOnMap(appointment)"
+                  class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2 text-xs font-semibold text-brand-foreground hover:bg-brand/90"
+                >
+                  <app-icon [iconName]="'Location01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+                  عرض على الخريطة
+                </button>
+                <button
+                  type="button"
+                  (click)="removeAppointment(appointment)"
+                  class="inline-flex items-center justify-center gap-2 rounded-lg border border-ink-border px-4 py-2 text-xs font-semibold text-ink-muted hover:bg-ink"
+                >
+                  <app-icon [iconName]="'Delete01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+                  حذف
+                </button>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+
+    <aside class="space-y-6">
+      <section class="rounded-2xl border border-ink-border bg-ink-2 p-5 sm:p-6">
+        <h2 class="font-display text-xl text-ink-fg">الدعوات</h2>
+        <p class="mt-1 text-xs text-ink-muted">طلبات مشاركة المواعيد من مستخدمين آخرين.</p>
+
+        <div class="mt-5 space-y-3">
+          @for (invite of appointmentStore.pendingInvites(); track invite._id) {
+            <article class="rounded-xl border border-ink-border bg-ink p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <h3 class="truncate text-sm font-semibold text-ink-fg">{{ invite.appointmentId.title }}</h3>
+                  <p class="mt-1 text-xs text-ink-muted">
+                    من {{ invite.senderId.name }} · {{ invite.appointmentId.arrivalTime | date: 'd MMM، h:mm a' }}
+                  </p>
+                </div>
+              </div>
+              <div class="mt-4 flex gap-2">
+                <button
+                  type="button"
+                  (click)="setLocModal.open(invite.appointmentId._id)"
+                  class="flex-1 rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-brand-foreground"
+                >
+                  قبول
+                </button>
+                <button
+                  type="button"
+                  (click)="appointmentStore.declineInvitation(invite.appointmentId._id)"
+                  class="flex-1 rounded-lg border border-ink-border px-3 py-2 text-xs text-ink-muted hover:bg-ink-3"
+                >
+                  رفض
+                </button>
+              </div>
+            </article>
+          } @empty {
+            <div class="rounded-xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted">
+              لا توجد دعوات حالياً
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="rounded-2xl border border-ink-border bg-ink-2 p-5 sm:p-6">
+        <h2 class="font-display text-xl text-ink-fg">آخر المواعيد</h2>
+        <p class="mt-1 text-xs text-ink-muted">سجل مختصر من بيانات الخادم.</p>
+        <div class="mt-5 space-y-3">
+          @for (appointment of previousAppointments(); track appointment._id) {
+            <article class="rounded-xl bg-ink p-4">
+              <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                  <h3 class="truncate text-sm font-semibold text-ink-fg">{{ appointment.title }}</h3>
+                  <p class="mt-1 text-xs text-ink-muted">{{ appointment.arrivalTime | date: 'd MMM y، h:mm a' }}</p>
+                </div>
+                <span [class]="'shrink-0 rounded-full border px-2 py-0.5 text-[10px] ' + sourceClasses(appointment)">
+                  {{ sourceLabel(appointment) }}
+                </span>
+              </div>
+            </article>
+          } @empty {
+            <div class="rounded-xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted">
+              لا يوجد سجل مواعيد بعد
+            </div>
+          }
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <app-set-location-modal #setLocModal></app-set-location-modal>
+</div>

@@ -19,16 +19,19 @@
         <span
           class="inline-flex items-center gap-1.5 rounded-full bg-ink/10 px-2.5 py-1 text-[11px] backdrop-blur"
         >
-          <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-success"></span> تدفق سلس
+          <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-success"></span> بيانات مباشرة
         </span>
         <span class="text-xs text-ink-muted">الموعد القادم</span>
       </div>
-      <div class="mt-6 text-sm text-ink-muted">الإنطلاق الأمثل خلال</div>
+      @if (nextAppointment(); as appointment) {
+      <div class="mt-6 text-sm text-ink-muted">الانطلاق الأمثل خلال</div>
       <div class="mt-1 flex items-baseline gap-2">
-        <span class="font-display text-6xl tracking-tight tabular-nums sm:text-7xl">45</span>
+        <span class="font-display text-6xl tracking-tight tabular-nums sm:text-7xl">
+          {{ departureInMinutes() !== null && departureInMinutes()! > 0 ? departureInMinutes() : 0 }}
+        </span>
         <span class="text-xl text-ink-muted">دقيقة</span>
       </div>
-      <div class="mt-1 text-base">اجتماع الفريق — مقر الشركة</div>
+      <div class="mt-1 text-base">{{ appointment.title }} — {{ destinationLabel(appointment) }}</div>
 
       <div class="mt-6 grid grid-cols-3 gap-3">
         <div class="rounded-xl border border-ink-border bg-ink/5 p-3 backdrop-blur">
@@ -38,7 +41,7 @@
             [iconColor]="'var(--color-ink-muted)'"
           ></app-icon>
           <div class="mt-2 text-[11px] text-ink-muted">المسافة</div>
-          <div class="font-medium text-sm">8.2 كم</div>
+          <div class="font-medium text-sm">{{ distanceLabel(appointment) }}</div>
         </div>
         <div class="rounded-xl border border-ink-border bg-ink/5 p-3 backdrop-blur">
           <app-icon
@@ -47,21 +50,22 @@
             [iconColor]="'var(--color-ink-muted)'"
           ></app-icon>
           <div class="mt-2 text-[11px] text-ink-muted">مدة الرحلة</div>
-          <div class="font-medium text-sm">22 دقيقة</div>
+          <div class="font-medium text-sm">{{ travelTimeLabel(appointment) }}</div>
         </div>
         <div class="rounded-xl border border-ink-border bg-ink/5 p-3 backdrop-blur">
           <app-icon
-            [iconName]="'CloudFreeIcons'"
+            [iconName]="'TimeQuarter02Icon'"
             [iconSize]="16"
             [iconColor]="'var(--color-ink-muted)'"
           ></app-icon>
-          <div class="mt-2 text-[11px] text-ink-muted">الطقس</div>
-          <div class="font-medium text-sm">مشمس 24°</div>
+          <div class="mt-2 text-[11px] text-ink-muted">وقت المغادرة</div>
+          <div class="font-medium text-sm">{{ departureTimeLabel(appointment) }}</div>
         </div>
       </div>
 
       <div class="mt-6 flex flex-wrap items-center gap-2">
-        <button
+        <a
+          routerLink="/user/map"
           class="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand/90 transition-all"
         >
           ابدأ الرحلة
@@ -70,8 +74,9 @@
             [iconSize]="16"
             [iconColor]="'currentColor'"
           ></app-icon>
-        </button>
-        <button
+        </a>
+        <a
+          routerLink="/user/calendar"
           class="flex items-center gap-1.5 rounded-lg border border-ink-border bg-transparent px-4 py-2 text-sm font-semibold text-ink-fg hover:bg-ink/40 transition-all"
         >
           <app-icon
@@ -80,8 +85,22 @@
             [iconColor]="'currentColor'"
           ></app-icon>
           موعد جديد
-        </button>
+        </a>
       </div>
+      } @else {
+        <div class="mt-8 rounded-2xl border border-dashed border-ink-border bg-ink/20 p-8 text-center">
+          <h2 class="font-display text-2xl text-ink-fg">لا توجد مواعيد قادمة</h2>
+          <p class="mt-2 text-sm text-ink-muted">أضف موعداً أو فعالية إلى جدولك ليظهر نبض اليوم هنا.</p>
+          <div class="mt-5 flex flex-wrap justify-center gap-2">
+            <a routerLink="/user/calendar" class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground">
+              إضافة موعد
+            </a>
+            <a routerLink="/user/events" class="rounded-lg border border-ink-border px-4 py-2 text-sm font-semibold text-ink-fg">
+              تصفح الفعاليات
+            </a>
+          </div>
+        </div>
+      }
     </div>
   </div>
 
@@ -178,6 +197,10 @@
     <app-dashboard-appointments></app-dashboard-appointments>
   </app-card>
 
+  <app-card class="block lg:col-span-12" customClass="h-full">
+    <app-dashboard-events></app-dashboard-events>
+  </app-card>
+
 
   <!--Invites list-->
   <app-card class="block lg:col-span-12" customClass="h-full">
@@ -229,56 +252,46 @@
 </div>
   </app-card>
 
-  <!-- Friends -->
+  <!-- Shared appointments -->
   <app-card class="block lg:col-span-7" customClass="text-ink-fg h-full">
     <div class="mb-4 flex items-center justify-between gap-2">
-      <h3 class="font-display text-lg">الرحلات المشتركة</h3>
-      <span class="text-xs text-ink-muted">3 نشطة</span>
+      <h3 class="font-display text-lg">الدعوات والرحلات المشتركة</h3>
+      <span class="text-xs text-ink-muted">{{ appStore.pendingInvites().length }} دعوة</span>
     </div>
     <div class="space-y-3">
-      <!-- Item 1 -->
-      <div class="flex items-center gap-3">
-        <div class="h-8 w-8 rounded-full bg-ink-3 grid place-items-center text-xs font-medium">
-          ن
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium truncate">نادر محمد</div>
-          <div class="h-1.5 mt-1 overflow-hidden rounded-full bg-ink-3">
-            <div class="h-full rounded-full bg-ink-fg" style="width: 70%"></div>
+      @for (invite of appStore.pendingInvites().slice(0, 3); track invite._id) {
+        <div class="flex items-center gap-3 rounded-xl border border-ink-border bg-ink p-3">
+          <div class="h-8 w-8 rounded-full bg-ink-3 grid place-items-center text-xs font-medium">
+            {{ invite.senderId.name.charAt(0) }}
           </div>
-        </div>
-        <div class="text-xs text-ink-muted shrink-0">8 دقائق</div>
-      </div>
-      <!-- Item 2 -->
-      <div class="flex items-center gap-3">
-        <div class="h-8 w-8 rounded-full bg-ink-3 grid place-items-center text-xs font-medium">
-          ب
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium truncate">بسمة جمال</div>
-          <div class="h-1.5 mt-1 overflow-hidden rounded-full bg-ink-3">
-            <div class="h-full rounded-full bg-ink-fg" style="width: 40%"></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium truncate">{{ invite.appointmentId.title }}</div>
+            <div class="mt-0.5 text-xs text-ink-muted">دعوة من {{ invite.senderId.name }}</div>
           </div>
+          <div class="text-xs text-ink-muted shrink-0">{{ formatTime(invite.appointmentId.arrivalTime) }}</div>
         </div>
-        <div class="text-xs text-ink-muted shrink-0">15 دقيقة</div>
-      </div>
-      <!-- Item 3 -->
-      <div class="flex items-center gap-3">
-        <div class="h-8 w-8 rounded-full bg-ink-3 grid place-items-center text-xs font-medium">
-          أ
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium truncate">أحمد هشام</div>
-          <div class="h-1.5 mt-1 overflow-hidden rounded-full bg-ink-3">
-            <div class="h-full rounded-full bg-ink-fg" style="width: 90%"></div>
+      }
+      @for (appointment of sharedAppointments(); track appointment._id) {
+        <div class="flex items-center gap-3 rounded-xl border border-ink-border bg-ink p-3">
+          <div class="h-8 w-8 rounded-full bg-ink-3 grid place-items-center text-xs font-medium">
+            {{ participantCount(appointment) }}
           </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium truncate">{{ appointment.title }}</div>
+            <div class="mt-0.5 text-xs text-ink-muted">{{ participantCount(appointment) }} مشارك</div>
+          </div>
+          <a routerLink="/user/map" class="text-xs text-brand shrink-0">الخريطة</a>
         </div>
-        <div class="text-xs text-ink-muted shrink-0">3 دقائق</div>
-      </div>
+      }
+      @if (appStore.pendingInvites().length === 0 && sharedAppointments().length === 0) {
+        <div class="rounded-xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted">
+          لا توجد دعوات أو رحلات مشتركة حالياً
+        </div>
+      }
     </div>
   </app-card>
 
-  <!-- Suggested -->
+  <!-- Suggested from backend data -->
   <app-card class="block lg:col-span-5" customClass="text-ink-fg h-full">
     <div class="flex items-center gap-2">
       <app-icon
@@ -288,20 +301,29 @@
       ></app-icon>
       <h3 class="font-medium">اقتراح ذكي</h3>
     </div>
-    <p class="mt-3 text-sm text-ink-muted">
-      يمكنك دمج مشوار التسوق مع رحلة العودة لتوفير 15 دقيقة وتقليل استهلاك الوقود.
-    </p>
+    @if (nextAppointment(); as appointment) {
+      <p class="mt-3 text-sm text-ink-muted">
+        موعدك القادم هو {{ appointment.title }}. وقت المغادرة المحسوب من الخادم:
+        <span class="font-semibold text-ink-fg">{{ departureTimeLabel(appointment) }}</span>.
+      </p>
+    } @else {
+      <p class="mt-3 text-sm text-ink-muted">
+        لا توجد مواعيد قادمة لتحليلها حالياً. أضف فعالية أو موعداً لتظهر الاقتراحات.
+      </p>
+    }
     <div class="mt-4 flex items-center gap-2">
-      <button
+      <a
+        routerLink="/user/map"
         class="rounded-lg bg-ink-fg px-3 py-1.5 text-xs font-semibold text-ink hover:bg-ink-fg/90 transition-all"
       >
-        إضافة للجدول
-      </button>
-      <button
+        فتح الخريطة
+      </a>
+      <a
+        routerLink="/user/events"
         class="rounded-lg bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-fg hover:bg-ink-3 transition-all"
       >
-        لاحقاً
-      </button>
+        فعاليات
+      </a>
     </div>
   </app-card>
 

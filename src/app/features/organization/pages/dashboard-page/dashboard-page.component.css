@@ -1,0 +1,106 @@
+:host {
+  display: block;
+}
+
+.metric-cell {
+  background: var(--color-ink-2);
+  padding: 1rem;
+}
+
+.metric-cell span,
+.metric-cell small {
+  display: block;
+  color: var(--color-ink-muted);
+}
+
+.metric-cell span {
+  font-size: 0.75rem;
+}
+
+.metric-cell strong {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--color-ink-fg);
+  font-size: 1.875rem;
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-cell small {
+  margin-top: 0.35rem;
+  font-size: 0.6875rem;
+}
+
+.dashboard-panel {
+  transition:
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.dashboard-panel:hover {
+  border-color: color-mix(in srgb, var(--color-ink-fg) 18%, transparent);
+}
+
+.chart-grid {
+  background-image: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--color-ink-fg) 8%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 100% 25%;
+}
+
+.chart-bar {
+  animation: chart-rise 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  transform-origin: bottom;
+  transition: height 260ms ease;
+}
+
+.chart-tooltip {
+  pointer-events: none;
+  position: absolute;
+  bottom: calc(100% + 0.4rem);
+  left: 50%;
+  display: none;
+  transform: translateX(-50%);
+  border-radius: 0.375rem;
+  background: var(--color-ink-fg);
+  padding: 0.2rem 0.45rem;
+  color: var(--color-ink);
+  font-size: 0.625rem;
+}
+
+.group:hover .chart-tooltip {
+  display: block;
+}
+
+.event-row {
+  transition: background-color 160ms ease;
+}
+
+.event-row:hover {
+  background: color-mix(in srgb, var(--color-ink-fg) 3%, transparent);
+}
+
+@keyframes chart-rise {
+  from {
+    opacity: 0;
+    transform: scaleY(0.15);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chart-bar {
+    animation: none;
+  }
+
+  .dashboard-panel,
+  .event-row {
+    transition: none;
+  }
+}

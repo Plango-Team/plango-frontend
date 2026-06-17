@@ -22,6 +22,11 @@ export class NotificationsPageComponent {
   readonly ar = true;
 
   readonly items = computed(() => this.notificationsStore.visible());
+  readonly pushEnabled = computed(
+    () =>
+      this.notificationsStore.pushPermission() === 'granted' &&
+      this.notificationsStore.deviceRegistered(),
+  );
 
   open(item: AppNotification) {
     this.notificationsStore.markRead(item.id);
@@ -41,8 +46,34 @@ export class NotificationsPageComponent {
   }
 
   clearAll() {
-    this.notificationsStore.clear();
-    this.toastService.info(this.ar ? 'تم مسح كل الإشعارات' : 'Notifications cleared');
+    this.notificationsStore.clearLocal();
+    this.toastService.info(
+      this.ar ? 'تم مسح الإشعارات المحلية' : 'Local notifications cleared',
+    );
+  }
+
+  refresh() {
+    this.notificationsStore.load();
+  }
+
+  loadMore() {
+    this.notificationsStore.loadMore();
+  }
+
+  async enableDeviceNotifications() {
+    const enabled = await this.notificationsStore.syncPushToken(true);
+    if (enabled) {
+      this.toastService.success(
+        this.ar ? 'تم تفعيل إشعارات الجهاز' : 'Device notifications enabled',
+      );
+    } else if (this.notificationsStore.pushPermission() === 'denied') {
+      this.toastService.warning(
+        this.ar ? 'إذن الإشعارات محظور من المتصفح' : 'Notifications are blocked',
+        this.ar
+          ? 'اسمح بالإشعارات من إعدادات الموقع في المتصفح ثم أعد المحاولة.'
+          : 'Allow notifications from the browser site settings and try again.',
+      );
+    }
   }
 
   relativeTime(item: AppNotification) {

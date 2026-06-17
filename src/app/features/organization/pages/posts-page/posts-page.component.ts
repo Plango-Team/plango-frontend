@@ -26,7 +26,7 @@ export class OrganizationPostsPageComponent {
   });
 
   readonly totalLikes = computed(() =>
-    this.posts().reduce((sum, post) => sum + post.likes.length, 0),
+    this.posts().reduce((sum, post) => sum + post.likeCount, 0),
   );
 
   readonly averageLikes = computed(() => {
@@ -36,6 +36,6 @@ export class OrganizationPostsPageComponent {
   });
 
   readonly topPosts = computed(() =>
-    [...this.posts()].sort((a, b) => b.likes.length - a.likes.length).slice(0, 3),
+    [...this.posts()].sort((a, b) => b.likeCount - a.likeCount).slice(0, 3),
   );
 }

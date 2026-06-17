@@ -45,11 +45,6 @@
     </div>
 
     <div class="flex items-center justify-between cursor-pointer m-0 p-2 rounded-sm hover:bg-ink-3 transition-all duration-500">
-      <span class="text-xs font-bold">الأصدقاء</span>
-      <input type="checkbox" [checked]="layers().friends" (click)="toggelLayers('friends')" class="w-4 h-4 black">
-    </div>
-
-    <div class="flex items-center justify-between cursor-pointer m-0 p-2 rounded-sm hover:bg-ink-3 transition-all duration-500">
       <span class="text-xs font-bold">الفعاليات</span>
       <input type="checkbox" [checked]="layers().events" (click)="toggelLayers('events')" class="w-4 h-4 black">
     </div>
@@ -76,10 +71,6 @@
     <li class="flex items-center justify-start gap-1">
       <span class="w-3 h-3 rounded-full bg-orange-500 shadow-sm"></span>
       <span class="text-sm font-medium">فعاليات قريبة</span>
-    </li>
-    <li class="flex items-center justify-start gap-1">
-      <span class="w-3 h-3 rounded-full bg-success shadow-sm"></span>
-      <span class="text-sm font-medium">أصدقاء نشطون</span>
     </li>
       </ul>  
    </div>

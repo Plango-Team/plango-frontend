@@ -1,1 +1,218 @@
-<p>profile-page works!</p>
+<div class="px-4 py-6 sm:px-6 lg:px-8">
+  @if (!socialStore.loaded()) {
+    <div class="animate-pulse space-y-5">
+      <div class="-mx-4 -mt-4 h-40 bg-ink-2 sm:-mx-6 sm:-mt-6 sm:h-56 lg:-mx-8 lg:-mt-8"></div>
+      <div class="h-24 rounded-2xl bg-ink-2"></div>
+      <div class="h-48 rounded-2xl bg-ink-2"></div>
+    </div>
+  } @else if (!profile()) {
+    <div class="mt-10 flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-border p-12 text-center">
+      <h3 class="font-display text-lg text-ink-fg">هذا الحساب غير موجود</h3>
+      <p class="mt-2 text-sm text-ink-muted">&#64;{{ username() }}</p>
+      <button type="button" (click)="goBack()" class="mt-6 rounded-lg border border-ink-border bg-ink-2 px-4 py-2 text-sm text-ink-fg hover:bg-ink-3">
+        العودة للوحة التحكم
+      </button>
+    </div>
+  } @else if (!isMe() && profileLoadFailed()) {
+    <div class="mt-10 flex flex-col items-center justify-center rounded-2xl border border-ink-border bg-ink-2 p-12 text-center">
+      <h3 class="font-display text-lg text-ink-fg">تعذر تحميل الملف الشخصي</h3>
+      <p class="mt-2 text-sm text-ink-muted">لم نعرض تفاصيل الحساب لحماية خصوصيته.</p>
+      <button type="button" (click)="retryProfile()" class="mt-6 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90">
+        إعادة المحاولة
+      </button>
+    </div>
+  } @else if (!profileReady()) {
+    <div class="animate-pulse space-y-5">
+      <div class="-mx-4 -mt-4 h-40 bg-ink-2 sm:-mx-6 sm:-mt-6 sm:h-56 lg:-mx-8 lg:-mt-8"></div>
+      <div class="h-24 rounded-2xl bg-ink-2"></div>
+      <div class="h-48 rounded-2xl bg-ink-2"></div>
+    </div>
+  } @else {
+    <div
+      class="relative -mx-4 -mt-4 h-40 sm:-mx-6 sm:-mt-6 sm:h-56 lg:-mx-8 lg:-mt-8"
+      [style.backgroundImage]="coverGradient()"
+    ></div>
+
+    <div class="-mt-14 flex flex-col items-start gap-4 sm:-mt-20 sm:flex-row sm:items-end sm:justify-between">
+      <div class="flex items-end gap-4">
+        <div class="rounded-full border-4 border-ink bg-ink-2 p-0">
+          <div class="grid h-24 w-24 place-items-center rounded-full text-3xl font-semibold text-ink-fg">
+            {{ initials(profile()!.displayName) }}
+          </div>
+        </div>
+        <div class="pb-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">
+              {{ profile()!.displayName }}
+            </h1>
+            <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
+              [ngClass]="profile()!.kind === 'org' ? 'border-brand/40 bg-brand/10 text-brand' : 'border-ink-border bg-ink-2 text-ink-muted'">
+              <app-icon
+                [iconName]="profile()!.kind === 'org' ? 'Building02Icon' : 'UserIcon'"
+                [iconSize]="12"
+                iconColor="currentColor"
+              ></app-icon>
+              {{ profile()!.kind === 'org' ? 'مؤسسة' : 'شخصي' }}
+            </span>
+            <span class="inline-flex items-center gap-1 rounded-full border border-ink-border bg-ink-2 px-2 py-0.5 text-[10px] font-medium text-ink-muted">
+              <app-icon
+                [iconName]="profile()!.isPrivate ? 'LockPasswordIcon' : 'GlobalIcon'"
+                [iconSize]="12"
+                iconColor="currentColor"
+              ></app-icon>
+              {{ profile()!.isPrivate ? 'خاص' : 'عام' }}
+            </span>
+          </div>
+          <div class="mt-0.5 text-sm text-ink-muted">&#64;{{ profile()!.username }}</div>
+          @if (profile()!.city) {
+            <div class="mt-1 inline-flex items-center gap-1 text-xs text-ink-muted">
+              <app-icon iconName="Location01Icon" [iconSize]="12" iconColor="currentColor"></app-icon>
+              {{ profile()!.city }}
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        @if (isMe()) {
+          @if (!isEditing()) {
+            <button type="button" (click)="openEdit()" class="rounded-lg border border-ink-border bg-ink-2 px-4 py-2 text-sm font-medium text-ink-fg transition hover:bg-ink-3">
+              تعديل الملف الشخصي
+            </button>
+          } @else {
+            <button type="button" (click)="isEditing.set(false)" class="rounded-lg px-4 py-2 text-sm font-medium text-ink-muted transition hover:text-ink-fg">
+              إلغاء
+            </button>
+            <button type="button" (click)="saveEdit()" class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground transition hover:bg-brand/90">
+              حفظ
+            </button>
+          }
+        } @else {
+          <button
+            type="button"
+            (click)="toggleFollow()"
+            class="rounded-lg px-4 py-2 text-sm font-medium transition"
+            [ngClass]="followStatus() === 'none' ? 'bg-brand text-brand-foreground hover:bg-brand/90' : 'border border-ink-border bg-ink-2 text-ink-fg hover:bg-ink-3'"
+          >
+            {{ followButtonLabel() }}
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (isEditing()) {
+      <div class="mt-6 max-w-2xl space-y-4 rounded-2xl border border-ink-border bg-ink-2 p-5">
+        <div>
+          <label class="mb-1 block text-sm font-medium text-ink-fg">الاسم</label>
+          <input type="text" [(ngModel)]="editForm.displayName" class="w-full rounded-lg border border-ink-border bg-ink px-3 py-2 text-sm text-ink-fg focus:border-brand focus:outline-none" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-ink-fg">المدينة</label>
+          <input type="text" [(ngModel)]="editForm.city" class="w-full rounded-lg border border-ink-border bg-ink px-3 py-2 text-sm text-ink-fg focus:border-brand focus:outline-none" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-ink-fg">النبذة</label>
+          <textarea [(ngModel)]="editForm.bio" rows="3" class="w-full rounded-lg border border-ink-border bg-ink px-3 py-2 text-sm text-ink-fg focus:border-brand focus:outline-none"></textarea>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          [attr.aria-checked]="editForm.isPrivate"
+          (click)="editForm.isPrivate = !editForm.isPrivate"
+          class="flex w-full items-center justify-between rounded-xl border border-ink-border bg-ink px-4 py-3 text-start"
+        >
+          <span>
+            <span class="block text-sm font-medium text-ink-fg">حساب خاص</span>
+            <span class="mt-1 block text-xs text-ink-muted">تحتاج طلبات المتابعة إلى موافقتك قبل عرض النشاط.</span>
+          </span>
+          <span class="relative inline-flex h-6 w-11 rounded-full transition" [ngClass]="editForm.isPrivate ? 'bg-brand' : 'bg-ink-3'">
+            <span class="absolute top-1 h-4 w-4 rounded-full bg-white transition-all" [ngClass]="editForm.isPrivate ? 'start-6' : 'start-1'"></span>
+          </span>
+        </button>
+      </div>
+    } @else if (profile()!.bio) {
+      <p class="mt-4 max-w-2xl text-sm text-ink-fg/90">{{ profile()!.bio }}</p>
+    }
+
+    @if (restricted()) {
+      <div class="mt-10 grid place-items-center rounded-2xl border border-ink-border bg-ink-2 p-10 text-center">
+        <app-icon iconName="LockPasswordIcon" [iconSize]="40" iconColor="var(--color-ink-muted)"></app-icon>
+        <div class="mt-4 font-display text-lg text-ink-fg">هذا الحساب خاص</div>
+        <p class="mt-1 max-w-md text-sm text-ink-muted">
+          {{ followStatus() === 'pending'
+            ? 'طلب المتابعة قيد المراجعة. يمكنك إلغاء الطلب من الزر بالأعلى.'
+            : 'أرسل طلب متابعة لمشاهدة المنشورات وقوائم المتابعين بعد الموافقة.' }}
+        </p>
+      </div>
+    } @else {
+      <div class="mt-6 flex gap-2 overflow-x-auto border-b border-ink-border">
+        @for (item of tabs(); track item.key) {
+          <button
+            type="button"
+            (click)="tab.set(item.key)"
+            class="shrink-0 border-b-2 px-3 py-2 text-sm transition"
+            [ngClass]="tab() === item.key ? 'border-brand text-ink-fg' : 'border-transparent text-ink-muted hover:text-ink-fg'"
+          >
+            {{ item.label }}
+            <span class="text-xs tabular-nums text-ink-muted">{{ item.count }}</span>
+          </button>
+        }
+      </div>
+
+      <div class="mt-5">
+        @if (tab() === 'posts') {
+          <div class="grid gap-4 lg:grid-cols-2">
+            @if (isMe()) {
+              <div class="lg:col-span-2"><app-post-composer></app-post-composer></div>
+            }
+            @if (userPosts().length === 0) {
+              <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-border p-12 text-center lg:col-span-2">
+                <h3 class="font-display text-lg text-ink-fg">لا منشورات بعد</h3>
+                <p class="mt-2 text-sm text-ink-muted">
+                  {{ isMe() ? 'ابدأ مشاركة أفكارك مع متابعيك.' : 'لم ينشر هذا الحساب أي شيء بعد.' }}
+                </p>
+              </div>
+            } @else {
+              @for (post of userPosts(); track post.id) {
+                <app-post-card [post]="post"></app-post-card>
+              }
+            }
+          </div>
+        } @else {
+          @if (relationsLoading()) {
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              @for (item of [1, 2, 3]; track item) {
+                <div class="h-16 animate-pulse rounded-2xl bg-ink-2"></div>
+              }
+            </div>
+          } @else if (currentPeople().length === 0) {
+            <div class="flex justify-center rounded-2xl border border-dashed border-ink-border p-10 text-sm text-ink-muted">
+              لا يوجد أحد بعد
+            </div>
+          } @else {
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              @for (person of currentPeople(); track person.id) {
+                <div class="flex items-center justify-between gap-2 rounded-2xl border border-ink-border bg-ink-2 p-3">
+                  <a [routerLink]="[profileRouteBase(), person.username]" class="flex min-w-0 items-center gap-2 hover:opacity-80">
+                    <div class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-ink-3 text-sm font-semibold text-ink-fg">
+                      {{ initials(person.displayName) }}
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-1">
+                        <span class="truncate text-sm font-medium text-ink-fg">{{ person.displayName }}</span>
+                        @if (person.isPrivate) {
+                          <app-icon iconName="LockPasswordIcon" [iconSize]="11" iconColor="var(--color-ink-muted)"></app-icon>
+                        }
+                      </div>
+                      <div class="truncate text-xs text-ink-muted">&#64;{{ person.username }}</div>
+                    </div>
+                  </a>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+  }
+</div>

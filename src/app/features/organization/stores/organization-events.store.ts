@@ -1,111 +1,166 @@
 import { inject } from '@angular/core';
-import { patchState, signalStore, withHooks, withMethods, withState } from '@ngrx/signals';
 import {
-  AttendanceStatus,
+  patchState,
+  signalStore,
+  withHooks,
+  withMethods,
+  withState,
+} from '@ngrx/signals';
+import { firstValueFrom } from 'rxjs';
+import { ToastService } from '../../../shared/services/toast.service';
+import {
   CreateOrganizationEventInput,
-  OrganizationAttendance,
   OrganizationEvent,
   OrganizationEventsService,
+  UpdateOrganizationEventInput,
 } from '../services/organization-events.service';
 
 type OrganizationEventsState = {
   events: OrganizationEvent[];
-  attendances: OrganizationAttendance[];
   loaded: boolean;
   loading: boolean;
+  saving: boolean;
+  activeEventId: string | null;
   error: string | null;
 };
 
 const initialState: OrganizationEventsState = {
   events: [],
-  attendances: [],
   loaded: false,
   loading: false,
+  saving: false,
+  activeEventId: null,
   error: null,
 };
+
+const sortEvents = (events: OrganizationEvent[]) =>
+  [...events].sort(
+    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+  );
 
 export const OrganizationEventsStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
   withMethods((store) => {
     const service = inject(OrganizationEventsService);
+    const toast = inject(ToastService);
 
     return {
       loadAll() {
+        if (store.loading()) return;
         patchState(store, { loading: true, error: null });
-
-        service.loadAll().subscribe({
-          next: ({ events, attendances }) => {
+        service.getEvents().subscribe({
+          next: (events) => {
             patchState(store, {
-              events,
-              attendances,
+              events: sortEvents(events),
               loaded: true,
               loading: false,
-              error: null,
             });
           },
           error: () => {
             patchState(store, {
+              loaded: true,
               loading: false,
-              error: 'تعذر تحميل بيانات فعاليات المؤسسة.',
+              error: 'تعذر تحميل فعاليات المؤسسة.',
             });
           },
         });
       },
 
       eventsForOwner(ownerId: string): OrganizationEvent[] {
-        return store.events().filter((event) => event.ownerId === ownerId);
+        return store.events().filter((event) => {
+          const companyId =
+            typeof event.companyId === 'string' ? event.companyId : event.companyId._id;
+          return !companyId || companyId === ownerId;
+        });
       },
 
-      attendancesForEvent(eventId: string): OrganizationAttendance[] {
-        return store.attendances().filter((attendance) => attendance.eventId === eventId);
-      },
-
-      liveStatus(attendance: OrganizationAttendance): AttendanceStatus {
-        if (attendance.status !== 'confirmed') {
-          return attendance.status;
+      async createEvent(event: CreateOrganizationEventInput): Promise<boolean> {
+        if (store.saving()) return false;
+        patchState(store, { saving: true, error: null });
+        try {
+          const created = await firstValueFrom(service.createEvent(event));
+          patchState(store, {
+            events: sortEvents([created, ...store.events()]),
+            saving: false,
+          });
+          toast.success('تم نشر الفعالية', 'أصبحت متاحة الآن لمستخدمي PlanGo.');
+          return true;
+        } catch {
+          patchState(store, { saving: false, error: 'تعذر إنشاء الفعالية الجديدة.' });
+          toast.error('تعذر إنشاء الفعالية');
+          return false;
         }
-
-        return Date.now() > attendance.departureAt + 5 * 60_000 ? 'at_risk' : 'confirmed';
       },
 
-      createEvent(event: CreateOrganizationEventInput) {
-        service.createEvent(event).subscribe({
-          next: (created) => {
-            patchState(store, { events: [created, ...store.events()] });
-          },
-          error: () => {
-            patchState(store, { error: 'تعذر إنشاء الفعالية الجديدة.' });
-          },
-        });
+      async updateEvent(
+        id: string,
+        changes: UpdateOrganizationEventInput,
+      ): Promise<boolean> {
+        if (store.saving()) return false;
+        patchState(store, { saving: true, activeEventId: id, error: null });
+        try {
+          const updated = await firstValueFrom(service.updateEvent(id, changes));
+          patchState(store, {
+            events: sortEvents(
+              store.events().map((event) => (event._id === id ? updated : event)),
+            ),
+            saving: false,
+            activeEventId: null,
+          });
+          toast.success('تم تحديث الفعالية');
+          return true;
+        } catch {
+          patchState(store, {
+            saving: false,
+            activeEventId: null,
+            error: 'تعذر تحديث الفعالية.',
+          });
+          toast.error('تعذر تحديث الفعالية');
+          return false;
+        }
       },
 
-      updateAttendanceStatus(attendanceId: string, status: AttendanceStatus) {
-        const current = store.attendances().find((attendance) => attendance.id === attendanceId);
-        if (!current) return;
+      async deleteEvent(id: string): Promise<boolean> {
+        if (store.activeEventId()) return false;
+        patchState(store, { activeEventId: id, error: null });
+        try {
+          await firstValueFrom(service.deleteEvent(id));
+          patchState(store, {
+            events: store.events().filter((event) => event._id !== id),
+            activeEventId: null,
+          });
+          toast.info('تم حذف الفعالية');
+          return true;
+        } catch {
+          patchState(store, {
+            activeEventId: null,
+            error: 'تعذر حذف الفعالية.',
+          });
+          toast.error('تعذر حذف الفعالية');
+          return false;
+        }
+      },
 
-        const updated: OrganizationAttendance = {
-          ...current,
-          status,
-          updatedAt: Date.now(),
-        };
-
-        patchState(store, {
-          attendances: store
-            .attendances()
-            .map((attendance) => (attendance.id === attendanceId ? updated : attendance)),
-        });
-
-        service.updateAttendance(updated).subscribe({
-          error: () => {
-            patchState(store, {
-              attendances: store
-                .attendances()
-                .map((attendance) => (attendance.id === attendanceId ? current : attendance)),
-              error: 'تعذر تحديث حالة الحضور.',
-            });
-          },
-        });
+      async toggleEventStatus(id: string): Promise<boolean> {
+        if (store.activeEventId()) return false;
+        patchState(store, { activeEventId: id, error: null });
+        try {
+          const updated = await firstValueFrom(service.toggleEventStatus(id));
+          patchState(store, {
+            events: store.events().map((event) => (event._id === id ? updated : event)),
+            activeEventId: null,
+          });
+          toast.success(updated.isActive ? 'تم تفعيل الفعالية' : 'تم إيقاف الفعالية');
+          return true;
+        } catch {
+          patchState(store, {
+            activeEventId: null,
+            error: 'تعذر تغيير حالة الفعالية.',
+          });
+          toast.error('تعذر تغيير حالة الفعالية');
+          return false;
+        }
       },
     };
   }),

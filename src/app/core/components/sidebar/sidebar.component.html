@@ -51,7 +51,7 @@
           [iconColor]="'var(--color-brand)'"
         ></app-icon>
         <span class="font-medium">{{
-          $any(authStore.user())?.accountType === 'organization'
+          authStore.user()?.role === 'org'
             ? 'لوحة المؤسسة المتقدمة'
             : 'ترقية للنسخة الاحترافية'
         }}</span>

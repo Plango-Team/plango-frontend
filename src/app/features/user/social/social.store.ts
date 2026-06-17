@@ -7,40 +7,80 @@ import {
   withMethods,
   withState,
 } from '@ngrx/signals';
-import { forkJoin } from 'rxjs';
+import { Subscription, catchError, forkJoin, map, of } from 'rxjs';
 import { authStore } from '../../auth/auth.store';
+import { NotificationRealtimeService } from '../../../shared/services/notification-realtime.service';
 import { ToastService } from '../../../shared/services/toast.service';
-import { NotificationsStore } from '../../../shared/stores/notifications.store';
-import { FollowEdge, Post, Profile, SocialService } from './services/social.service';
 import {
   FollowService,
   FollowerItem,
   FollowingItem,
   PendingRequest,
 } from './services/follow.service';
+import {
+  FollowEdge,
+  Post,
+  Profile,
+  SocialService,
+  postFromBackend,
+} from './services/social.service';
 
 type SocialState = {
+  viewerId: string | null;
   profiles: Profile[];
   posts: Post[];
   follows: FollowEdge[];
   loaded: boolean;
+  postsLoading: boolean;
+  postsLoadingMore: boolean;
+  postsError: string | null;
+  postsPage: number;
+  postsPages: number;
   myFollowers: FollowerItem[];
   myFollowing: FollowingItem[];
   pendingRequests: PendingRequest[];
   sentPendingIds: string[];
   followDataLoaded: boolean;
+  profileLoadingIds: string[];
+  profileLoadedIds: string[];
+  profileFailedIds: string[];
+  relationLoadingIds: string[];
+  relationLoadedIds: string[];
+  profileFollowers: Record<string, FollowerItem[]>;
+  profileFollowing: Record<string, FollowingItem[]>;
 };
 
 const initial: SocialState = {
+  viewerId: null,
   profiles: [],
   posts: [],
   follows: [],
   loaded: false,
+  postsLoading: false,
+  postsLoadingMore: false,
+  postsError: null,
+  postsPage: 0,
+  postsPages: 1,
   myFollowers: [],
   myFollowing: [],
   pendingRequests: [],
   sentPendingIds: [],
   followDataLoaded: false,
+  profileLoadingIds: [],
+  profileLoadedIds: [],
+  profileFailedIds: [],
+  relationLoadingIds: [],
+  relationLoadedIds: [],
+  profileFollowers: {},
+  profileFollowing: {},
+};
+
+const mergePosts = (current: Post[], incoming: Post[]): Post[] => {
+  const posts = new Map<string, Post>();
+  for (const post of [...incoming, ...current]) {
+    if (post.id && !posts.has(post.id)) posts.set(post.id, post);
+  }
+  return [...posts.values()].sort((a, b) => b.createdAt - a.createdAt);
 };
 
 export const SocialStore = signalStore(
@@ -51,36 +91,132 @@ export const SocialStore = signalStore(
     const auth = inject(authStore);
 
     return {
-      /** Current user's social profile (matched by username or id). */
       myProfile: computed(() => {
         const user = auth.user();
         if (!user) return null;
         return (
-          store.profiles().find((profile) => profile.id === user._id || profile.username === user.name) ??
-          null
+          store
+            .profiles()
+            .find((profile) => profile.id === user._id || profile.username === user.username) ?? null
         );
       }),
+      hasMorePosts: computed(() => store.postsPage() < store.postsPages()),
     };
   }),
 
   withMethods((store) => {
-    const svc = inject(SocialService);
-    const followSvc = inject(FollowService);
+    const service = inject(SocialService);
+    const followService = inject(FollowService);
     const auth = inject(authStore);
-    const notificationsStore = inject(NotificationsStore);
-    const toastService = inject(ToastService);
+    const toast = inject(ToastService);
 
-    const isArabic = () => auth.user();
-    const t = (ar: string, en: string) => (isArabic() ? ar : en);
+    const t = (ar: string, _en: string) => ar;
 
-    // Helper to reload follow data (extracted so it can be called within withMethods)
+    const asEpoch = (value: unknown): number => {
+      if (value instanceof Date) return value.getTime();
+      if (typeof value === 'string' || typeof value === 'number') {
+        const timestamp = new Date(value).getTime();
+        if (!Number.isNaN(timestamp)) return timestamp;
+      }
+      return Date.now();
+    };
+
+    const currentAuthProfile = (): Profile | null => {
+      const user = auth.user();
+      if (!user) return null;
+
+      return {
+        id: user._id,
+        kind: user.role === 'org' ? 'org' : 'user',
+        username: user.username,
+        displayName: user.name,
+        bio: (user as { bio?: string }).bio,
+        city: user.location,
+        isPrivate: user.isPrivate ?? false,
+        createdAt: asEpoch(user.createdAt),
+      };
+    };
+
+    const withAuthProfile = (profiles: Profile[]): Profile[] => {
+      const profile = currentAuthProfile();
+      if (!profile) return profiles;
+      const exists = profiles.some(
+        (item) =>
+          item.id === profile.id ||
+          item.username.toLowerCase() === profile.username.toLowerCase(),
+      );
+      return exists ? profiles : [profile, ...profiles];
+    };
+
+    const profileById = (id: string): Profile | null =>
+      store.profiles().find((profile) => profile.id === id) ?? null;
+
+    const addId = (ids: string[], id: string): string[] =>
+      ids.includes(id) ? ids : [...ids, id];
+
+    const removeId = (ids: string[], id: string): string[] =>
+      ids.filter((item) => item !== id);
+
+    const patchProfile = (profileId: string, changes: Partial<Profile>) => {
+      patchState(store, {
+        profiles: store
+          .profiles()
+          .map((profile) => (profile.id === profileId ? { ...profile, ...changes } : profile)),
+      });
+    };
+
+    const localFollowState = (
+      followerId: string | null,
+      followeeId: string,
+    ): 'none' | 'pending' | 'accepted' => {
+      if (!followerId) return 'none';
+
+      const following = store.myFollowing().some((item) => {
+        const id = typeof item.following === 'object' ? item.following._id : item.following;
+        return id === followeeId;
+      });
+      if (following) return 'accepted';
+
+      const profileStatus = profileById(followeeId)?.followStatus;
+      if (profileStatus === 'accepted') return 'accepted';
+      if (store.sentPendingIds().includes(followeeId) || profileStatus === 'pending') {
+        return 'pending';
+      }
+      return 'none';
+    };
+
+    const canViewProfile = (profileId: string, viewerId = auth.user()?._id ?? null): boolean => {
+      if (viewerId === profileId) return true;
+      const profile = profileById(profileId);
+      if (!profile) return false;
+      if (!profile.isPrivate) return true;
+      return (
+        profile.limitedProfile === false ||
+        localFollowState(viewerId, profileId) === 'accepted'
+      );
+    };
+
+    const clearProfileRelations = (profileId: string) => {
+      const followers = { ...store.profileFollowers() };
+      const following = { ...store.profileFollowing() };
+      delete followers[profileId];
+      delete following[profileId];
+      patchState(store, {
+        profileFollowers: followers,
+        profileFollowing: following,
+        relationLoadingIds: removeId(store.relationLoadingIds(), profileId),
+        relationLoadedIds: removeId(store.relationLoadedIds(), profileId),
+      });
+    };
+
     const reloadFollowData = () => {
       const user = auth.user();
       if (!user) return;
+
       forkJoin({
-        followers: followSvc.getFollowers(user._id),
-        following: followSvc.getFollowing(user._id),
-        pending: followSvc.getPendingRequests(),
+        followers: followService.getFollowers(user._id),
+        following: followService.getFollowing(user._id),
+        pending: followService.getPendingRequests(),
       }).subscribe({
         next: ({ followers, following, pending }) => {
           patchState(store, {
@@ -90,88 +226,118 @@ export const SocialStore = signalStore(
             followDataLoaded: true,
           });
         },
+        error: () => patchState(store, { followDataLoaded: true }),
+      });
+    };
+
+    const loadProfileRelations = (profileId: string) => {
+      const viewerId = auth.user()?._id ?? null;
+      if (!canViewProfile(profileId, viewerId)) {
+        clearProfileRelations(profileId);
+        return;
+      }
+
+      if (profileId === viewerId) {
+        patchState(store, {
+          relationLoadedIds: addId(store.relationLoadedIds(), profileId),
+        });
+        return;
+      }
+
+      if (
+        store.relationLoadingIds().includes(profileId) ||
+        store.relationLoadedIds().includes(profileId)
+      ) {
+        return;
+      }
+
+      patchState(store, {
+        relationLoadingIds: addId(store.relationLoadingIds(), profileId),
+      });
+
+      forkJoin({
+        followers: followService.getFollowers(profileId),
+        following: followService.getFollowing(profileId),
+      }).subscribe({
+        next: ({ followers, following }) => {
+          if (!canViewProfile(profileId)) {
+            clearProfileRelations(profileId);
+            return;
+          }
+          patchState(store, {
+            profileFollowers: {
+              ...store.profileFollowers(),
+              [profileId]: followers ?? [],
+            },
+            profileFollowing: {
+              ...store.profileFollowing(),
+              [profileId]: following ?? [],
+            },
+            relationLoadingIds: removeId(store.relationLoadingIds(), profileId),
+            relationLoadedIds: addId(store.relationLoadedIds(), profileId),
+          });
+        },
         error: () => {
-          patchState(store, { followDataLoaded: true });
+          patchState(store, {
+            relationLoadingIds: removeId(store.relationLoadingIds(), profileId),
+            relationLoadedIds: addId(store.relationLoadedIds(), profileId),
+          });
         },
       });
     };
 
-    const asEpoch = (value: unknown): number => {
-      if (value instanceof Date) return value.getTime();
-      if (typeof value === 'string' || typeof value === 'number') {
-        const ts = new Date(value).getTime();
-        if (!Number.isNaN(ts)) return ts;
-      }
-      return Date.now();
-    };
-
-    const profileById = (id: string): Profile | null =>
-      store.profiles().find((profile) => profile.id === id) ?? null;
-
-    const profileLink = (_kind: 'user' | 'org', username: string) =>
-      `/user/profile/${username}`;
-
-    const communityLinkFor = (ownerId: string) => {
-      const owner = profileById(ownerId);
-      return owner?.kind === 'org' ? '/organization/followers' : '/user/network';
-    };
-
-    const currentAuthProfile = (): Profile | null => {
-      const user = auth.user();
-      if (!user) return null;
-
-      return {
-        id: user._id,
-        kind: (user as any).accountType === 'organization' ? 'org' : 'user',
-        username: user.username,
-        displayName: user.name,
-        bio: (user as any).bio,
-        privateFollows: user.isPrivate ?? false,
-        createdAt: asEpoch(user.createdAt),
-      };
-    };
-
-    const ensureAuthProfile = (profiles?: Profile[]) => {
-      const profile = currentAuthProfile();
-      if (!profile) return;
-
-      const source = profiles ?? store.profiles();
-      const exists = source.some(
-        (p) => p.id === profile.id || p.username.toLowerCase() === profile.username.toLowerCase(),
-      );
-      if (exists) return;
-
-      if (!profiles) {
-        patchState(store, { profiles: [profile, ...source] });
-      }
-
-      svc.createProfile(profile).subscribe();
-    };
-
     return {
       loadAll() {
-        svc.loadAll().subscribe({
-          next: ({ profiles, posts, follows }) => {
-            ensureAuthProfile(profiles);
-            const authProfile = currentAuthProfile();
-            const nextProfiles =
-              authProfile &&
-              !profiles.some(
-                (profile) =>
-                  profile.id === authProfile.id ||
-                  profile.username.toLowerCase() === authProfile.username.toLowerCase(),
-              )
-                ? [authProfile, ...profiles]
-                : profiles;
+        if (store.postsLoading()) return;
+        patchState(store, { postsLoading: true, postsError: null });
 
-            patchState(store, { profiles: nextProfiles, posts, follows, loaded: true });
+        forkJoin({
+          profiles: service.getProfiles().pipe(catchError(() => of([]))),
+          postsResult: service.getPosts(1, 20).pipe(
+            map((value) => ({ ok: true as const, value })),
+            catchError(() =>
+              of({
+                ok: false as const,
+                value: { posts: [], total: 0, page: 1, limit: 20, pages: 1 },
+              }),
+            ),
+          ),
+          followStatuses: service.searchUsers('').pipe(catchError(() => of([]))),
+        }).subscribe(({ profiles, postsResult, followStatuses }) => {
+          patchState(store, {
+            profiles: withAuthProfile(profiles),
+            posts: postsResult.value.posts,
+            postsPage: postsResult.value.page,
+            postsPages: Math.max(1, postsResult.value.pages),
+            sentPendingIds: followStatuses
+              .filter((profile) => profile.followStatus === 'pending')
+              .map((profile) => profile.id),
+            loaded: true,
+            postsLoading: false,
+            postsError: postsResult.ok ? null : 'تعذر تحميل المنشورات. حاول مرة أخرى.',
+          });
+        });
+      },
+
+      loadMorePosts() {
+        if (store.postsLoadingMore() || store.postsPage() >= store.postsPages()) return;
+        const nextPage = store.postsPage() + 1;
+        patchState(store, { postsLoadingMore: true, postsError: null });
+
+        service.getPosts(nextPage, 20).subscribe({
+          next: (page) => {
+            patchState(store, {
+              posts: mergePosts(store.posts(), page.posts),
+              postsPage: page.page,
+              postsPages: Math.max(1, page.pages),
+              postsLoadingMore: false,
+            });
           },
           error: () => {
-            // Mock API endpoints (/profiles, /posts, /follows) may not exist on production.
-            // Still mark as loaded and create an auth profile locally.
-            const authProfile = currentAuthProfile();
-            const profiles = authProfile ? [authProfile] : [];
-            patchState(store, { profiles, posts: [], follows: [], loaded: true });
+            patchState(store, {
+              postsLoadingMore: false,
+              postsError: 'تعذر تحميل المزيد من المنشورات.',
+            });
           },
         });
       },
@@ -180,39 +346,80 @@ export const SocialStore = signalStore(
         reloadFollowData();
       },
 
+      loadProfile(userId: string) {
+        patchState(store, {
+          profileLoadingIds: addId(store.profileLoadingIds(), userId),
+          profileFailedIds: removeId(store.profileFailedIds(), userId),
+        });
+
+        service.getProfile(userId).subscribe({
+          next: (profile) => {
+            const current = profileById(profile.id);
+            const merged = current
+              ? { ...current, ...profile, kind: current.kind, createdAt: current.createdAt }
+              : profile;
+            patchState(store, {
+              profiles: [
+                merged,
+                ...store.profiles().filter((item) => item.id !== profile.id),
+              ],
+              profileLoadingIds: removeId(store.profileLoadingIds(), profile.id),
+              profileLoadedIds: addId(store.profileLoadedIds(), profile.id),
+              profileFailedIds: removeId(store.profileFailedIds(), profile.id),
+            });
+            if (merged.limitedProfile) {
+              clearProfileRelations(merged.id);
+            } else {
+              loadProfileRelations(merged.id);
+            }
+          },
+          error: () => {
+            patchState(store, {
+              profileLoadingIds: removeId(store.profileLoadingIds(), userId),
+              profileFailedIds: addId(store.profileFailedIds(), userId),
+            });
+          },
+        });
+      },
+
+      isProfileLoading(profileId: string): boolean {
+        return store.profileLoadingIds().includes(profileId);
+      },
+
+      isProfileLoaded(profileId: string): boolean {
+        return store.profileLoadedIds().includes(profileId);
+      },
+
+      didProfileLoadFail(profileId: string): boolean {
+        return store.profileFailedIds().includes(profileId);
+      },
+
+      areProfileRelationsLoading(profileId: string): boolean {
+        return store.relationLoadingIds().includes(profileId);
+      },
+
+      canViewProfileContent(profileId: string): boolean {
+        return canViewProfile(profileId);
+      },
+
       findProfile(by: { id?: string; username?: string }): Profile | null {
-        if (by.id) return store.profiles().find((profile) => profile.id === by.id) ?? null;
-        if (by.username) {
-          return (
-            store
-              .profiles()
-              .find(
-                (profile) =>
-                  profile.username.toLowerCase() === by.username!.toLowerCase().replace(/^@/, ''),
-              ) ?? null
-          );
-        }
-        return null;
+        if (by.id) return profileById(by.id);
+        if (!by.username) return null;
+        const username = by.username.toLowerCase().replace(/^@/, '');
+        return (
+          store.profiles().find((profile) => profile.username.toLowerCase() === username) ?? null
+        );
       },
 
       feedFor(profileId: string | null): Post[] {
-        const all = store.posts();
-        if (!profileId) return [...all].sort((a, b) => b.createdAt - a.createdAt);
-
-        const followingIds = new Set(
-          store
-            .follows()
-            .filter((edge) => edge.followerId === profileId && edge.status === 'approved')
-            .map((edge) => edge.followeeId),
-        );
-        followingIds.add(profileId);
-
-        return all
-          .filter((post) => followingIds.has(post.authorId))
+        return store
+          .posts()
+          .filter((post) => canViewProfile(post.authorId, profileId))
           .sort((a, b) => b.createdAt - a.createdAt);
       },
 
       postsBy(profileId: string): Post[] {
+        if (!canViewProfile(profileId)) return [];
         return store
           .posts()
           .filter((post) => post.authorId === profileId)
@@ -220,287 +427,330 @@ export const SocialStore = signalStore(
       },
 
       followersOf(profileId: string): FollowerItem[] {
-        const user = auth.user();
-        if (user && user._id === profileId) {
-          return store.myFollowers();
-        }
-        return [];
+        if (!canViewProfile(profileId)) return [];
+        return auth.user()?._id === profileId
+          ? store.myFollowers()
+          : (store.profileFollowers()[profileId] ?? []);
       },
 
       followingOf(profileId: string): FollowingItem[] {
-        const user = auth.user();
-        if (user && user._id === profileId) {
-          return store.myFollowing();
-        }
-        return [];
+        if (!canViewProfile(profileId)) return [];
+        return auth.user()?._id === profileId
+          ? store.myFollowing()
+          : (store.profileFollowing()[profileId] ?? []);
       },
 
       pendingRequestsFor(profileId: string): PendingRequest[] {
-        const user = auth.user();
-        if (user && user._id === profileId) {
-          return store.pendingRequests();
-        }
-        return [];
+        return auth.user()?._id === profileId ? store.pendingRequests() : [];
       },
 
       followState(followerId: string | null, followeeId: string): 'none' | 'pending' | 'accepted' {
-        if (!followerId) return 'none';
-        const isFollowing = store.myFollowing().some((f) => {
-          const fid = typeof f.following === 'object' ? f.following._id : f.following;
-          return fid === followeeId;
-        });
-        if (isFollowing) return 'accepted';
-        if (store.sentPendingIds().includes(followeeId)) return 'pending';
-        return 'none';
+        return localFollowState(followerId, followeeId);
       },
 
       getAuthor(authorId: string): Profile | null {
-        return store.profiles().find((profile) => profile.id === authorId) ?? null;
+        return profileById(authorId);
       },
 
-      updateProfile(updated: Profile) {
+      updateProfile(
+        updated: Profile,
+        callbacks?: { onSuccess?: (profile: Profile) => void; onError?: () => void },
+      ) {
+        const previous = profileById(updated.id);
+        const optimistic = { ...updated, limitedProfile: false };
         patchState(store, {
-          profiles: store.profiles().map((profile) => (profile.id === updated.id ? updated : profile)),
+          profiles: previous
+            ? store
+                .profiles()
+                .map((profile) => (profile.id === updated.id ? optimistic : profile))
+            : [optimistic, ...store.profiles()],
         });
 
-        svc.updateProfile(updated).subscribe({
-          next: () => {
-            toastService.success(
-              t('تم حفظ التعديلات', 'Profile updated'),
-              t('تم تحديث معلومات الملف الشخصي.', 'Your profile details were updated.'),
-            );
+        service.updateProfile(updated).subscribe({
+          next: (saved) => {
+            const merged = { ...optimistic, ...saved, limitedProfile: false };
+            const savedExists = !!profileById(saved.id);
+            patchState(store, {
+              profiles: savedExists
+                ? store
+                    .profiles()
+                    .map((profile) =>
+                      profile.id === saved.id ? { ...profile, ...merged } : profile,
+                    )
+                : [merged, ...store.profiles()],
+            });
+            auth.patchCurrentUser({
+              name: merged.displayName,
+              bio: merged.bio,
+              location: merged.city ?? '',
+              isPrivate: merged.isPrivate,
+            });
+            callbacks?.onSuccess?.(merged);
+            toast.success('تم حفظ التعديلات', 'تم تحديث معلومات الملف الشخصي.');
           },
           error: () => {
-            toastService.error(
-              t('تعذر حفظ التعديلات', 'Could not save profile'),
-              t('حاول مرة أخرى بعد قليل.', 'Please try again in a moment.'),
-            );
+            if (previous) {
+              patchState(store, {
+                profiles: store.profiles().map((profile) =>
+                  profile.id === previous.id ? previous : profile,
+                ),
+              });
+            } else {
+              patchState(store, {
+                profiles: store.profiles().filter((profile) => profile.id !== updated.id),
+              });
+            }
+            callbacks?.onError?.();
+            toast.error('تعذر حفظ التعديلات', 'حاول مرة أخرى بعد قليل.');
           },
         });
       },
 
       createPost(authorId: string, body: string) {
-        ensureAuthProfile();
-        const cleanBody = body.trim();
-        const post: Post = {
-          authorId,
-          body: cleanBody,
-          likes: [],
-          createdAt: Date.now(),
-        };
+        const content = body.trim();
+        if (!content || content.length > 500) {
+          toast.warning('تحقق من المنشور', 'يجب أن يكون المحتوى بين 1 و500 حرف.');
+          return;
+        }
 
-        svc.createPost(post).subscribe({
+        service.createPost(content).subscribe({
           next: (created) => {
-            patchState(store, { posts: [created, ...store.posts()] });
-
-            const author = profileById(authorId);
-            if (author) {
-              notificationsStore.push({
-                ownerId: authorId,
-                kind: 'info',
-                title: t('تم نشر منشور جديد', 'Post published'),
-                body: cleanBody.slice(0, 100),
-                link: author.kind === 'org' ? '/organization/posts' : '/user/feed',
-              });
-
-              const followers = store
-                .follows()
-                .filter((edge) => edge.followeeId === authorId && edge.status === 'approved');
-              for (const edge of followers) {
-                const recipient = profileById(edge.followerId);
-                notificationsStore.push({
-                  ownerId: edge.followerId,
-                  kind: 'info',
-                  title: t(
-                    `${author.displayName} نشر تحديثًا جديدًا`,
-                    `${author.displayName} posted a new update`,
-                  ),
-                  body: cleanBody.slice(0, 100),
-                  link: profileLink(recipient?.kind ?? 'user', author.username),
-                });
-              }
-            }
-
-            toastService.success(
-              t('تم نشر المنشور', 'Post published'),
-              t('شاركته الآن مع متابعيك.', 'Your update is now live.'),
-            );
+            const post = { ...created, authorId: created.authorId || authorId };
+            patchState(store, { posts: mergePosts(store.posts(), [post]) });
+            toast.success('تم نشر المنشور', 'ظهر المنشور الآن في الرئيسية.');
           },
-          error: () => {
-            toastService.error(
-              t('تعذر نشر المنشور', 'Could not publish post'),
-              t('حاول مرة أخرى.', 'Please try again.'),
-            );
-          },
+          error: () => toast.error('تعذر نشر المنشور', 'حاول مرة أخرى.'),
         });
       },
 
       deletePost(postId: string) {
-        svc.deletePost(postId).subscribe({
-          next: () => {
-            patchState(store, { posts: store.posts().filter((post) => post.id !== postId) });
-            toastService.info(
-              t('تم حذف المنشور', 'Post removed'),
-              t('تمت إزالة المنشور من الخلاصة.', 'The post was removed from your feed.'),
-            );
-          },
+        const previous = store.posts();
+        patchState(store, { posts: previous.filter((post) => post.id !== postId) });
+
+        service.deletePost(postId).subscribe({
+          next: () => toast.info('تم حذف المنشور'),
           error: () => {
-            toastService.error(
-              t('تعذر حذف المنشور', 'Could not remove post'),
-              t('حاول مرة أخرى.', 'Please try again.'),
-            );
+            patchState(store, { posts: previous });
+            toast.error('تعذر حذف المنشور', 'حاول مرة أخرى.');
           },
         });
       },
 
       toggleLike(postId: string, profileId: string) {
-        const post = store.posts().find((item) => item.id === postId);
-        if (!post) return;
+        const original = store.posts().find((post) => post.id === postId);
+        if (!original) return;
 
-        const liked = post.likes.includes(profileId);
-        const updatedPost: Post = {
-          ...post,
-          likes: liked ? post.likes.filter((id) => id !== profileId) : [...post.likes, profileId],
+        const wasLiked = original.likes.includes(profileId);
+        const optimistic: Post = {
+          ...original,
+          likes: wasLiked
+            ? original.likes.filter((id) => id !== profileId)
+            : [...original.likes, profileId],
+          likeCount: Math.max(0, original.likeCount + (wasLiked ? -1 : 1)),
         };
-
         patchState(store, {
-          posts: store.posts().map((item) => (item.id === postId ? updatedPost : item)),
+          posts: store.posts().map((post) => (post.id === postId ? optimistic : post)),
         });
 
-        svc.updatePost(updatedPost).subscribe({
-          next: () => {
-            if (!liked && post.authorId !== profileId) {
-              const actor = profileById(profileId);
-              const author = profileById(post.authorId);
-              if (author) {
-                notificationsStore.push({
-                  ownerId: author.id,
-                  kind: 'info',
-                  title: t(
-                    `${actor?.displayName ?? 'مستخدم'} أعجب بمنشورك`,
-                    `${actor?.displayName ?? 'Someone'} liked your post`,
-                  ),
-                  link: profileLink(author.kind, author.username),
-                });
-              }
-            }
+        service.toggleLike(postId).subscribe({
+          next: (result) => {
+            patchState(store, {
+              posts: store.posts().map((post) =>
+                post.id === postId ? { ...post, likeCount: result.totalLikes } : post,
+              ),
+            });
           },
           error: () => {
             patchState(store, {
-              posts: store.posts().map((item) => (item.id === postId ? post : item)),
+              posts: store.posts().map((post) => (post.id === postId ? original : post)),
             });
           },
+        });
+      },
+
+      receiveRealtimePost(payload: unknown) {
+        const post = postFromBackend(payload as Parameters<typeof postFromBackend>[0]);
+        if (!post.id) return;
+        patchState(store, { posts: mergePosts(store.posts(), [post]) });
+      },
+
+      receiveRealtimeLike(event: { postId: string; userId: string; liked: boolean }) {
+        patchState(store, {
+          posts: store.posts().map((post) => {
+            if (post.id !== event.postId) return post;
+            const hasUser = post.likes.includes(event.userId);
+            const likes = event.liked
+              ? hasUser
+                ? post.likes
+                : [...post.likes, event.userId]
+              : post.likes.filter((id) => id !== event.userId);
+            return { ...post, likes, likeCount: likes.length };
+          }),
+        });
+      },
+
+      receiveRealtimeDelete(event: { postId: string }) {
+        patchState(store, {
+          posts: store.posts().filter((post) => post.id !== event.postId),
         });
       },
 
       follow(followerId: string, followeeId: string) {
         if (followerId === followeeId) return;
 
-        followSvc.followUser(followeeId).subscribe({
-          next: (res) => {
-            if (res.status === 'accepted') {
+        followService.followUser(followeeId).subscribe({
+          next: (response) => {
+            if (response.status === 'accepted') {
+              const profile = profileById(followeeId);
+              if (profile) {
+                patchState(store, {
+                  myFollowing: [
+                    {
+                      _id: response._id,
+                      follower: followerId,
+                      following: {
+                        _id: profile.id,
+                        name: profile.displayName,
+                        username: profile.username,
+                      },
+                      status: 'accepted',
+                    },
+                    ...store.myFollowing(),
+                  ],
+                  sentPendingIds: store.sentPendingIds().filter((id) => id !== followeeId),
+                });
+                patchProfile(followeeId, {
+                  followStatus: 'accepted',
+                  limitedProfile: false,
+                  followersCount: (profile.followersCount ?? 0) + 1,
+                });
+              }
               reloadFollowData();
-              toastService.success(
-                t('تمت المتابعة بنجاح', 'Now following'),
-                t('أنت الآن تتابع هذا الحساب.', 'You are now following this account.'),
-              );
+              service.getProfile(followeeId).subscribe({
+                next: (saved) => {
+                  const current = profileById(followeeId);
+                  patchProfile(followeeId, {
+                    ...saved,
+                    kind: current?.kind ?? saved.kind,
+                    createdAt: current?.createdAt ?? saved.createdAt,
+                  });
+                  loadProfileRelations(followeeId);
+                },
+                error: () => void 0,
+              });
+              toast.success(t('تمت المتابعة بنجاح', 'Now following'));
             } else {
               patchState(store, {
-                sentPendingIds: [...store.sentPendingIds(), followeeId],
+                sentPendingIds: [...new Set([...store.sentPendingIds(), followeeId])],
               });
-              toastService.info(
-                t('تم إرسال طلب المتابعة', 'Follow request sent'),
-                t('سنُعلمك عند القبول.', 'We will notify you once approved.'),
-              );
+              patchProfile(followeeId, { followStatus: 'pending' });
+              toast.info(t('تم إرسال طلب المتابعة', 'Follow request sent'));
             }
           },
-          error: () => {
-            toastService.error(
-              t('تعذر تنفيذ المتابعة', 'Could not follow'),
-              t('حاول مرة أخرى.', 'Please try again.'),
-            );
-          },
+          error: () => toast.error(t('تعذر تنفيذ المتابعة', 'Could not follow')),
         });
       },
 
-      unfollow(followerId: string, followeeId: string) {
-        followSvc.unfollowUser(followeeId).subscribe({
+      unfollow(_followerId: string, followeeId: string) {
+        const previousStatus = localFollowState(auth.user()?._id ?? null, followeeId);
+        const profile = profileById(followeeId);
+        followService.unfollowUser(followeeId).subscribe({
           next: () => {
             patchState(store, {
-              myFollowing: store.myFollowing().filter((f) => {
-                const fid = typeof f.following === 'object' ? f.following._id : f.following;
-                return fid !== followeeId;
+              myFollowing: store.myFollowing().filter((item) => {
+                const id =
+                  typeof item.following === 'object' ? item.following._id : item.following;
+                return id !== followeeId;
               }),
               sentPendingIds: store.sentPendingIds().filter((id) => id !== followeeId),
             });
-            toastService.info(t('تم إلغاء المتابعة', 'Unfollowed'));
+            patchProfile(followeeId, {
+              followStatus: 'none',
+              limitedProfile: profile?.isPrivate ? true : false,
+              followersCount:
+                previousStatus === 'accepted'
+                  ? Math.max(0, (profile?.followersCount ?? 1) - 1)
+                  : profile?.followersCount,
+            });
+            if (profile?.isPrivate) clearProfileRelations(followeeId);
+            toast.info('تم إلغاء المتابعة');
           },
-          error: () => {
-            toastService.error(
-              t('تعذر إلغاء المتابعة', 'Could not unfollow'),
-              t('حاول مرة أخرى.', 'Please try again.'),
-            );
-          },
+          error: () => toast.error('تعذر إلغاء المتابعة'),
         });
       },
 
-      approveFollow(followerId: string, followeeId: string) {
-        const request = store.pendingRequests().find((r) => r.follower._id === followerId);
+      approveFollow(followerId: string, _followeeId: string) {
+        const request = store.pendingRequests().find((item) => item.follower._id === followerId);
         if (!request) return;
-
-        followSvc.acceptFollowRequest(request._id).subscribe({
+        followService.acceptFollowRequest(request._id).subscribe({
           next: () => {
+            const ownProfile = profileById(auth.user()?._id ?? '');
+            if (ownProfile) {
+              patchProfile(ownProfile.id, {
+                followersCount: (ownProfile.followersCount ?? store.myFollowers().length) + 1,
+              });
+            }
             reloadFollowData();
-            toastService.success(
-              t('تم قبول الطلب', 'Request approved'),
-              t('أصبح المستخدم الآن ضمن متابعيك.', 'The follower is now approved.'),
-            );
+            toast.success('تم قبول الطلب');
           },
-          error: () => {
-            toastService.error(
-              t('تعذر قبول الطلب', 'Could not approve request'),
-              t('حاول مرة أخرى.', 'Please try again.'),
-            );
-          },
+          error: () => toast.error('تعذر قبول الطلب'),
         });
       },
 
-      denyFollow(followerId: string, followeeId: string) {
-        const request = store.pendingRequests().find((r) => r.follower._id === followerId);
+      denyFollow(followerId: string, _followeeId: string) {
+        const request = store.pendingRequests().find((item) => item.follower._id === followerId);
         if (!request) return;
-
-        followSvc.rejectFollowRequest(request._id).subscribe({
+        followService.rejectFollowRequest(request._id).subscribe({
           next: () => {
             patchState(store, {
-              pendingRequests: store.pendingRequests().filter((r) => r._id !== request._id),
+              pendingRequests: store
+                .pendingRequests()
+                .filter((item) => item._id !== request._id),
             });
-            toastService.info(t('تم رفض الطلب', 'Request declined'));
+            toast.info('تم رفض الطلب');
           },
-          error: () => {
-            toastService.error(
-              t('تعذر رفض الطلب', 'Could not decline request'),
-              t('حاول مرة أخرى.', 'Please try again.'),
-            );
-          },
+          error: () => toast.error('تعذر رفض الطلب'),
         });
       },
     };
   }),
 
-  withHooks({
-    onInit(store) {
-      const auth = inject(authStore);
+  withHooks((store) => {
+    const auth = inject(authStore);
+    const realtime = inject(NotificationRealtimeService);
+    const subscriptions = new Subscription();
 
-      // Reactively load data when user becomes available
-      effect(() => {
-        const user = auth.user();
-        if (user) {
+    return {
+      onInit() {
+        subscriptions.add(
+          realtime.postCreated$.subscribe((post) => store.receiveRealtimePost(post)),
+        );
+        subscriptions.add(
+          realtime.postLiked$.subscribe((event) => store.receiveRealtimeLike(event)),
+        );
+        subscriptions.add(
+          realtime.postDeleted$.subscribe((event) => store.receiveRealtimeDelete(event)),
+        );
+
+        effect(() => {
+          const user = auth.user();
           untracked(() => {
+            const viewerId = user?._id ?? null;
+            if (store.viewerId() !== viewerId) {
+              patchState(store, {
+                ...initial,
+                viewerId,
+              });
+            }
+            if (!user) return;
             store.loadAll();
             store.loadFollowData();
           });
-        }
-      });
-    },
+        });
+      },
+      onDestroy() {
+        subscriptions.unsubscribe();
+      },
+    };
   }),
 );

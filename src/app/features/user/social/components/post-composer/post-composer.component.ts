@@ -15,13 +15,21 @@ import { authStore } from '../../../../auth/auth.store';
         [(ngModel)]="body"
         name="body"
         [placeholder]="placeholderText"
+        maxlength="500"
         rows="2"
         class="w-full resize-none border-0 bg-transparent p-0 text-sm text-ink-fg focus:outline-none focus:ring-0 placeholder:text-ink-muted"
       ></textarea>
-      <div class="mt-2 flex items-center justify-end">
+      <div class="mt-2 flex items-center justify-between gap-3">
+        <span
+          class="text-[11px] tabular-nums"
+          [class.text-red-400]="body.length > 480"
+          [class.text-ink-muted]="body.length <= 480"
+        >
+          {{ body.length }}/500
+        </span>
         <button
           type="submit"
-          [disabled]="!body.trim()"
+          [disabled]="!body.trim() || body.trim().length > 500"
           class="rounded-full bg-brand px-4 py-1.5 text-xs font-medium text-brand-foreground hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           نشر
@@ -46,7 +54,7 @@ export class PostComposerComponent {
 
   onSubmit() {
     const user = this.authStore.user();
-    if (!user || !this.body.trim()) return;
+    if (!user || !this.body.trim() || this.body.trim().length > 500) return;
     this.socialStore.createPost(this.socialStore.myProfile()?.id ?? user._id, this.body);
     this.body = '';
   }

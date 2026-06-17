@@ -23,8 +23,9 @@ export class SidebarComponent {
 
   private readonly userNavItems: SidebarItem[] = [
     { route: '/user/dashboard', label: 'نبض اليوم', icon: 'DashboardSquare02Icon', exact: true },
-    { route: '/user/feed', label: 'الخلاصة', icon: 'Note01Icon' },
+    { route: '/user/feed', label: 'الرئيسية', icon: 'Note01Icon' },
     { route: '/user/calendar', label: 'التقويم', icon: 'Calendar01Icon' },
+    { route: '/user/appointments', label: 'المواعيد', icon: 'TimeQuarter02Icon' },
     { route: '/user/tasks', label: 'المهام', icon: 'Task01Icon' },
     { route: '/user/map', label: 'الخريطة', icon: 'Location01Icon' },
     { route: '/user/events', label: 'الفعاليات', icon: 'Compass01Icon' },
@@ -39,15 +40,15 @@ export class SidebarComponent {
       icon: 'DashboardSquare02Icon',
       exact: true,
     },
-    { route: '/organization/feed', label: 'الخلاصة', icon: 'Note01Icon' },
-    { route: '/organization/posts', label: 'البثوث', icon: 'Message01Icon' },
+    { route: '/organization/feed', label: 'الرئيسية', icon: 'Note01Icon' },
+    { route: '/organization/posts', label: 'منشورات المؤسسة', icon: 'Message01Icon' },
     { route: '/organization/events', label: 'الفعاليات', icon: 'Compass01Icon' },
     { route: '/organization/followers', label: 'المجتمع', icon: 'UserGroupIcon' },
     { route: '/organization/settings', label: 'الإعدادات', icon: 'Settings01Icon' },
   ];
 
   readonly navItems = computed(() =>
-    (this.authStore.user() as any)?.accountType === 'organization'
+    this.authStore.user()?.role === 'org'
       ? this.organizationNavItems
       : this.userNavItems,
   );
@@ -59,29 +60,29 @@ export class SidebarComponent {
       return '/admin';
     }
 
-    return (user as any)?.accountType === 'organization' ? '/organization/dashboard' : '/user/dashboard';
+    return user?.role === 'org' ? '/organization/dashboard' : '/user/dashboard';
   });
 
   readonly quickActionLabel = computed(() =>
-    (this.authStore.user() as any)?.accountType === 'organization' ? 'فعالية جديدة' : 'موعد ذكي جديد',
+    this.authStore.user()?.role === 'org' ? 'فعالية جديدة' : 'موعد ذكي جديد',
   );
 
   readonly quickActionDescription = computed(() =>
-    (this.authStore.user() as any)?.accountType === 'organization'
+    this.authStore.user()?.role === 'org'
       ? 'أنشئ فعالية جديدة وابدأ دعوة الحضور.'
       : 'أنشئ موعداً جديداً مع تنبيه المغادرة الذكي.',
   );
 
   readonly quickActionButtonLabel = computed(() =>
-   (this.authStore.user() as any)?.accountType === 'organization' ? 'إنشاء فعالية' : 'إنشاء موعد',
+   this.authStore.user()?.role === 'org' ? 'إنشاء فعالية' : 'إنشاء موعد',
   );
 
   readonly quickActionIcon = computed(() =>
-   (this.authStore.user() as any)?.accountType === 'organization' ? 'Calendar01Icon' : 'Add01Icon',
+   this.authStore.user()?.role === 'org' ? 'Calendar01Icon' : 'Add01Icon',
   );
 
   readonly quickActionRoute = computed(() =>
-    (this.authStore.user() as any)?.accountType === 'organization'
+    this.authStore.user()?.role === 'org'
       ? '/organization/events'
       : '/user/appointments',
   );

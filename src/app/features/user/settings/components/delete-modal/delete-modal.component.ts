@@ -1,5 +1,4 @@
 import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
-import { IconComponent } from "../../../../../shared/components/icon/icon.component";
 import { authStore } from '../../../../auth/auth.store';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../../../core/services/auth/auth.service';
@@ -8,7 +7,7 @@ import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-delete-modal',
-  imports: [IconComponent,FormsModule],
+  imports: [FormsModule],
   templateUrl: './delete-modal.component.html',
   styleUrl: './delete-modal.component.css',
 })

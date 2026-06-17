@@ -12,7 +12,7 @@ export const isAdminGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  if ((user as any)?.accountType === 'organization') {
+  if (user?.role === 'org') {
     return router.parseUrl('/organization');
   }
 

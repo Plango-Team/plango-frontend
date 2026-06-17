@@ -41,6 +41,8 @@ export interface PendingInvite {
 export interface AcceptInvitePayload {
   startLocation: {
     addressName: string;
+    fullAddress?: string;
+    type?: 'Point';
     coordinates: [number, number]; // [long, lat] أو العكس حسب الـ Backend
   };
   transportation: 'driving' | 'walking' | 'bicycling' | 'other';

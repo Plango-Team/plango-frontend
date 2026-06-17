@@ -30,7 +30,7 @@ export class SignupComponent {
   username = '';
   city = '';
   bio = '';
-  privateFollows = signal(false);
+  isPrivate = signal(false);
 
   // حالة الفاليديشن
   step2Errors = signal<Record<string, string>>({});
@@ -169,7 +169,7 @@ export class SignupComponent {
       password: this.password,
       city: this.city,
       bio: this.bio.trim() || undefined,
-      privateFollows: this.privateFollows(),
+      isPrivate: this.isPrivate(),
       organizationName: this.isOrganizationAccount() ? displayName : undefined,
       organizationDescription: this.isOrganizationAccount()
         ? this.bio.trim() || undefined

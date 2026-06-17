@@ -4,7 +4,10 @@
 /* 2. Tailwind v4 core */
 @import 'tailwindcss';
 @import 'aos/dist/aos.css';
-@plugin "flowbite/plugin";
+@import './styles/account-settings.css';
+@plugin "flowbite/plugin" {
+  forms: false;
+}
 @source "../node_modules/flowbite";
 
 /* ★ CRITICAL: Tell Tailwind v4 to use class-based dark mode (.dark on <html>) */

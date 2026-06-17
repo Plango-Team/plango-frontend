@@ -1,4 +1,4 @@
-import { computed, inject } from '@angular/core';
+import { computed, effect, inject, untracked } from '@angular/core';
 import {
   patchState,
   signalStore,
@@ -7,14 +7,28 @@ import {
   withMethods,
   withState,
 } from '@ngrx/signals';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { authStore } from '../../features/auth/auth.store';
+import {
+  BackendNotification,
+  NotificationApiService,
+} from '../services/notification-api.service';
+import { NotificationRealtimeService } from '../services/notification-realtime.service';
+import { PushNotificationService } from '../services/push-notification.service';
+import { ToastService } from '../services/toast.service';
 
 export type NotificationKind =
   | 'task_deadline'
   | 'task_overdue'
   | 'appointment_added'
+  | 'appointment_preparation'
+  | 'appointment_departure'
   | 'event_published'
-  | 'info';
+  | 'new_follower'
+  | 'new_follow_request'
+  | 'follow_request_accepted'
+  | 'info'
+  | (string & {});
 
 export type AppNotification = {
   id: string;
@@ -25,22 +39,76 @@ export type AppNotification = {
   createdAt: number;
   read: boolean;
   link?: string;
+  source: 'server' | 'local';
+  data?: Record<string, unknown>;
 };
 
 type NotificationsState = {
   items: AppNotification[];
+  isLoading: boolean;
+  isLoadingMore: boolean;
+  error: string | null;
+  page: number;
+  hasMore: boolean;
+  deviceRegistered: boolean;
+  pushRegistrationError: string | null;
 };
 
 const STORAGE_KEY = 'plango.notifications.v1';
-const MAX_ITEMS = 100;
+const PAGE_SIZE = 20;
+const MAX_LOCAL_ITEMS = 100;
+
+const recipientId = (recipient: BackendNotification['recipient']): string =>
+  typeof recipient === 'string' ? recipient : recipient?._id ?? '';
+
+const routeForNotification = (notification: BackendNotification): string | undefined => {
+  switch (notification.type) {
+    case 'task_deadline':
+      return '/user/tasks';
+    case 'appointment_preparation':
+    case 'appointment_departure':
+      return '/user/calendar';
+    case 'new_follower':
+    case 'new_follow_request':
+    case 'follow_request_accepted':
+      return '/user/network';
+    default:
+      return undefined;
+  }
+};
+
+const fromBackend = (
+  notification: BackendNotification,
+  fallbackOwnerId: string,
+): AppNotification => ({
+  id: notification._id,
+  ownerId: recipientId(notification.recipient) || fallbackOwnerId,
+  kind: notification.type,
+  title: notification.title,
+  body: notification.message,
+  createdAt: new Date(notification.createdAt).getTime() || Date.now(),
+  read: notification.isRead,
+  link: routeForNotification(notification),
+  source: 'server',
+  data: notification.data,
+});
 
 export const NotificationsStore = signalStore(
   { providedIn: 'root' },
   withState<NotificationsState>({
     items: [],
+    isLoading: false,
+    isLoadingMore: false,
+    error: null,
+    page: 0,
+    hasMore: true,
+    deviceRegistered: false,
+    pushRegistrationError: null,
   }),
   withComputed((store) => {
     const auth = inject(authStore);
+    const push = inject(PushNotificationService);
+    const realtime = inject(NotificationRealtimeService);
 
     const currentOwnerId = computed(() => auth.user()?._id ?? 'guest');
     const visible = computed(() =>
@@ -54,79 +122,350 @@ export const NotificationsStore = signalStore(
       currentOwnerId,
       visible,
       unreadCount: computed(() => visible().filter((item) => !item.read).length),
+      localCount: computed(() => visible().filter((item) => item.source === 'local').length),
+      pushSupported: computed(() => push.supported()),
+      pushPermission: computed(() => push.permission()),
+      pushBusy: computed(() => push.isBusy()),
+      realtimeConnected: computed(() => realtime.connected()),
+      realtimeError: computed(() => realtime.lastError()),
     };
   }),
   withMethods((store) => {
-    const commit = (nextItems: AppNotification[]) => {
-      patchState(store, { items: nextItems });
+    const api = inject(NotificationApiService);
+    const push = inject(PushNotificationService);
+    const toast = inject(ToastService);
+
+    const persistLocal = (items: AppNotification[]) => {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(nextItems.slice(0, 400)));
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(items.filter((item) => item.source === 'local').slice(0, 400)),
+        );
       } catch {
-        // Ignore persistence errors (private mode / quota).
+        // Ignore persistence errors from private mode or storage quotas.
       }
     };
 
-    const randomId = () => Math.random().toString(36).slice(2, 10);
+    const commit = (items: AppNotification[]) => {
+      patchState(store, { items });
+      persistLocal(items);
+    };
+
+    const dedupe = (items: AppNotification[]): AppNotification[] => {
+      const seen = new Set<string>();
+      return items.filter((item) => {
+        const key = `${item.source}:${item.id}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    };
+
+    const loadPage = (page: number, append: boolean) => {
+      const ownerId = store.currentOwnerId();
+      if (ownerId === 'guest') return;
+      if ((!append && store.isLoading()) || (append && store.isLoadingMore())) return;
+
+      patchState(store, {
+        isLoading: !append,
+        isLoadingMore: append,
+        error: null,
+      });
+
+      api.getNotifications(page, PAGE_SIZE).subscribe({
+        next: ({ notifications, pagination }) => {
+          const mapped = notifications.map((notification) => fromBackend(notification, ownerId));
+          const retained = store.items().filter(
+            (item) => item.source === 'local' || item.ownerId !== ownerId,
+          );
+          const previousServerItems = append
+            ? store
+                .items()
+                .filter((item) => item.source === 'server' && item.ownerId === ownerId)
+            : [];
+
+          commit(dedupe([...mapped, ...previousServerItems, ...retained]));
+          patchState(store, {
+            isLoading: false,
+            isLoadingMore: false,
+            page: pagination.page,
+            hasMore: pagination.page < pagination.pages,
+          });
+        },
+        error: () => {
+          patchState(store, {
+            isLoading: false,
+            isLoadingMore: false,
+            error: 'تعذر تحميل الإشعارات. حاول مرة أخرى.',
+          });
+        },
+      });
+    };
 
     return {
       hydrate() {
         try {
           const raw = localStorage.getItem(STORAGE_KEY);
           if (!raw) return;
-          const parsed = JSON.parse(raw) as AppNotification[];
-          if (Array.isArray(parsed)) {
-            patchState(store, { items: parsed });
-          }
+          const parsed = JSON.parse(raw) as Partial<AppNotification>[];
+          if (!Array.isArray(parsed)) return;
+
+          const localItems = parsed
+            .filter((item) => item.id && item.ownerId && item.title)
+            .map(
+              (item): AppNotification => ({
+                id: item.id!,
+                ownerId: item.ownerId!,
+                kind: item.kind ?? 'info',
+                title: item.title!,
+                body: item.body,
+                createdAt: item.createdAt ?? Date.now(),
+                read: item.read ?? false,
+                link: item.link,
+                source: 'local',
+                data: item.data,
+              }),
+            );
+          patchState(store, { items: localItems });
         } catch {
           patchState(store, { items: [] });
         }
       },
 
+      load() {
+        loadPage(1, false);
+      },
+
+      loadMore() {
+        if (store.isLoadingMore() || !store.hasMore()) return;
+        loadPage(store.page() + 1, true);
+      },
+
+      resetRemote() {
+        commit(store.items().filter((item) => item.source === 'local'));
+        patchState(store, {
+          isLoading: false,
+          isLoadingMore: false,
+          error: null,
+          page: 0,
+          hasMore: true,
+          deviceRegistered: false,
+          pushRegistrationError: null,
+        });
+      },
+
+      receiveServerNotification(notification: BackendNotification) {
+        const ownerId = store.currentOwnerId();
+        if (ownerId === 'guest') return;
+
+        const incoming = fromBackend(notification, ownerId);
+        commit(dedupe([incoming, ...store.items()]));
+        toast.info(incoming.title, incoming.body);
+      },
+
       push(
-        input: Omit<AppNotification, 'id' | 'createdAt' | 'read' | 'ownerId'> & {
+        input: Omit<AppNotification, 'id' | 'createdAt' | 'read' | 'ownerId' | 'source'> & {
           ownerId?: string;
         },
       ) {
         const ownerId = input.ownerId ?? store.currentOwnerId();
         const newItem: AppNotification = {
           ...input,
-          id: randomId(),
+          id: crypto.randomUUID?.() ?? Math.random().toString(36).slice(2, 10),
           ownerId,
           createdAt: Date.now(),
           read: false,
+          source: 'local',
         };
 
-        const scoped = [newItem, ...store.items().filter((item) => item.ownerId === ownerId)].slice(
-          0,
-          MAX_ITEMS,
-        );
-        const others = store.items().filter((item) => item.ownerId !== ownerId);
+        const scoped = [
+          newItem,
+          ...store
+            .items()
+            .filter((item) => item.source === 'local' && item.ownerId === ownerId),
+        ].slice(0, MAX_LOCAL_ITEMS);
+        const others = store
+          .items()
+          .filter((item) => item.source !== 'local' || item.ownerId !== ownerId);
         commit([...scoped, ...others]);
       },
 
       markRead(id: string) {
-        commit(store.items().map((item) => (item.id === id ? { ...item, read: true } : item)));
+        const item = store.items().find((notification) => notification.id === id);
+        if (!item || item.read) return;
+
+        commit(
+          store.items().map((notification) =>
+            notification.id === id ? { ...notification, read: true } : notification,
+          ),
+        );
+
+        if (item.source === 'server') {
+          api.markAsRead(id).subscribe({
+            error: () => {
+              commit(
+                store.items().map((notification) =>
+                  notification.id === id ? { ...notification, read: false } : notification,
+                ),
+              );
+              toast.error('تعذر تحديث حالة الإشعار');
+            },
+          });
+        }
       },
 
       markAllRead(ownerId = store.currentOwnerId()) {
+        const unreadServerItems = store
+          .items()
+          .filter(
+            (item) => item.ownerId === ownerId && item.source === 'server' && !item.read,
+          );
+        const previousItems = store.items();
+
         commit(
-          store.items().map((item) => (item.ownerId === ownerId ? { ...item, read: true } : item)),
+          previousItems.map((item) =>
+            item.ownerId === ownerId ? { ...item, read: true } : item,
+          ),
+        );
+
+        if (unreadServerItems.length) {
+          api.markAllAsRead().subscribe({
+            error: () => {
+              commit(previousItems);
+              toast.error('تعذر تعليم الإشعارات كمقروءة');
+            },
+          });
+        }
+      },
+
+      clearLocal(ownerId = store.currentOwnerId()) {
+        commit(
+          store
+            .items()
+            .filter((item) => item.ownerId !== ownerId || item.source !== 'local'),
         );
       },
 
-      clear(ownerId = store.currentOwnerId()) {
-        commit(store.items().filter((item) => item.ownerId !== ownerId));
+      remove(id: string) {
+        const item = store.items().find((notification) => notification.id === id);
+        if (item?.source !== 'local') return;
+        commit(store.items().filter((notification) => notification.id !== id));
       },
 
-      remove(id: string) {
-        commit(store.items().filter((item) => item.id !== id));
+      async syncPushToken(requestPermission = false): Promise<boolean> {
+        patchState(store, { pushRegistrationError: null });
+        try {
+          const token = await push.getRegistrationToken(requestPermission);
+          if (!token) {
+            patchState(store, { deviceRegistered: false });
+            return false;
+          }
+          await firstValueFrom(api.saveFcmToken(token));
+          patchState(store, {
+            deviceRegistered: true,
+            pushRegistrationError: null,
+          });
+          return true;
+        } catch (error) {
+          const message =
+            push.lastError() ||
+            (error instanceof Error ? error.message : 'تعذر تسجيل هذا الجهاز');
+          patchState(store, {
+            deviceRegistered: false,
+            pushRegistrationError: message,
+          });
+          if (requestPermission) {
+            toast.error(
+              'تعذر تفعيل إشعارات الجهاز',
+              message,
+            );
+          }
+          return false;
+        }
       },
     };
   }),
-  withHooks({
-    onInit(store) {
-      store.hydrate();
-    },
+  withHooks((store) => {
+    const auth = inject(authStore);
+    const realtime = inject(NotificationRealtimeService);
+    const push = inject(PushNotificationService);
+    const subscriptions = new Subscription();
+    let refreshTimer: ReturnType<typeof setInterval> | null = null;
+    let wasRealtimeConnected = false;
+
+    const refreshWhenAuthenticated = () => {
+      if (auth.user()) {
+        store.load();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refreshWhenAuthenticated();
+    };
+
+    return {
+      onInit() {
+        store.hydrate();
+        subscriptions.add(
+          realtime.notifications$.subscribe((notification) => {
+            store.receiveServerNotification(notification);
+          }),
+        );
+        subscriptions.add(
+          push.messages$.subscribe(() => {
+            store.load();
+          }),
+        );
+
+        window.addEventListener('focus', refreshWhenAuthenticated);
+        window.addEventListener('online', refreshWhenAuthenticated);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        effect(() => {
+          const isConnected = realtime.connected();
+          if (isConnected && !wasRealtimeConnected) {
+            untracked(() => store.load());
+          }
+          wasRealtimeConnected = isConnected;
+        });
+
+        effect(() => {
+          const user = auth.user();
+          const token = auth.token();
+
+          untracked(() => {
+            if (!user) {
+              if (refreshTimer) {
+                clearInterval(refreshTimer);
+                refreshTimer = null;
+              }
+              realtime.disconnect();
+              store.resetRemote();
+              return;
+            }
+
+            if (token) {
+              realtime.connect(token);
+            } else {
+              realtime.disconnect();
+            }
+            store.load();
+            void store.syncPushToken(false);
+            if (!refreshTimer) {
+              refreshTimer = setInterval(refreshWhenAuthenticated, 60_000);
+            }
+          });
+        });
+      },
+      onDestroy() {
+        if (refreshTimer) clearInterval(refreshTimer);
+        window.removeEventListener('focus', refreshWhenAuthenticated);
+        window.removeEventListener('online', refreshWhenAuthenticated);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        subscriptions.unsubscribe();
+        realtime.disconnect();
+      },
+    };
   }),
 );
 

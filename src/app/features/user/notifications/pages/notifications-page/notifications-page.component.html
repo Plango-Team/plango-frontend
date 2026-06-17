@@ -9,25 +9,78 @@
     <div class="flex items-center gap-2">
       <button
         type="button"
+        (click)="refresh()"
+        [disabled]="notificationsStore.isLoading()"
+        class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-ink-border bg-ink-2 px-3 text-sm text-ink-fg transition-colors hover:bg-ink-3 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        تحديث
+      </button>
+      <button
+        type="button"
         (click)="markAllRead()"
+        [disabled]="notificationsStore.unreadCount() === 0"
         class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-ink-border bg-ink-2 px-3 text-sm text-ink-fg transition-colors hover:bg-ink-3"
       >
         <app-icon [iconName]="'CheckmarkCircle01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
         تعليم الكل كمقروء
       </button>
-      <button
-        type="button"
-        (click)="clearAll()"
-        class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-500/40 bg-red-500/10 px-3 text-sm text-red-300 transition-colors hover:bg-red-500/20"
-      >
-        <app-icon [iconName]="'Delete01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
-        مسح الكل
-      </button>
+      @if (notificationsStore.localCount() > 0) {
+        <button
+          type="button"
+          (click)="clearAll()"
+          class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-500/40 bg-red-500/10 px-3 text-sm text-red-300 transition-colors hover:bg-red-500/20"
+        >
+          <app-icon [iconName]="'Delete01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+          مسح المحلية
+        </button>
+      }
     </div>
   </div>
 
+  @if (notificationsStore.pushSupported() !== false && !pushEnabled()) {
+    <div class="mb-5 flex flex-col gap-3 rounded-2xl border border-brand/30 bg-brand/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h2 class="text-sm font-semibold text-ink-fg">فعّل إشعارات الجهاز</h2>
+        <p class="mt-1 text-xs text-ink-muted">
+          استلم تنبيهات المهام والمواعيد والمتابعة حتى عندما لا تكون صفحة PlanGo مفتوحة.
+        </p>
+      </div>
+      <button
+        type="button"
+        (click)="enableDeviceNotifications()"
+        [disabled]="notificationsStore.pushBusy()"
+        class="h-9 shrink-0 rounded-lg bg-brand px-4 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {{ notificationsStore.pushBusy() ? 'جارٍ التفعيل...' : 'تفعيل الإشعارات' }}
+      </button>
+    </div>
+    @if (notificationsStore.pushRegistrationError()) {
+      <p class="-mt-3 mb-5 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400" dir="ltr">
+        {{ notificationsStore.pushRegistrationError() }}
+      </p>
+    }
+  } @else if (pushEnabled()) {
+    <div class="mb-5 flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-xs text-success">
+      <span class="h-2 w-2 rounded-full bg-success"></span>
+      إشعارات هذا الجهاز مفعّلة
+    </div>
+  }
+
   <div class="overflow-hidden rounded-2xl border border-ink-border bg-ink-2 shadow-soft">
-    @if (items().length === 0) {
+    @if (notificationsStore.isLoading() && items().length === 0) {
+      <div class="px-6 py-16 text-center">
+        <div class="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-brand border-t-transparent"></div>
+        <p class="text-sm text-ink-muted">جارٍ تحميل الإشعارات...</p>
+      </div>
+    } @else if (notificationsStore.error() && items().length === 0) {
+      <div class="px-6 py-16 text-center">
+        <h2 class="text-base font-semibold text-ink-fg">تعذر تحميل الإشعارات</h2>
+        <p class="mt-1 text-sm text-ink-muted">{{ notificationsStore.error() }}</p>
+        <button type="button" (click)="refresh()" class="mt-4 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground">
+          إعادة المحاولة
+        </button>
+      </div>
+    } @else if (items().length === 0) {
       <div class="px-6 py-16 text-center">
         <div class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full border border-ink-border bg-ink text-ink-muted">
           <app-icon [iconName]="'Notification02Icon'" [iconSize]="20" [iconColor]="'currentColor'"></app-icon>
@@ -50,13 +103,28 @@
             }
             <div class="mt-1 text-[11px] text-ink-muted">{{ relativeTime(item) }}</div>
           </div>
+          @if (item.source === 'local') {
+            <button
+              type="button"
+              (click)="remove(item.id, $event)"
+              class="grid h-7 w-7 shrink-0 place-items-center rounded-md text-ink-muted transition-colors hover:bg-ink hover:text-red-400"
+              aria-label="Delete notification"
+            >
+              <app-icon [iconName]="'Cancel01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+            </button>
+          }
+        </div>
+      }
+
+      @if (notificationsStore.hasMore()) {
+        <div class="border-t border-ink-border p-3 text-center">
           <button
             type="button"
-            (click)="remove(item.id, $event)"
-            class="grid h-7 w-7 shrink-0 place-items-center rounded-md text-ink-muted transition-colors hover:bg-ink hover:text-red-400"
-            aria-label="Delete notification"
+            (click)="loadMore()"
+            [disabled]="notificationsStore.isLoadingMore()"
+            class="rounded-lg border border-ink-border px-4 py-2 text-sm text-ink-fg transition-colors hover:bg-ink-3 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <app-icon [iconName]="'Cancel01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+            {{ notificationsStore.isLoadingMore() ? 'جارٍ التحميل...' : 'تحميل المزيد' }}
           </button>
         </div>
       }

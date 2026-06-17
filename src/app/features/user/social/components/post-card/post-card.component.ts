@@ -69,7 +69,7 @@ import { IconComponent } from '../../../../../shared/components/icon/icon.compon
                   [iconSize]="14"
                   [iconColor]="liked() ? 'currentColor' : 'var(--color-ink-muted)'"
                 ></app-icon>
-                {{ post().likes.length }}
+                {{ post().likeCount }}
               </button>
 
               @if (isMine()) {
@@ -100,8 +100,7 @@ export class PostCardComponent {
 
   profileRouteBase = computed(() =>{
     const user = this.authStore.user();
-    const accountType = user ?(user as any).accountType : null;
-    return accountType === 'organization'
+    return user?.role === 'org'
       ? '/organization/profile'
       : '/user/profile';
 });
@@ -116,11 +115,11 @@ export class PostCardComponent {
     if (currentUser && currentUser._id === this.post().authorId) {
       return {
         id: currentUser._id,
-        kind: (currentUser as any).accountType === 'organization' ? 'org' : 'user',
+        kind: currentUser.role === 'org' ? 'org' : 'user',
         username: currentUser.username,
         displayName:currentUser.name,
         bio: (currentUser as any).bio,
-        privateFollows: (currentUser as any).privateFollows,
+        isPrivate: currentUser.isPrivate,
         createdAt: Date.now(),
       };
     }
@@ -161,13 +160,13 @@ export class PostCardComponent {
   toggleLike() {
     const profileId = this.activeProfileId();
     if (profileId) {
-      this.socialStore.toggleLike(this.post().id!, profileId);
+      this.socialStore.toggleLike(this.post().id, profileId);
     }
   }
 
   deletePost() {
     if (this.isMine()) {
-      this.socialStore.deletePost(this.post().id!);
+      this.socialStore.deletePost(this.post().id);
     }
   }
 }
