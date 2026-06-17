@@ -64,6 +64,18 @@ importScripts('https://www.gstatic.com/firebasejs/12.14.0/firebase-messaging-com
 firebase.initializeApp(${JSON.stringify(firebaseConfig, null, 2)});
 
 const messaging = firebase.messaging();
+const CACHE_NAME = 'plango-shell-v1';
+const APP_SHELL = [
+  '/',
+  '/manifest.webmanifest',
+  '/favicon.svg',
+  '/favicon-48x48.png',
+  '/favicon-96x96.png',
+  '/apple-touch-icon.png',
+  '/assets/seo/logo-512.png',
+];
+const DEFAULT_ICON = '/assets/seo/logo-512.png';
+const DEFAULT_BADGE = '/favicon-96x96.png';
 
 const ROUTE_MAP = {
   task_deadline: '/user/tasks',
@@ -92,8 +104,8 @@ messaging.onBackgroundMessage((payload) => {
   if (!notificationData.title && dataPayload.title) {
     self.registration.showNotification(dataPayload.title, {
       body: dataPayload.body || '',
-      icon: dataPayload.icon || '/favicon.ico',
-      badge: '/favicon.ico',
+      icon: dataPayload.icon || DEFAULT_ICON,
+      badge: DEFAULT_BADGE,
       tag: dataPayload.type || 'plango-notification',
       data: dataPayload,
       vibrate: [200, 100, 200],
@@ -125,12 +137,58 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-self.addEventListener('install', () => {
-  self.skipWaiting();
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(APP_SHELL))
+      .catch(() => undefined)
+      .then(() => self.skipWaiting()),
+  );
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches
+      .keys()
+      .then((cacheNames) =>
+        Promise.all(
+          cacheNames
+            .filter((cacheName) => cacheName !== CACHE_NAME)
+            .map((cacheName) => caches.delete(cacheName)),
+        ),
+      )
+      .then(() => self.clients.claim()),
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+
+  if (request.method !== 'GET') return;
+
+  const requestUrl = new URL(request.url);
+  if (requestUrl.origin !== self.location.origin) return;
+  if (requestUrl.pathname.startsWith('/api/')) return;
+
+  if (request.mode === 'navigate') {
+    event.respondWith(fetch(request).catch(() => caches.match('/')));
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      if (cachedResponse) return cachedResponse;
+
+      return fetch(request).then((networkResponse) => {
+        if (!networkResponse || !networkResponse.ok) return networkResponse;
+
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));
+        return networkResponse;
+      });
+    }),
+  );
 });
 `;
 

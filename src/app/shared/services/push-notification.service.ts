@@ -24,6 +24,8 @@ type NavigatorWithStandalone = Navigator & {
   providedIn: 'root',
 })
 export class PushNotificationService {
+  private readonly notificationIcon = '/assets/seo/logo-512.png';
+  private readonly notificationBadge = '/favicon-96x96.png';
   private readonly router = inject(Router);
   private messagingPromise: Promise<Messaging | null> | null = null;
   private foregroundListenerReady = false;
@@ -140,8 +142,8 @@ export class PushNotificationService {
     const registration = await this.ensureServiceWorker();
     await registration.showNotification(payload.notification.title, {
       body: payload.notification.body,
-      icon: '/favicon.ico',
-      badge: '/favicon.ico',
+      icon: payload.notification.icon || this.notificationIcon,
+      badge: this.notificationBadge,
       tag: payload.data?.['type'] ?? 'plango-notification',
       data: {
         ...payload.data,

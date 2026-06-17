@@ -13,7 +13,7 @@ import { NotificationsStore } from './shared/stores/notifications.store';
   styleUrl: './app.css',
 })
 export class App {
-  protected readonly title = signal('plango-frontend');
+  protected readonly title = signal('PlanGo');
   private authStore = inject(authStore);
   private notificationsStore = inject(NotificationsStore);
   // flowbite تاني
