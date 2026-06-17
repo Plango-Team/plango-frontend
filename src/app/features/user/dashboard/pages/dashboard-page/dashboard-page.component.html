@@ -1,0 +1,330 @@
+<div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between px-4 mt-4">
+  <div>
+    <div class="text-sm text-ink-muted">
+      {{ greeting() }}، {{ authStore.user()?.name }}
+    </div>
+    <h1 class="font-display text-2xl tracking-tight sm:text-3xl text-ink-fg">نبض اليوم</h1>
+  </div>
+  <div class="text-xs text-ink-muted sm:text-sm">{{ todayFormatted() }}</div>
+</div>
+
+<div class="grid gap-4 lg:grid-cols-12 px-4 pb-10">
+  <!-- Smart Countdown -->
+  <div
+    class="relative overflow-hidden rounded-2xl border border-ink-border bg-ink-2 p-5 text-ink-fg sm:p-6 lg:col-span-7 lg:row-span-2 shadow-soft"
+  >
+    <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-brand/20 blur-3xl"></div>
+    <div class="relative">
+      <div class="flex items-center justify-between gap-2">
+        <span
+          class="inline-flex items-center gap-1.5 rounded-full bg-ink/10 px-2.5 py-1 text-[11px] backdrop-blur"
+        >
+          <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-success"></span> بيانات مباشرة
+        </span>
+        <span class="text-xs text-ink-muted">الموعد القادم</span>
+      </div>
+      @if (nextAppointment(); as appointment) {
+      <div class="mt-6 text-sm text-ink-muted">الانطلاق الأمثل خلال</div>
+      <div class="mt-1 flex items-baseline gap-2">
+        <span class="font-display text-6xl tracking-tight tabular-nums sm:text-7xl">
+          {{ departureInMinutes() !== null && departureInMinutes()! > 0 ? departureInMinutes() : 0 }}
+        </span>
+        <span class="text-xl text-ink-muted">دقيقة</span>
+      </div>
+      <div class="mt-1 text-base">{{ appointment.title }} — {{ destinationLabel(appointment) }}</div>
+
+      <div class="mt-6 grid grid-cols-3 gap-3">
+        <div class="rounded-xl border border-ink-border bg-ink/5 p-3 backdrop-blur">
+          <app-icon
+            [iconName]="'Location01Icon'"
+            [iconSize]="16"
+            [iconColor]="'var(--color-ink-muted)'"
+          ></app-icon>
+          <div class="mt-2 text-[11px] text-ink-muted">المسافة</div>
+          <div class="font-medium text-sm">{{ distanceLabel(appointment) }}</div>
+        </div>
+        <div class="rounded-xl border border-ink-border bg-ink/5 p-3 backdrop-blur">
+          <app-icon
+            [iconName]="'TimeQuarter02Icon'"
+            [iconSize]="16"
+            [iconColor]="'var(--color-ink-muted)'"
+          ></app-icon>
+          <div class="mt-2 text-[11px] text-ink-muted">مدة الرحلة</div>
+          <div class="font-medium text-sm">{{ travelTimeLabel(appointment) }}</div>
+        </div>
+        <div class="rounded-xl border border-ink-border bg-ink/5 p-3 backdrop-blur">
+          <app-icon
+            [iconName]="'TimeQuarter02Icon'"
+            [iconSize]="16"
+            [iconColor]="'var(--color-ink-muted)'"
+          ></app-icon>
+          <div class="mt-2 text-[11px] text-ink-muted">وقت المغادرة</div>
+          <div class="font-medium text-sm">{{ departureTimeLabel(appointment) }}</div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <a
+          routerLink="/user/map"
+          class="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand/90 transition-all"
+        >
+          ابدأ الرحلة
+          <app-icon
+            [iconName]="'ArrowLeft02Icon'"
+            [iconSize]="16"
+            [iconColor]="'currentColor'"
+          ></app-icon>
+        </a>
+        <a
+          routerLink="/user/calendar"
+          class="flex items-center gap-1.5 rounded-lg border border-ink-border bg-transparent px-4 py-2 text-sm font-semibold text-ink-fg hover:bg-ink/40 transition-all"
+        >
+          <app-icon
+            [iconName]="'Add01Icon'"
+            [iconSize]="16"
+            [iconColor]="'currentColor'"
+          ></app-icon>
+          موعد جديد
+        </a>
+      </div>
+      } @else {
+        <div class="mt-8 rounded-2xl border border-dashed border-ink-border bg-ink/20 p-8 text-center">
+          <h2 class="font-display text-2xl text-ink-fg">لا توجد مواعيد قادمة</h2>
+          <p class="mt-2 text-sm text-ink-muted">أضف موعداً أو فعالية إلى جدولك ليظهر نبض اليوم هنا.</p>
+          <div class="mt-5 flex flex-wrap justify-center gap-2">
+            <a routerLink="/user/calendar" class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground">
+              إضافة موعد
+            </a>
+            <a routerLink="/user/events" class="rounded-lg border border-ink-border px-4 py-2 text-sm font-semibold text-ink-fg">
+              تصفح الفعاليات
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Today stats — WIRED TO REAL DATA -->
+  <app-card
+    class="block lg:col-span-5"
+    customClass="flex flex-col justify-center text-ink-fg h-full"
+  >
+    <div class="flex items-center justify-between gap-2">
+      <h3 class="font-display text-lg">إنتاجية اليوم</h3>
+      @if (completionPercentage() >= 50) {
+        <span class="text-xs text-success inline-flex items-center gap-1">
+          <app-icon
+            [iconName]="'ArrowUpRight01Icon'"
+            [iconSize]="12"
+            [iconColor]="'currentColor'"
+          ></app-icon>
+          {{ completionPercentage() }}%
+        </span>
+      } @else {
+        <span class="text-xs text-ink-muted inline-flex items-center gap-1">
+          {{ completionPercentage() }}%
+        </span>
+      }
+    </div>
+    <div class="mt-5 grid grid-cols-3 gap-4">
+      <div>
+        <div class="font-display text-2xl tracking-tight sm:text-3xl">{{ totalTasks() }}</div>
+        <div class="text-xs text-ink-muted">إجمالي المهام</div>
+        <div class="text-[10px] text-ink-muted/70">كل المهام</div>
+      </div>
+      <div>
+        <div class="font-display text-2xl tracking-tight sm:text-3xl text-success">{{ completedTasks() }}</div>
+        <div class="text-xs text-ink-muted">مكتملة</div>
+        <div class="text-[10px] text-ink-muted/70">بنجاح</div>
+      </div>
+      <div>
+        <div class="font-display text-2xl tracking-tight sm:text-3xl text-brand">{{ pendingTasks() }}</div>
+        <div class="text-xs text-ink-muted">متبقية</div>
+        <div class="text-[10px] text-ink-muted/70">مهام</div>
+      </div>
+    </div>
+    <div class="mt-5 h-2 overflow-hidden rounded-full bg-ink-3">
+      <div class="h-full rounded-full bg-ink-fg transition-all" [style.width.%]="completionPercentage()"></div>
+    </div>
+    <div class="mt-2 text-xs text-ink-muted">{{ completionPercentage() }}% من مهامك مكتملة</div>
+  </app-card>
+
+  <!-- Tasks tile — WIRED TO REAL DATA -->
+  <app-card class="block lg:col-span-5" customClass="text-ink-fg h-full">
+    <div class="flex items-start gap-3">
+      <div class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-ink/10 text-ink-fg">
+        <app-icon [iconName]="'Task01Icon'" [iconSize]="20" [iconColor]="'currentColor'"></app-icon>
+      </div>
+      <div class="flex-1 min-w-0">
+        <h3 class="font-medium">المهام</h3>
+        <p class="mt-1 text-sm text-ink-muted">
+          @if (pendingTasks() > 0) {
+            لديك {{ pendingTasks() }} مهام معلّقة
+            @if (latedTasks() > 0) {
+              · <span class="text-brand">{{ latedTasks() }} متأخرة</span>
+            }
+          } @else if (totalTasks() > 0) {
+            كل المهام مكتملة 🎉
+          } @else {
+            لا توجد مهام بعد
+          }
+        </p>
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+          <a
+            routerLink="/user/tasks"
+            class="rounded-lg border border-ink-border bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-fg hover:bg-ink-3 transition-all"
+          >
+            فتح المهام
+          </a>
+          <a
+            routerLink="/user/tasks"
+            class="flex items-center gap-1 rounded-lg bg-ink-fg px-3 py-1.5 text-xs font-semibold text-ink hover:bg-ink-fg/90 transition-all"
+          >
+            <app-icon
+              [iconName]="'Add01Icon'"
+              [iconSize]="12"
+              [iconColor]="'currentColor'"
+            ></app-icon>
+            مهمة سريعة
+          </a>
+        </div>
+      </div>
+    </div>
+  </app-card>
+
+  <!-- Schedule List -->
+  <app-card class="block lg:col-span-12" customClass="h-full">
+    <app-dashboard-appointments></app-dashboard-appointments>
+  </app-card>
+
+  <app-card class="block lg:col-span-12" customClass="h-full">
+    <app-dashboard-events></app-dashboard-events>
+  </app-card>
+
+
+  <!--Invites list-->
+  <app-card class="block lg:col-span-12" customClass="h-full">
+    <div class="mb-4 flex items-center justify-between gap-2">
+  <h3 class="font-display text-lg text-ink-fg">دعوات الأصدقاء</h3>
+</div>
+
+<div class="space-y-2">
+  @for (invite of appStore.pendingInvites(); track $index) {
+    <div class="flex items-center gap-3 rounded-xl border border-ink-border bg-ink-2 px-3 py-3 transition hover:border-ink-fg/30 sm:gap-4 sm:px-4">
+      
+      <div class="font-mono text-xs tabular-nums text-ink-muted flex items-center justify-center w-10 sm:w-14 sm:text-sm">
+        <!-- <app-icon [iconName]="'TimeQuarter02Icon'" [iconSize]="20" [iconColor]="'currentColor'"></app-icon> -->
+         <div>{{invite.senderId.username}}</div>
+      </div>
+      
+      <div class="h-10 w-1 shrink-0 rounded-full bg-brand"></div>
+
+      <div class="flex-1 min-w-0 text-right">
+        <div class="font-medium truncate text-ink-fg">{{ invite.appointmentId.title }}</div>
+        <div class="mt-0.5 text-xs text-ink-muted">{{ formatDate(invite.appointmentId.arrivalTime) }} - {{ formatTime(invite.appointmentId.arrivalTime) }}</div>
+      </div>
+      
+      <div class="flex items-center gap-3">
+        @let minsLeft = getMinutesRemaining(invite.appointmentId.arrivalTime);
+        @if (minsLeft > 0 && minsLeft <= 60) {
+          <div class="rounded-full flex items-center gap-1 bg-brand/10 px-2 py-0.5 text-[10px] font-medium text-brand">
+            <app-icon [iconName]="'Notification01Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
+            <span>بعد {{minsLeft}} دقيقة</span>
+          </div>
+        }
+        <button (click)="setLocModal.open(invite.appointmentId._id)" class="flex items-center justify-center gap-1 rounded-lg bg-brand text-brand-foreground hover:bg-brand/90 p-2 py-1 text-xs font-semibold transition-all">
+          <app-icon [iconName]="'Location01Icon'" [iconColor]="'currentColor'" [iconSize]="14"></app-icon>
+          <span class="hidden sm:inline">قبول</span>
+        </button>
+        <button (click)="onDeclineInvite(invite.appointmentId._id)" class="flex items-center justify-center gap-1 rounded-lg bg-brand text-brand-foreground hover:bg-brand/90 p-2 py-1 text-xs font-semibold transition-all">
+          <app-icon [iconName]="'Location01Icon'" [iconColor]="'currentColor'" [iconSize]="14"></app-icon>
+          <span class="hidden sm:inline">تجاهل</span>
+        </button>
+      </div>
+      <app-set-location-modal #setLocModal></app-set-location-modal>
+
+    </div>
+  } @empty {
+    <div class="rounded-xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted">
+      لا توجد دعوات جديدة
+    </div>
+  }
+</div>
+  </app-card>
+
+  <!-- Shared appointments -->
+  <app-card class="block lg:col-span-7" customClass="text-ink-fg h-full">
+    <div class="mb-4 flex items-center justify-between gap-2">
+      <h3 class="font-display text-lg">الدعوات والرحلات المشتركة</h3>
+      <span class="text-xs text-ink-muted">{{ appStore.pendingInvites().length }} دعوة</span>
+    </div>
+    <div class="space-y-3">
+      @for (invite of appStore.pendingInvites().slice(0, 3); track invite._id) {
+        <div class="flex items-center gap-3 rounded-xl border border-ink-border bg-ink p-3">
+          <div class="h-8 w-8 rounded-full bg-ink-3 grid place-items-center text-xs font-medium">
+            {{ invite.senderId.name.charAt(0) }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium truncate">{{ invite.appointmentId.title }}</div>
+            <div class="mt-0.5 text-xs text-ink-muted">دعوة من {{ invite.senderId.name }}</div>
+          </div>
+          <div class="text-xs text-ink-muted shrink-0">{{ formatTime(invite.appointmentId.arrivalTime) }}</div>
+        </div>
+      }
+      @for (appointment of sharedAppointments(); track appointment._id) {
+        <div class="flex items-center gap-3 rounded-xl border border-ink-border bg-ink p-3">
+          <div class="h-8 w-8 rounded-full bg-ink-3 grid place-items-center text-xs font-medium">
+            {{ participantCount(appointment) }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium truncate">{{ appointment.title }}</div>
+            <div class="mt-0.5 text-xs text-ink-muted">{{ participantCount(appointment) }} مشارك</div>
+          </div>
+          <a routerLink="/user/map" class="text-xs text-brand shrink-0">الخريطة</a>
+        </div>
+      }
+      @if (appStore.pendingInvites().length === 0 && sharedAppointments().length === 0) {
+        <div class="rounded-xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted">
+          لا توجد دعوات أو رحلات مشتركة حالياً
+        </div>
+      }
+    </div>
+  </app-card>
+
+  <!-- Suggested from backend data -->
+  <app-card class="block lg:col-span-5" customClass="text-ink-fg h-full">
+    <div class="flex items-center gap-2">
+      <app-icon
+        [iconName]="'UserGroupIcon'"
+        [iconSize]="16"
+        [iconColor]="'var(--color-brand)'"
+      ></app-icon>
+      <h3 class="font-medium">اقتراح ذكي</h3>
+    </div>
+    @if (nextAppointment(); as appointment) {
+      <p class="mt-3 text-sm text-ink-muted">
+        موعدك القادم هو {{ appointment.title }}. وقت المغادرة المحسوب من الخادم:
+        <span class="font-semibold text-ink-fg">{{ departureTimeLabel(appointment) }}</span>.
+      </p>
+    } @else {
+      <p class="mt-3 text-sm text-ink-muted">
+        لا توجد مواعيد قادمة لتحليلها حالياً. أضف فعالية أو موعداً لتظهر الاقتراحات.
+      </p>
+    }
+    <div class="mt-4 flex items-center gap-2">
+      <a
+        routerLink="/user/map"
+        class="rounded-lg bg-ink-fg px-3 py-1.5 text-xs font-semibold text-ink hover:bg-ink-fg/90 transition-all"
+      >
+        فتح الخريطة
+      </a>
+      <a
+        routerLink="/user/events"
+        class="rounded-lg bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-fg hover:bg-ink-3 transition-all"
+      >
+        فعاليات
+      </a>
+    </div>
+  </app-card>
+
+</div>

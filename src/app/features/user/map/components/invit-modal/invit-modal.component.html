@@ -1,0 +1,166 @@
+<dialog
+  #invitModal
+  class="backdrop:bg-black/50 backdrop:backdrop-blur-sm bg-transparent p-0 m-auto shadow-none outline-none overflow-visible w-full max-w-lg z-100"
+  (cancel)="close()" > <!--------------- close-------------------> 
+>
+  <form (ngSubmit)="onSubmit()"
+    class="relative w-full bg-ink-2 border border-ink-border overflow-visible rounded-xl shadow-elevated p-6 animate-fade-in-up max-h-[90vh]"
+  >
+    <div class="mb-4">
+      <h2 class="font-display text-2xl text-ink-fg">
+        {{ 'رحلة مشتركة جديدة' }}
+      </h2>
+      <p class="text-sm text-ink-muted mt-1">
+        {{'حدّد نقطة اللقاء وادعُ أصدقاءك — سيرى كل صديق وقت مغادرته الأمثل.' }}
+      </p>
+    </div>
+
+    <div class="space-y-4"> 
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-ink-fg">{{ 'العنوان'}}</label>
+        <input
+          [(ngModel)]="invitData.title"
+          name="title"
+          required
+          class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          [placeholder]="'عشاء الفريق'"
+        />
+      </div>
+
+      <div class="relative space-y-1.5">
+        <label class="text-sm font-medium text-ink-fg">{{'نقطة اللقاء' }}</label>
+        <input
+          type="text"
+          [(ngModel)]="invitData.location"
+          (input)="onLocationInput(invitData.location)" 
+          name="location"
+          class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          [placeholder]="'اختر مكاناً او اضف جديداً'"
+        />
+           @if (showDropDown) {
+    <ul class="bg-ink-2 absolute z-9999 w-full mt-1 max-h-44 overflow-y-auto border border-ink-border rounded-lg shadow-lg animate-fade-in">
+      @for (place of searchRes; track place.place_id) {
+        <li>
+          <button 
+            type="button"
+            (click)="selectLocation(place)"
+            class="w-full text-right px-4 py-2.5 text-xs text-ink-muted flex items-center gap-2 transition-colors">
+            <span><app-icon [iconName]="'Location01FreeIcons'" [iconSize]="12" [iconColor]="'#d32e18'"></app-icon></span>
+            <span class="truncate">{{ place.display_name }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+}
+      </div>
+</div>
+
+      <div class="grid grid-cols-3 gap-3">  
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-ink-fg">{{'التاريخ'}}</label>
+          <input
+            type="date"
+            [(ngModel)]="date"
+            name="date"
+            required
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-ink-fg">{{'الوقت' }}</label>
+          <input
+            type="time"
+            [(ngModel)]="time"
+            name="time"
+            required
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-ink-fg">{{'الوصول قبل (د)' }}</label>
+          <input
+            type="number"
+            [(ngModel)]="invitData.arrive"
+            name="arrive"
+            required
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+        </div>
+      </div>
+
+      <div class="space-y-2.5 mt-2">
+        <div class="flex items-center justify-between">
+          <label class="text-sm font-medium text-ink-fg flex items-center gap-1.5">
+            <span><app-icon [iconName]="'User'" [iconSize]="16" [iconColor]="'#d32e18'"></app-icon></span>
+            {{ 'المدعوون' }}
+          </label>
+          <button 
+            type="button" 
+            (click)="addInvitee()"
+            class="text-xs font-semibold flex items-center gap-0.5"
+          >
+            + إضافة
+          </button>
+        </div>
+
+        <div class="space-y-2 max-h-32 overflow-y-auto pr-1">
+          @for (invitee of invitData.invitees; track $index) {
+            <div class="flex items-center gap-2 animate-fade-in">
+              <div class="relative flex-1">
+                <input
+                  type="text"
+                  [(ngModel)]="invitee.inviteeUsarname"
+                  [name]="'invitee_' + $index"
+                  required
+                  class="h-10 w-full focus:ring-brand rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1"
+                  [placeholder]="'الاسم'"
+                />
+              </div>
+              
+              <button 
+                type="button" 
+                (click)="removeInvitee($index)"
+                [disabled]="invitData.invitees.length === 1"
+                class="p-2 text-ink-muted rounded-lg hover:bg-ink-3 transition-colors"
+              >
+                <app-icon [iconName]="'Delete02FreeIcons'" [iconSize]="16"></app-icon>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+
+
+@if (appStore.error()) {
+  <div class="text-xs text-red-500 bg-red-50 p-2 rounded-lg mt-2">
+    {{ appStore.error() }}
+  </div>
+}
+
+@if (appStore.invitationWarnings()) {
+  <div class="text-xs text-amber-600 bg-amber-50 p-2 rounded-lg mt-2">
+    <ul>
+      @for (warning of appStore.invitationWarnings(); track warning) {
+        <li>⚠️ {{ warning }}</li>
+      }
+    </ul>
+  </div>
+}
+
+      <div class="mt-6 flex justify-end gap-3 pt-2"> <!--------close---------->
+        <button
+          type="button"
+          (click)="close()" 
+          class="rounded-lg border border-ink-border bg-transparent px-4 py-2 text-sm font-medium text-ink-fg hover:bg-ink-3 transition-colors"
+        >
+          {{'إلغاء'}}
+        </button>
+        <button
+          type="submit"
+          class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
+        >
+          {{'إرسال الدعوات'}}
+        </button>
+      </div>
+    </form>
+</dialog> 

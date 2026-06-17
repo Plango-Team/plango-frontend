@@ -1,0 +1,484 @@
+@if (authStore.user(); as user) {
+  <section class="settings-page px-4 py-6 sm:px-6 lg:px-8" dir="rtl">
+    <header class="settings-hero">
+      <div>
+        <div class="mb-3 flex flex-wrap items-center gap-2">
+          <span class="eyebrow">{{ isOrganization() ? 'حساب مؤسسة' : 'حساب شخصي' }}</span>
+          <span
+            class="status-pill"
+            [class.status-pill--success]="user.isEmailVerified && user.isPhoneVerified"
+          >
+            {{ user.isEmailVerified && user.isPhoneVerified ? 'الحساب موثّق' : 'يحتاج استكمال التحقق' }}
+          </span>
+        </div>
+        <h1 class="font-display text-3xl tracking-tight text-ink-fg sm:text-4xl">
+          {{ isOrganization() ? 'إعدادات المؤسسة' : 'إعدادات الحساب' }}
+        </h1>
+        <p class="mt-2 max-w-2xl text-sm leading-6 text-ink-muted">
+          عدّل المعلومات التي تظهر في ملفك، وراجع وسائل التواصل والأمان والخصوصية من مكان واحد.
+        </p>
+      </div>
+
+      <a
+        [routerLink]="profileRoute()"
+        class="inline-flex h-10 items-center justify-center rounded-full border border-ink-border bg-ink-2 px-5 text-sm font-semibold text-ink-fg transition hover:border-brand/50 hover:text-brand"
+      >
+        عرض الملف
+      </a>
+    </header>
+
+    @if (isOrganization()) {
+      <div class="metrics-strip">
+        <div>
+          <span>المتابعون</span>
+          <strong>{{ followersCount() }}</strong>
+        </div>
+        <div>
+          <span>المنشورات</span>
+          <strong>{{ postsCount() }}</strong>
+        </div>
+        <div>
+          <span>معرّف المؤسسة</span>
+          <strong class="text-base">&#64;{{ user.username }}</strong>
+        </div>
+      </div>
+    }
+
+    <div class="settings-layout">
+      <aside class="settings-aside">
+        <div class="account-card">
+          <div class="account-avatar">{{ initials() }}</div>
+          <div class="min-w-0">
+            <div class="truncate font-semibold text-ink-fg">{{ user.name }}</div>
+            <div class="truncate text-xs text-ink-muted">&#64;{{ user.username }}</div>
+          </div>
+          <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+            <div class="account-fact">
+              <span>نوع الملف</span>
+              <strong>{{ isPrivate ? 'خاص' : 'عام' }}</strong>
+            </div>
+            <div class="account-fact">
+              <span>منذ</span>
+              <strong>{{ user.createdAt | date: 'yyyy' }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <nav class="settings-nav" aria-label="أقسام الإعدادات">
+          <button type="button" (click)="scrollToSection('profile')">الملف والخصوصية</button>
+          <button type="button" (click)="scrollToSection('contact')">البريد والهاتف</button>
+          <button type="button" (click)="scrollToSection('security')">الأمان</button>
+          <button type="button" (click)="scrollToSection('danger')">حذف الحساب</button>
+        </nav>
+      </aside>
+
+      <main class="settings-panel">
+        <section id="profile" class="settings-section">
+          <div class="section-heading">
+            <div>
+              <span class="section-number">01</span>
+              <h2>الملف والخصوصية</h2>
+              <p>
+                هذه المعلومات تظهر للمستخدمين، مع تطبيق صلاحيات الحساب العام أو الخاص من الخادم.
+              </p>
+            </div>
+            <div class="flex gap-2">
+              @if (profileChanged()) {
+                <button type="button" class="button-secondary" (click)="resetProfile()">تراجع</button>
+              }
+              <button
+                type="button"
+                class="button-primary"
+                [disabled]="!profileChanged() || profileSaving()"
+                (click)="saveProfile()"
+              >
+                {{ profileSaving() ? 'جارٍ الحفظ...' : 'حفظ الملف' }}
+              </button>
+            </div>
+          </div>
+
+          <form class="form-grid" (ngSubmit)="saveProfile()">
+            <label class="field">
+              <span>{{ isOrganization() ? 'اسم المؤسسة' : 'الاسم' }}</span>
+              <input
+                name="name"
+                [(ngModel)]="name"
+                required
+                minlength="3"
+                maxlength="80"
+                autocomplete="name"
+              />
+              <small>من 3 إلى 80 حرفاً.</small>
+            </label>
+
+            <label class="field">
+              <span>اسم المستخدم</span>
+              <div class="readonly-field">
+                <span>&#64;{{ user.username }}</span>
+                <span class="lock-label">غير قابل للتغيير حالياً</span>
+              </div>
+              <small>الخادم الحالي لا يدعم تعديل اسم المستخدم بعد إنشاء الحساب.</small>
+            </label>
+
+            <label class="field">
+              <span>المدينة أو الموقع</span>
+              <input
+                name="location"
+                [(ngModel)]="location"
+                autocomplete="address-level2"
+                placeholder="مثال: القاهرة"
+              />
+            </label>
+
+            <label class="field field--wide">
+              <span>{{ isOrganization() ? 'نبذة عن المؤسسة' : 'نبذة عنك' }}</span>
+              <textarea
+                name="bio"
+                [(ngModel)]="bio"
+                maxlength="120"
+                rows="4"
+                [placeholder]="
+                  isOrganization()
+                    ? 'عرّف الجمهور برسالة المؤسسة ونشاطها'
+                    : 'اكتب نبذة قصيرة تظهر في ملفك'
+                "
+              ></textarea>
+              <small>{{ bio.length }}/120</small>
+            </label>
+          </form>
+
+          <div class="privacy-row">
+            <div>
+              <h3>{{ isPrivate ? 'ملف خاص' : 'ملف عام' }}</h3>
+              <p>
+                {{
+                  isPrivate
+                    ? 'طلبات المتابعة تحتاج موافقتك قبل إظهار المحتوى الخاص.'
+                    : 'يمكن للمستخدمين متابعة الحساب ورؤية المحتوى العام مباشرة.'
+                }}
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              [attr.aria-checked]="isPrivate"
+              class="switch"
+              [class.switch--active]="isPrivate"
+              (click)="isPrivate = !isPrivate"
+            >
+              <span></span>
+            </button>
+          </div>
+        </section>
+
+        <section id="contact" class="settings-section">
+          <div class="section-heading">
+            <div>
+              <span class="section-number">02</span>
+              <h2>البريد والهاتف</h2>
+              <p>أي تغيير هنا يحتاج كلمة المرور، ثم خطوة تحقق منفصلة لحماية الحساب.</p>
+            </div>
+          </div>
+
+          @if (pendingEmail()) {
+            <div class="notice">
+              أرسلنا رابط التأكيد إلى <strong dir="ltr">{{ pendingEmail() }}</strong>. سيظل البريد
+              الحالي فعالاً حتى فتح الرابط.
+            </div>
+          }
+
+          <div class="contact-list">
+            <article class="contact-row">
+              <div class="contact-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M4 6h16v12H4z" stroke-width="1.7"></path>
+                  <path d="m4 7 8 6 8-6" stroke-width="1.7"></path>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="mb-2 flex flex-wrap items-center gap-2">
+                  <h3>البريد الإلكتروني</h3>
+                  <span
+                    class="verification-badge"
+                    [class.verification-badge--ok]="user.isEmailVerified"
+                  >
+                    {{ user.isEmailVerified ? 'مؤكد' : 'غير مؤكد' }}
+                  </span>
+                </div>
+                <input
+                  class="contact-input"
+                  type="email"
+                  name="email"
+                  [(ngModel)]="email"
+                  autocomplete="email"
+                  dir="ltr"
+                />
+                @if (user.emailChangeCooldownHours > 0) {
+                  <small>{{ cooldownText(user.emailChangeCooldownHours) }}</small>
+                }
+              </div>
+              <div class="contact-actions">
+                @if (!user.isEmailVerified && !emailChanged()) {
+                  <button
+                    type="button"
+                    class="button-secondary"
+                    [disabled]="verificationSending()"
+                    (click)="resendEmailVerification()"
+                  >
+                    إرسال التحقق
+                  </button>
+                }
+                <button
+                  type="button"
+                  class="button-primary"
+                  [disabled]="
+                    !emailChanged() ||
+                    sensitiveSaving() ||
+                    user.emailChangeCooldownHours > 0
+                  "
+                  (click)="beginSensitiveChange('email')"
+                >
+                  تغيير البريد
+                </button>
+              </div>
+            </article>
+
+            <article class="contact-row">
+              <div class="contact-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path
+                    d="M7.2 3.8 9.5 7l-1.7 2a15.5 15.5 0 0 0 7.2 7.2l2-1.7 3.2 2.3-.8 3A2 2 0 0 1 17.5 21C9.5 20.4 3.6 14.5 3 6.5a2 2 0 0 1 1.2-1.9z"
+                    stroke-width="1.7"
+                  ></path>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="mb-2 flex flex-wrap items-center gap-2">
+                  <h3>رقم الهاتف</h3>
+                  <span
+                    class="verification-badge"
+                    [class.verification-badge--ok]="user.isPhoneVerified"
+                  >
+                    {{ user.isPhoneVerified ? 'مؤكد' : 'غير مؤكد' }}
+                  </span>
+                </div>
+                <input
+                  class="contact-input"
+                  type="tel"
+                  name="phone"
+                  [(ngModel)]="phone"
+                  autocomplete="tel"
+                  dir="ltr"
+                  placeholder="+201001234567"
+                />
+                <small>استخدم الصيغة الدولية التي تبدأ بعلامة +.</small>
+                @if (user.phoneChangeCooldownHours > 0) {
+                  <small>{{ cooldownText(user.phoneChangeCooldownHours) }}</small>
+                }
+              </div>
+              <div class="contact-actions">
+                @if (user.phone && !user.isPhoneVerified && !phoneChanged()) {
+                  <button
+                    type="button"
+                    class="button-secondary"
+                    [disabled]="verificationSending()"
+                    (click)="verifyCurrentPhone()"
+                  >
+                    تأكيد الرقم
+                  </button>
+                }
+                <button
+                  type="button"
+                  class="button-primary"
+                  [disabled]="
+                    !phoneChanged() ||
+                    sensitiveSaving() ||
+                    user.phoneChangeCooldownHours > 0
+                  "
+                  (click)="beginSensitiveChange('phone')"
+                >
+                  تغيير الرقم
+                </button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="security" class="settings-section">
+          <div class="section-heading">
+            <div>
+              <span class="section-number">03</span>
+              <h2>الأمان</h2>
+              <p>
+                آخر تسجيل دخول:
+                <span dir="ltr">{{ user.lastLoginAt | date: 'medium' }}</span>
+              </p>
+            </div>
+          </div>
+
+          @if (user.provider === 'local') {
+            <form class="password-form" (ngSubmit)="changePassword()">
+              <label class="field">
+                <span>كلمة المرور الحالية</span>
+                <input
+                  type="password"
+                  name="currentPassword"
+                  [(ngModel)]="currentPassword"
+                  autocomplete="current-password"
+                  required
+                />
+              </label>
+              <label class="field">
+                <span>كلمة المرور الجديدة</span>
+                <input
+                  type="password"
+                  name="newPassword"
+                  [(ngModel)]="newPassword"
+                  autocomplete="new-password"
+                  required
+                  minlength="8"
+                />
+              </label>
+              <label class="field">
+                <span>تأكيد كلمة المرور</span>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  [(ngModel)]="confirmPassword"
+                  autocomplete="new-password"
+                  required
+                  minlength="8"
+                />
+              </label>
+              <div class="password-rules">
+                استخدم 8 أحرف على الأقل، مع حرف كبير وصغير ورقم ورمز خاص.
+                @if (user.passwordChangeCooldownHours > 0) {
+                  <strong>{{ cooldownText(user.passwordChangeCooldownHours) }}</strong>
+                }
+              </div>
+              <button
+                type="submit"
+                class="button-primary justify-self-start"
+                [disabled]="passwordSaving() || user.passwordChangeCooldownHours > 0"
+              >
+                {{ passwordSaving() ? 'جارٍ التغيير...' : 'تغيير كلمة المرور' }}
+              </button>
+            </form>
+          } @else {
+            <div class="notice">
+              تسجيل الدخول مرتبط بمزوّد خارجي. إدارة كلمة المرور تتم من خلال
+              <strong>{{ user.provider }}</strong>.
+            </div>
+          }
+        </section>
+
+        <section id="danger" class="settings-section settings-section--danger">
+          <div>
+            <span class="section-number">04</span>
+            <h2>حذف الحساب</h2>
+            <p>
+              يحذف الحساب ومحتواه نهائياً. هذه العملية لا يمكن التراجع عنها بعد التأكيد.
+            </p>
+          </div>
+          <button type="button" class="button-danger" (click)="openDeleteDialog()">
+            حذف الحساب نهائياً
+          </button>
+        </section>
+      </main>
+    </div>
+  </section>
+
+  @if (pendingChange()) {
+    <div class="modal-backdrop" (click)="cancelSensitiveChange()">
+      <div
+        class="confirmation-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sensitive-title"
+        (click)="$event.stopPropagation()"
+      >
+        <span class="eyebrow">خطوة أمان</span>
+        <h2 id="sensitive-title">
+          {{ pendingChange() === 'email' ? 'تأكيد تغيير البريد' : 'تأكيد تغيير الهاتف' }}
+        </h2>
+        <p>أدخل كلمة المرور الحالية قبل إرسال طلب التغيير.</p>
+        <label class="field mt-5">
+          <span>كلمة المرور الحالية</span>
+          <input
+            type="password"
+            name="confirmationPassword"
+            [(ngModel)]="confirmationPassword"
+            autocomplete="current-password"
+            (keydown.enter)="confirmSensitiveChange()"
+          />
+        </label>
+        <div class="mt-6 flex justify-end gap-2">
+          <button type="button" class="button-secondary" (click)="cancelSensitiveChange()">
+            إلغاء
+          </button>
+          <button
+            type="button"
+            class="button-primary"
+            [disabled]="sensitiveSaving()"
+            (click)="confirmSensitiveChange()"
+          >
+            {{ sensitiveSaving() ? 'جارٍ التأكيد...' : 'تأكيد وإرسال' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <dialog
+    #deleteDialog
+    class="delete-dialog"
+    (cancel)="$event.preventDefault(); closeDeleteDialog()"
+  >
+    <div class="confirmation-card">
+      @if (deleteStep() === 'warning') {
+        <span class="eyebrow eyebrow--danger">منطقة حساسة</span>
+        <h2>هل تريد حذف الحساب نهائياً؟</h2>
+        <p>
+          ستفقد الوصول إلى الملف والمنشورات والعلاقات المرتبطة به، ولا يمكن استعادة الحساب بعد
+          الحذف.
+        </p>
+        <div class="mt-6 flex justify-end gap-2">
+          <button type="button" class="button-secondary" (click)="closeDeleteDialog()">إلغاء</button>
+          <button type="button" class="button-danger" (click)="deleteStep.set('password')">
+            متابعة الحذف
+          </button>
+        </div>
+      } @else {
+        <span class="eyebrow eyebrow--danger">التأكيد الأخير</span>
+        <h2>أدخل كلمة المرور</h2>
+        <p>نحتاج كلمة المرور الحالية للتأكد من أن طلب الحذف صادر منك.</p>
+        <label class="field mt-5">
+          <span>كلمة المرور الحالية</span>
+          <input
+            type="password"
+            name="deletePassword"
+            [(ngModel)]="deletePassword"
+            autocomplete="current-password"
+            (keydown.enter)="confirmDeleteAccount()"
+          />
+        </label>
+        @if (deleteError()) {
+          <p class="mt-3 text-sm text-red-400">{{ deleteError() }}</p>
+        }
+        <div class="mt-6 flex justify-end gap-2">
+          <button type="button" class="button-secondary" [disabled]="deleting()" (click)="closeDeleteDialog()">
+            إلغاء
+          </button>
+          <button
+            type="button"
+            class="button-danger"
+            [disabled]="deleting()"
+            (click)="confirmDeleteAccount()"
+          >
+            {{ deleting() ? 'جارٍ الحذف...' : 'حذف الحساب' }}
+          </button>
+        </div>
+      }
+    </div>
+  </dialog>
+}

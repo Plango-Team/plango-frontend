@@ -1,0 +1,35 @@
+<section class="verify-page">
+  <div class="card">
+    <h1>تأكيد تغيير البريد الألكتروني</h1>
+
+    <div class="status">
+      @if (!token()) {
+      <p class="error">
+        لا يوجد رمز تفعيل. تأكد من فتح الرابط الصحيح من الإيميل.
+      </p>
+      }
+
+      @if (token() && loading()) {
+      <p>
+        جاري التحقق من الرابط...
+      </p>
+      }
+
+      @if (errorMessage()) {
+      <p class="error">
+        {{ errorMessage() }}
+      </p>
+      }
+
+      @if (store.error()) {
+      <p class="error">
+        {{ store.error() }}
+      </p>
+      }
+    </div>
+
+    <button type="button" class="action-button" (click)="goToLogin()">
+      العودة لتسجيل الدخول
+    </button>
+  </div>
+</section>

@@ -1,0 +1,129 @@
+<div class="px-4 py-6 sm:px-6 lg:px-8">
+  <div class="mb-6">
+    <h1 class="font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">المجتمع</h1>
+    <p class="text-sm text-ink-muted">إدارة المتابعين، الحسابات التي تتابعها، وطلبات المتابعة.</p>
+  </div>
+
+  <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex gap-2 overflow-x-auto">
+      @for (item of tabs(); track item.key) {
+        <button
+          type="button"
+          (click)="tab.set(item.key)"
+          class="inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-1.5 text-sm transition"
+          [ngClass]="
+            tab() === item.key
+              ? 'border-brand bg-brand/10 text-brand'
+              : 'border-ink-border bg-ink-2 text-ink-fg'
+          "
+        >
+          {{ item.label }}
+          <span class="rounded-full bg-ink px-1.5 py-0.5 text-[10px] tabular-nums text-ink-muted">
+            {{ item.count }}
+          </span>
+        </button>
+      }
+    </div>
+
+    @if (tab() !== 'requests') {
+      <input
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+        placeholder="ابحث بالاسم أو اسم المستخدم..."
+        class="h-9 w-full rounded-lg border border-ink-border bg-ink-2 px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none sm:w-72"
+      />
+    }
+  </div>
+
+  @if (tab() === 'requests') {
+    @if (requests().length === 0) {
+      <article
+        class="rounded-2xl border border-dashed border-ink-border bg-ink-2 p-8 text-center text-sm text-ink-muted"
+      >
+        لا توجد طلبات متابعة حالياً.
+      </article>
+    } @else {
+      <div class="grid gap-3 sm:grid-cols-2">
+        @for (request of requests(); track request._id) {
+          @let profile = requestProfile(request);
+            <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
+              <a
+                [routerLink]="['/organization/profile', profile.username]"
+                class="text-sm font-medium text-ink-fg hover:underline"
+              >
+                {{ profile.displayName }}
+              </a>
+              <div class="mt-1 text-xs text-ink-muted">&#64;{{ profile.username }}</div>
+              <div class="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  (click)="approve(request)"
+                  class="rounded-full bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand/90"
+                >
+                  قبول
+                </button>
+                <button
+                  type="button"
+                  (click)="deny(request)"
+                  class="rounded-full border border-ink-border bg-ink px-3 py-1.5 text-xs font-semibold text-ink-fg hover:bg-ink-3"
+                >
+                  رفض
+                </button>
+              </div>
+            </article>
+        }
+
+      </div>
+    }
+  } @else {
+    @if (visiblePeople().length === 0) {
+      <article
+        class="rounded-2xl border border-dashed border-ink-border bg-ink-2 p-8 text-center text-sm text-ink-muted"
+      >
+        لا توجد نتائج مطابقة.
+      </article>
+    } @else {
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        @for (profile of visiblePeople(); track profile.id) {
+          <article class="rounded-2xl border border-ink-border bg-ink-2 p-3">
+            <div class="flex items-center justify-between gap-3">
+              <a
+                [routerLink]="['/organization/profile', profile.username]"
+                class="min-w-0 flex-1 hover:opacity-80"
+              >
+                <div class="truncate text-sm font-medium text-ink-fg">
+                  {{ profile.displayName }}
+                </div>
+                <div class="truncate text-xs text-ink-muted">&#64;{{ profile.username }}</div>
+                <div class="mt-1 flex gap-1">
+                  <span class="rounded-full border border-ink-border px-2 py-0.5 text-[10px] text-ink-muted">
+                    {{ profile.kind === 'org' ? 'مؤسسة' : 'شخصي' }}
+                  </span>
+                  <span class="rounded-full border border-ink-border px-2 py-0.5 text-[10px] text-ink-muted">
+                    {{ profile.isPrivate ? 'خاص' : 'عام' }}
+                  </span>
+                </div>
+              </a>
+
+              @if (tab() === 'followers') {
+                <button
+                  type="button"
+                  (click)="toggleFollow(profile.id)"
+                  class="rounded-full border px-3 py-1 text-[11px] font-medium transition"
+                  [class.border-brand]="followState(profile.id) === 'none'"
+                  [class.bg-brand]="followState(profile.id) === 'none'"
+                  [class.text-brand-foreground]="followState(profile.id) === 'none'"
+                  [class.border-ink-border]="followState(profile.id) !== 'none'"
+                  [class.bg-ink]="followState(profile.id) !== 'none'"
+                  [class.text-ink-fg]="followState(profile.id) !== 'none'"
+                >
+                  {{ followLabel(profile) }}
+                </button>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    }
+  }
+</div>

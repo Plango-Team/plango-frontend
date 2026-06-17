@@ -1,0 +1,45 @@
+<footer class="border-t border-ink-border bg-ink px-4 py-14">
+  <div class="mx-auto max-w-6xl">
+    <div class="grid gap-10 md:grid-cols-4">
+      <div class="md:col-span-2">
+        <a class="inline-flex items-center gap-2" routerLink="/" aria-label="PlanGo home">
+          <img
+            [src]="
+              !themeService.isDark() ? 'images/planGo-BlackLogo.svg' : 'images/planGo-WhiteLogo.svg'
+            "
+            alt="PlanGo"
+          />
+        </a>
+        <p class="mt-4 max-w-xs text-sm leading-relaxed text-ink-muted">
+          منصة عربية ذكية للتخطيط، التنبيه، والوصول في الوقت المثالي دائماً.
+        </p>
+      </div>
+
+      @for (group of groups(); track group.title) {
+        <section>
+          <h4 class="text-sm font-medium text-accent-500">{{ group.title }}</h4>
+          <ul class="mt-4 space-y-2.5">
+            @for (link of group.links; track link) {
+              <li>
+                <a href="#" class="text-sm text-ink-muted transition hover:text-ink-fg">{{
+                  link
+                }}</a>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+
+    <div
+      class="mt-12 flex flex-col items-center justify-between gap-3 border-t border-ink-border pt-6 text-xs text-ink-muted md:flex-row"
+    >
+      <span>{{ copyrightText() }}</span>
+      <div class="flex items-center gap-4">
+        @for (link of legalLinks(); track link.label) {
+          <a [href]="link.href" class="transition hover:text-ink-fg">{{ link.label }}</a>
+        }
+      </div>
+    </div>
+  </div>
+</footer>

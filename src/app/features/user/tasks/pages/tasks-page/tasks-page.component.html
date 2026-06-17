@@ -1,0 +1,458 @@
+<!-- Header -->
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between px-4 mt-4">
+  <div>
+    <h1 class="font-display text-2xl tracking-tight sm:text-3xl text-ink-fg">المهام</h1>
+    <p class="text-sm text-ink-muted">
+      اربط كل مهمة بموعد لنذكّرك بإنجازها أو رفعها قبل الموعد.
+    </p>
+  </div>
+  <button
+    (click)="openAddTask()"
+    class="flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
+  >
+    <app-icon [iconName]="'Add01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+    مهمة جديدة
+  </button>
+</div>
+
+<!-- Quick add strip -->
+<form (ngSubmit)="submitQuick()" class="mb-4 mx-4 flex items-center gap-2 rounded-2xl border border-ink-border bg-ink-2 p-2">
+  <app-icon [iconName]="'Add01Icon'" [iconSize]="16" [iconColor]="'var(--color-ink-muted)'" class="ms-2"></app-icon>
+  <input
+    [(ngModel)]="quickAdd"
+    name="quick"
+    class="flex-1 bg-transparent border-0 px-1 text-sm text-ink-fg placeholder:text-ink-muted focus:outline-none"
+    [placeholder]="'أضِف مهمة سريعة واضغط Enter'"
+  />
+  <button
+    type="submit"
+    [disabled]="!quickAdd.trim()"
+    class="rounded-lg border border-ink-border bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-fg hover:bg-ink-3 transition-all disabled:opacity-40"
+  >
+    إضافة
+  </button>
+</form>
+
+<!-- Stats strip -->
+<div class="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4 px-4">
+  @for (s of stats(); track s.label) {
+    <div class="rounded-2xl border border-ink-border bg-ink-2 p-4">
+      <div class="text-xs text-ink-muted">{{ s.label }}</div>
+      <div
+        class="mt-1 font-display text-3xl tracking-tight tabular-nums"
+        [ngClass]="{
+          'text-brand': s.accent === 'danger' || s.accent === 'brand',
+          'text-success': s.accent === 'success',
+          'text-ink-fg': !s.accent
+        }"
+      >
+        {{ s.value }}
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Filters -->
+<div class="mb-5 flex flex-wrap items-center gap-2 px-4">
+  <span class="text-xs uppercase tracking-wider text-ink-muted">تصفية</span>
+
+  <!-- Priority chips -->
+  <div class="inline-flex rounded-full border border-ink-border bg-ink-2 p-0.5">
+    @for (o of [{v:'all',l:'كل الأولويات'},{v:'high',l:'عالية'},{v:'medium',l:'متوسطة'},{v:'low',l:'منخفضة'}]; track o.v) {
+      <button
+        (click)="filterPriority.set($any(o.v))"
+        class="rounded-full px-3 py-1 text-xs transition"
+        [ngClass]="filterPriority() === o.v ? 'bg-ink-fg text-ink' : 'text-ink-muted hover:text-ink-fg'"
+      >
+        {{ o.l }}
+      </button>
+    }
+  </div>
+
+  <!-- Appointment filter -->
+  <select
+    [ngModel]="filterAppt()"
+    (ngModelChange)="filterAppt.set($event)"
+    name="filterAppt"
+    class="rounded-full border border-ink-border bg-ink-2 px-3 py-1.5 text-xs text-ink-fg hover:bg-ink-3 focus:outline-none"
+  >
+    <option value="all">كل المواعيد</option>
+    <option value="none">غير مرتبطة</option>
+    @for (a of linkableAppointments(); track a._id) {
+      <option [value]="a._id">{{ a.title }} — {{ formatAppointmentTime(a.arrivalTime) }}</option>
+    }
+  </select>
+
+  @if (hasActiveFilters()) {
+    <button
+      (click)="clearFilters()"
+      class="ms-1 inline-flex items-center gap-1 text-xs text-ink-muted hover:text-ink-fg"
+    >
+      <app-icon [iconName]="'Cancel01Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
+      مسح
+    </button>
+  }
+</div>
+
+<!-- Main content -->
+<div class="grid gap-4 lg:grid-cols-12 px-4 pb-10">
+  <!-- Tasks column (8 cols) -->
+  <div class="space-y-5 lg:col-span-8">
+    <!-- Lated -->
+    <section>
+      <h2 class="mb-2 flex items-center gap-2 text-sm font-medium text-ink-fg">
+        <span class="h-2 w-2 rounded-full bg-brand"></span>
+        متأخرة — الموعد مرّ
+        <span class="text-ink-muted">· {{ buckets().lated.length }}</span>
+      </h2>
+      @if (buckets().lated.length === 0) {
+        <div class="rounded-2xl border border-dashed border-ink-border bg-ink-2/40 p-6 text-center text-sm text-ink-muted">
+          لا مهام متأخرة 🎉
+        </div>
+      } @else {
+        <div class="space-y-2">
+          @for (task of buckets().lated; track task._id) {
+            <ng-container *ngTemplateOutlet="taskCard; context: { $implicit: task }"></ng-container>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- Due soon -->
+    <section>
+      <h2 class="mb-2 flex items-center gap-2 text-sm font-medium text-ink-fg">
+        <span class="h-2 w-2 rounded-full bg-brand"></span>
+        خلال الساعة القادمة
+        <span class="text-ink-muted">· {{ buckets().soon.length }}</span>
+      </h2>
+      @if (buckets().soon.length === 0) {
+        <div class="rounded-2xl border border-dashed border-ink-border bg-ink-2/40 p-6 text-center text-sm text-ink-muted">
+          لا مهام وشيكة الآن
+        </div>
+      } @else {
+        <div class="space-y-2">
+          @for (task of buckets().soon; track task._id) {
+            <ng-container *ngTemplateOutlet="taskCard; context: { $implicit: task }"></ng-container>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- Upcoming -->
+    <section>
+      <h2 class="mb-2 flex items-center gap-2 text-sm font-medium text-ink-fg">
+        <span class="h-2 w-2 rounded-full bg-ink-fg"></span>
+        قادمة
+        <span class="text-ink-muted">· {{ buckets().upcoming.length }}</span>
+      </h2>
+      @if (buckets().upcoming.length === 0) {
+        <div class="rounded-2xl border border-dashed border-ink-border bg-ink-2/40 p-6 text-center text-sm text-ink-muted">
+          أضِف مهمتك الأولى
+        </div>
+      } @else {
+        <div class="space-y-2">
+          @for (task of buckets().upcoming; track task._id) {
+            <ng-container *ngTemplateOutlet="taskCard; context: { $implicit: task }"></ng-container>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- Completed -->
+    <section>
+      <h2 class="mb-2 flex items-center gap-2 text-sm font-medium text-ink-fg">
+        <span class="h-2 w-2 rounded-full bg-ink-muted"></span>
+        مكتملة
+        <span class="text-ink-muted">· {{ buckets().completed.length }}</span>
+      </h2>
+      @if (buckets().completed.length === 0) {
+        <div class="rounded-2xl border border-dashed border-ink-border bg-ink-2/40 p-6 text-center text-sm text-ink-muted">
+          لم تكتمل مهام بعد
+        </div>
+      } @else {
+        <div class="space-y-2">
+          @for (task of buckets().completed; track task._id) {
+            <ng-container *ngTemplateOutlet="taskCard; context: { $implicit: task }"></ng-container>
+          }
+        </div>
+      }
+    </section>
+  </div>
+
+  <!-- Sidebar (4 cols) -->
+  <aside class="space-y-4 lg:col-span-4">
+    <!-- How it works -->
+    <div class="rounded-2xl border border-ink-border bg-ink-2 p-5 text-ink-fg">
+      <h3 class="font-display text-lg">كيف يعمل</h3>
+      <ul class="mt-3 space-y-3 text-sm text-ink-muted">
+        <li class="flex gap-2">
+          <app-icon [iconName]="'Link04Icon'" [iconSize]="16" [iconColor]="'var(--color-brand)'" class="mt-0.5 shrink-0"></app-icon>
+          اربط المهمة بموعد ذكي — يصبح وقت الموعد هو الديدلاين.
+        </li>
+        <li class="flex gap-2">
+          <app-icon [iconName]="'Alert01Icon'" [iconSize]="16" [iconColor]="'var(--color-brand)'" class="mt-0.5 shrink-0"></app-icon>
+          نُذكّرك قبل ساعة وعند فوات الموعد لتسلّم أو تحدّث الحالة.
+        </li>
+        <li class="flex gap-2">
+          <app-icon [iconName]="'Calendar03Icon'" [iconSize]="16" [iconColor]="'var(--color-brand)'" class="mt-0.5 shrink-0"></app-icon>
+          حدّد موعداً نهائياً يدوياً إذا لم تربط بموعد.
+        </li>
+      </ul>
+    </div>
+
+    <!-- Linkable appointments -->
+    <div class="rounded-2xl border border-ink-border bg-ink-2 p-5 text-ink-fg">
+      <h3 class="font-display text-lg">مواعيد يمكن ربطها</h3>
+      <p class="mt-1 text-xs text-ink-muted">أضِف مهمة لتربطها بهذه المواعيد.</p>
+      <div class="mt-3 space-y-2">
+        @for (a of linkableAppointments(); track a._id) {
+          <div class="flex items-center justify-between gap-2 rounded-lg border border-ink-border bg-ink p-3">
+            <div class="min-w-0">
+              <div class="truncate text-sm font-medium text-ink-fg">{{ a.title }}</div>
+              <div class="text-[11px] text-ink-muted">{{ formatAppointmentTime(a.arrivalTime) }}</div>
+            </div>
+            <button
+              (click)="addTaskForAppointment(a._id)"
+              class="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-ink-border bg-transparent text-ink-fg hover:bg-ink-3 transition-colors"
+            >
+              <app-icon [iconName]="'Add01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+            </button>
+          </div>
+        }
+        @if (linkableAppointments().length === 0) {
+          <div class="rounded-lg border border-dashed border-ink-border p-4 text-center text-xs text-ink-muted">
+            لا توجد مواعيد قادمة يمكن ربطها
+          </div>
+        }
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- ============================== -->
+<!-- Task Card Template             -->
+<!-- ============================== -->
+<ng-template #taskCard let-task>
+  <div
+    class="group rounded-xl border bg-ink-2 p-4 transition hover:border-ink-fg/30"
+    [ngClass]="{
+      'border-brand/50': getDeadlineInfo(task)?.overdue,
+      'border-brand/30': getDeadlineInfo(task)?.soon && !getDeadlineInfo(task)?.overdue,
+      'border-ink-border': !getDeadlineInfo(task)?.overdue && !getDeadlineInfo(task)?.soon,
+      'opacity-70': task.status === 'completed'
+    }"
+  >
+    <div class="flex items-start gap-3">
+      <!-- Checkbox -->
+      <button
+        (click)="toggleStatus(task)"
+        class="mt-1 h-4 w-4 shrink-0 rounded border transition"
+        [ngClass]="task.status === 'completed'
+          ? 'bg-brand border-brand text-brand-foreground'
+          : 'border-ink-border hover:border-ink-fg'"
+      >
+        @if (task.status === 'completed') {
+          <app-icon [iconName]="'Tick01Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
+        }
+      </button>
+
+      <!-- Content -->
+      <div class="min-w-0 flex-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <div
+            class="text-sm font-medium"
+            [ngClass]="task.status === 'completed' ? 'text-ink-muted line-through' : 'text-ink-fg'"
+          >
+            {{ task.title }}
+          </div>
+          <!-- Priority chip -->
+          <span
+            class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px]"
+            [ngClass]="getPriorityChip(task.priority).cls"
+          >
+            <app-icon [iconName]="'Flag01Icon'" [iconSize]="10" [iconColor]="'currentColor'"></app-icon>
+            {{ getPriorityChip(task.priority).label }}
+          </span>
+          <!-- Lated badge -->
+          @if (task.status === 'lated') {
+            <span class="rounded-full border border-brand/40 bg-brand/10 px-2 py-0.5 text-[10px] text-brand">
+              متأخرة
+            </span>
+          }
+        </div>
+
+        <!-- Description -->
+        @if (task.description) {
+          <p class="mt-1 text-xs text-ink-muted">{{ task.description }}</p>
+        }
+
+        <!-- Deadline / link strip -->
+        <div class="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
+          @if (getDeadlineInfo(task); as di) {
+            <span
+              class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5"
+              [ngClass]="{
+                'border-brand/40 bg-brand/10 text-brand': di.overdue,
+                'border-brand/30 bg-brand/5 text-brand': di.soon && !di.overdue,
+                'border-ink-border bg-ink text-ink-muted': !di.overdue && !di.soon
+              }"
+            >
+              <app-icon
+                [iconName]="di.overdue ? 'Alert01Icon' : 'TimeQuarter02Icon'"
+                [iconSize]="12"
+                [iconColor]="'currentColor'"
+              ></app-icon>
+              {{ di.text }}
+            </span>
+          } @else {
+            <span class="inline-flex items-center gap-1 rounded-full border border-dashed border-ink-border px-2 py-0.5 text-ink-muted">
+              <app-icon [iconName]="'Link04Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
+              غير مرتبطة بموعد
+            </span>
+          }
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-1 opacity-80 transition group-hover:opacity-100">
+        @if (task.status === 'completed') {
+          <span class="grid h-8 w-8 place-items-center text-success">
+            <app-icon [iconName]="'CheckmarkCircle01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
+          </span>
+        }
+        <button
+          (click)="deleteTask(task._id)"
+          title="حذف"
+          class="grid h-8 w-8 place-items-center rounded-lg text-ink-muted hover:bg-ink-3 hover:text-brand transition-colors"
+        >
+          <app-icon [iconName]="'Delete01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<!-- ============================================== -->
+<!-- Create Task Dialog (Modal)                     -->
+<!-- ============================================== -->
+<dialog
+  #taskModal
+  class="backdrop:bg-black/50 backdrop:backdrop-blur-sm bg-transparent p-0 m-auto shadow-none outline-none overflow-visible w-full max-w-lg z-100"
+  (cancel)="closeAddTask()"
+>
+  <div
+    class="relative w-full bg-ink-2 border border-ink-border rounded-xl shadow-elevated p-6 animate-fade-in-up max-h-[90vh] overflow-y-auto"
+  >
+    <!-- Header -->
+    <div class="mb-4">
+      <h2 class="font-display text-2xl text-ink-fg">مهمة جديدة</h2>
+      <p class="text-sm text-ink-muted mt-1">
+        اربط المهمة بموعد قادم لنذكّرك بإنجازها أو تسليمها قبل الموعد.
+      </p>
+    </div>
+
+    <form (ngSubmit)="submitTask()" class="space-y-4">
+      <!-- Title -->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-ink-fg">عنوان المهمة</label>
+        <input
+          [(ngModel)]="newTaskTitle"
+          name="taskTitle"
+          required
+          minlength="3"
+          maxlength="120"
+          class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          placeholder="تجهيز عرض التصميم"
+        />
+      </div>
+
+      <!-- Description -->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-ink-fg">الوصف</label>
+        <textarea
+          [(ngModel)]="newTaskDescription"
+          name="taskDescription"
+          maxlength="200"
+          class="min-h-[80px] w-full rounded-lg border border-ink-border bg-ink p-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          placeholder="تفاصيل إضافية..."
+        ></textarea>
+      </div>
+
+      <!-- Linked Appointment -->
+      <div class="space-y-1.5">
+        <label class="flex items-center gap-1.5 text-sm font-medium text-ink-fg">
+          <app-icon [iconName]="'Link04Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+          الموعد المرتبط (الموعد النهائي)
+        </label>
+        <select
+          [(ngModel)]="newTaskLinkedAppointment"
+          name="taskAppointment"
+          class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+        >
+          <option value="none">بدون ربط</option>
+          @for (a of linkableAppointments(); track a._id) {
+            <option [value]="a._id">{{ a.title }} — {{ formatAppointmentTime(a.arrivalTime) }}</option>
+          }
+        </select>
+        @if (newTaskLinkedAppointment !== 'none') {
+          <p class="text-xs text-brand">ربط الموعد يحدد الموعد النهائي تلقائيًا</p>
+        }
+      </div>
+
+      <!-- Manual Deadline -->
+      @if (newTaskLinkedAppointment === 'none') {
+        <div class="space-y-1.5">
+          <label class="flex items-center gap-1.5 text-sm font-medium text-ink-fg">
+            <app-icon [iconName]="'Calendar03Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+            الموعد النهائي
+          </label>
+          <input
+            type="datetime-local"
+            [(ngModel)]="newTaskDeadline"
+            name="taskDeadline"
+            class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+        </div>
+      }
+
+      <!-- Priority -->
+      <div class="space-y-1.5">
+        <label class="flex items-center gap-1.5 text-sm font-medium text-ink-fg">
+          <app-icon [iconName]="'Flag01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+          الأولوية
+        </label>
+        <div class="grid grid-cols-3 gap-2">
+          @for (p of priorities; track p.id) {
+            <button
+              type="button"
+              (click)="newTaskPriority = p.id"
+              class="rounded-lg border py-2 text-xs transition"
+              [ngClass]="newTaskPriority === p.id
+                ? getPriorityTone(p.id)
+                : 'border-ink-border bg-ink text-ink-muted hover:bg-ink-3'"
+            >
+              {{ ar ? p.ar : p.en }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-6 flex justify-end gap-3 pt-2">
+        <button
+          type="button"
+          (click)="closeAddTask()"
+          class="rounded-lg border border-ink-border bg-transparent px-4 py-2 text-sm font-medium text-ink-fg hover:bg-ink-3 transition-colors"
+        >
+          إلغاء
+        </button>
+        <button
+          type="submit"
+          class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
+        >
+          إنشاء المهمة
+        </button>
+      </div>
+    </form>
+  </div>
+</dialog>

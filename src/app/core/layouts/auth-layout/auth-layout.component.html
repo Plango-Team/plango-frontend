@@ -1,0 +1,70 @@
+<app-loading-bar [isLoading]="store.isLoading()"></app-loading-bar>
+
+<div
+  class="relative min-h-screen overflow-hidden bg-ink text-ink-foreground transition-colors duration-300"
+  dir="rtl"
+>
+  <div class="absolute inset-0 -z-10 bg-grid opacity-[0.07] mask-fade-b"></div>
+  <div
+    class="absolute left-1/2 top-24 -z-10 h-105 w-160 -translate-x-1/2 rounded-full bg-brand/10 blur-3xl"
+  ></div>
+
+  <header class="w-full px-2 md:px-24 pt-4">
+    <div
+      class="container mx-auto flex h-16 items-center justify-between px-6 rounded-2xl border border-ink-border bg-ink/75 backdrop-blur"
+    >
+      <a class="inline-flex shrink-0 items-center gap-2" routerLink="/" aria-label="PlanGo home">
+        <img
+          [src]="
+            !themeService.isDark() ? 'images/planGo-BlackLogo.svg' : 'images/planGo-WhiteLogo.svg'
+          "
+          alt="PlanGo"
+        />
+      </a>
+
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="grid h-9 w-9 place-items-center rounded-lg border border-ink-border bg-ink-2 text-ink-muted hover:bg-ink-3 transition"
+          aria-label="تبديل الوضع"
+          (click)="themeService.toggleTheme()"
+        >
+          @if (themeService.isDark()) {
+            <svg class="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 3V5M12 19V21M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M3 12H5M19 12H21M4.93 19.07L6.34 17.66M17.66 6.34L19.07 4.93M16 12A4 4 0 1 1 8 12A4 4 0 0 1 16 12Z"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.8"
+              />
+            </svg>
+          } @else {
+            <svg class="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M21 12.79A9 9 0 1 1 11.21 3A7 7 0 0 0 21 12.79Z"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.8"
+              />
+            </svg>
+          }
+        </button>
+
+        <a
+          routerLink="/"
+          class="rounded-lg border border-ink-border bg-ink-2 px-3 py-2 text-xs text-ink-muted hover:bg-ink-3 hover:text-ink-foreground transition"
+        >
+          العودة للرئيسية
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative">
+    <router-outlet></router-outlet>
+  </main>
+</div>

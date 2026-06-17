@@ -1,0 +1,144 @@
+<div class="px-4 pb-12 pt-5 sm:px-6 lg:px-8">
+  <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">اكتشف الفعاليات</h1>
+      <p class="text-sm text-ink-muted">فعاليات حقيقية من مؤسسات PlanGo، أضفها مباشرة إلى جدولك.</p>
+    </div>
+    <button
+      type="button"
+      (click)="store.loadEvents()"
+      [disabled]="store.isLoading()"
+      class="rounded-full border border-ink-border bg-ink-2 px-4 py-2 text-xs text-ink-fg hover:bg-ink-3 disabled:opacity-50"
+    >
+      تحديث
+    </button>
+  </div>
+
+  <div class="mt-5 grid gap-3 sm:grid-cols-3">
+    <app-card customClass="text-ink-fg">
+      <p class="text-xs text-ink-muted">إجمالي الفعاليات</p>
+      <div class="mt-2 font-display text-3xl">{{ store.totalCount() }}</div>
+    </app-card>
+    <app-card customClass="text-ink-fg">
+      <p class="text-xs text-ink-muted">قادمة</p>
+      <div class="mt-2 font-display text-3xl text-brand">{{ store.upcomingCount() }}</div>
+    </app-card>
+    <app-card customClass="text-ink-fg">
+      <p class="text-xs text-ink-muted">تقام الآن</p>
+      <div class="mt-2 font-display text-3xl">{{ store.ongoingCount() }}</div>
+    </app-card>
+  </div>
+
+  <div class="mt-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <div class="flex flex-wrap gap-2">
+      @for (category of categories; track category.id) {
+        <button
+          type="button"
+          (click)="store.updateCategory(category.id)"
+          class="rounded-full border px-4 py-2 text-xs transition"
+          [class]="
+            store.filters.selectedCategory() === category.id
+              ? 'border-ink-fg bg-ink-fg text-ink'
+              : 'border-ink-border bg-ink-2 text-ink-fg hover:bg-ink-3'
+          "
+        >
+          {{ category.label }}
+        </button>
+      }
+    </div>
+
+    <div class="flex gap-2">
+      <button
+        type="button"
+        (click)="store.updatePriceFilter('all')"
+        [class]="store.filters.selectedPrice() === 'all' ? 'border-brand text-brand' : 'border-ink-border text-ink-muted'"
+        class="rounded-full border bg-ink-2 px-4 py-2 text-xs"
+      >
+        كل الأسعار
+      </button>
+      <button
+        type="button"
+        (click)="store.updatePriceFilter('free')"
+        [class]="store.filters.selectedPrice() === 'free' ? 'border-brand text-brand' : 'border-ink-border text-ink-muted'"
+        class="rounded-full border bg-ink-2 px-4 py-2 text-xs"
+      >
+        مجاني
+      </button>
+      <button
+        type="button"
+        (click)="store.updatePriceFilter('paid')"
+        [class]="store.filters.selectedPrice() === 'paid' ? 'border-brand text-brand' : 'border-ink-border text-ink-muted'"
+        class="rounded-full border bg-ink-2 px-4 py-2 text-xs"
+      >
+        مدفوع
+      </button>
+    </div>
+  </div>
+
+  @if (store.isLoading()) {
+    <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+        <div class="h-72 animate-pulse rounded-2xl border border-ink-border bg-ink-2"></div>
+      }
+    </div>
+  } @else if (store.error()) {
+    <div class="mt-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
+      <p class="text-sm text-red-300">{{ store.error() }}</p>
+      <button
+        type="button"
+        (click)="store.loadEvents()"
+        class="mt-4 rounded-full border border-red-400/40 px-4 py-2 text-xs text-red-200"
+      >
+        إعادة المحاولة
+      </button>
+    </div>
+  } @else {
+    <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      @for (event of store.filteredEvents(); track event._id) {
+        <article class="overflow-hidden rounded-2xl border border-ink-border bg-ink-2">
+          <div class="relative h-36 bg-gradient-to-br from-brand/30 via-brand/10 to-ink">
+            @if (event.images?.[0] && event.images[0] !== 'default-event.jpg') {
+              <img [src]="event.images[0]" [alt]="event.title" class="h-full w-full object-cover" />
+            }
+            <span class="absolute right-3 top-3 rounded-full bg-ink/80 px-3 py-1 text-[11px] text-ink-fg backdrop-blur">
+              {{ categoryLabel(event.category) }}
+            </span>
+            <span class="absolute bottom-3 left-3 rounded-full bg-ink/80 px-3 py-1 text-[11px] font-medium text-brand backdrop-blur">
+              {{ priceLabel(event) }}
+            </span>
+          </div>
+
+          <div class="p-5">
+            <div class="text-xs text-ink-muted">{{ companyName(event) }}</div>
+            <h2 class="mt-1 line-clamp-2 font-display text-lg text-ink-fg">{{ event.title }}</h2>
+            <p class="mt-2 line-clamp-2 text-sm leading-6 text-ink-muted">{{ event.description }}</p>
+
+            <div class="mt-4 space-y-1.5 text-xs text-ink-muted">
+              <div>{{ event.startDate | date: 'd MMMM y، h:mm a' }}</div>
+              <div>{{ locationLabel(event) }}</div>
+              @if (distanceLabel(event); as distance) {
+                <div>{{ distance }} من موقعك</div>
+              }
+            </div>
+
+            <button
+              type="button"
+              (click)="canSchedule(event) && scheduleModal.open(event)"
+              [disabled]="!canSchedule(event)"
+              class="mt-5 w-full rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 disabled:border disabled:border-ink-border disabled:bg-ink disabled:text-ink-muted"
+            >
+              {{ scheduleButtonLabel(event) }}
+            </button>
+          </div>
+        </article>
+      } @empty {
+        <div class="md:col-span-2 xl:col-span-3 rounded-2xl border border-dashed border-ink-border p-12 text-center">
+          <h2 class="font-display text-lg text-ink-fg">لا توجد فعاليات ضمن هذا الفلتر</h2>
+          <p class="mt-2 text-sm text-ink-muted">جرّب فئة أو سعراً مختلفاً.</p>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<app-event-modal #scheduleModal></app-event-modal>

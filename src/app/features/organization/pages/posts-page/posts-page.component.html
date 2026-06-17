@@ -1,0 +1,85 @@
+<div class="px-4 py-6 sm:px-6 lg:px-8">
+  <div class="mb-6">
+    <div
+      class="inline-flex items-center rounded-full border border-brand/40 bg-brand/10 px-2.5 py-0.5 text-[11px] font-medium text-brand"
+    >
+      منشورات المؤسسة
+    </div>
+    <h1 class="mt-1 font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">
+      إدارة المنشورات
+    </h1>
+    <p class="text-sm text-ink-muted">اكتب وانشر وتابع أداء كل تحديث يتم إرساله لمتابعي مؤسستك.</p>
+  </div>
+
+  <div class="mb-6 grid gap-3 sm:grid-cols-3">
+    <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
+      <div class="text-xs text-ink-muted">إجمالي المنشورات</div>
+      <div class="mt-2 font-display text-3xl tabular-nums text-ink-fg">{{ posts().length }}</div>
+    </article>
+    <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
+      <div class="text-xs text-ink-muted">إجمالي الإعجابات</div>
+      <div class="mt-2 font-display text-3xl tabular-nums text-brand">{{ totalLikes() }}</div>
+    </article>
+    <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
+      <div class="text-xs text-ink-muted">متوسط لكل منشور</div>
+      <div class="mt-2 font-display text-3xl tabular-nums text-ink-fg">{{ averageLikes() }}</div>
+    </article>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-12">
+    <section class="space-y-4 lg:col-span-8">
+      <div>
+        <h2 class="mb-2 font-display text-lg text-ink-fg">منشور جديد</h2>
+        <app-post-composer placeholder="اكتب إعلاناً أو تحديثاً جديداً..."></app-post-composer>
+      </div>
+
+      <div>
+        <h2 class="mb-3 font-display text-lg text-ink-fg">كل منشورات المؤسسة</h2>
+        @if (posts().length === 0) {
+          <article
+            class="rounded-2xl border border-dashed border-ink-border bg-ink-2 p-8 text-center text-sm text-ink-muted"
+          >
+            لا توجد منشورات بعد. انشر أول خبر أو تحديث وسيظهر هنا مباشرة.
+          </article>
+        } @else {
+          <div class="space-y-3">
+            @for (post of posts(); track post.id) {
+              <app-post-card [post]="post"></app-post-card>
+            }
+          </div>
+          @if (socialStore.hasMorePosts()) {
+            <button
+              type="button"
+              (click)="socialStore.loadMorePosts()"
+              [disabled]="socialStore.postsLoadingMore()"
+              class="mt-4 rounded-full border border-ink-border bg-ink-2 px-5 py-2 text-xs text-ink-fg hover:bg-ink-3 disabled:opacity-50"
+            >
+              {{ socialStore.postsLoadingMore() ? 'جارٍ التحميل...' : 'تحميل منشورات أقدم' }}
+            </button>
+          }
+        }
+      </div>
+    </section>
+
+    <aside class="space-y-4 lg:col-span-4">
+      <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
+        <div class="mb-3 text-sm font-medium text-ink-fg">الأعلى تفاعلاً</div>
+        @if (topPosts().length === 0) {
+          <p class="text-xs text-ink-muted">لا توجد بيانات بعد.</p>
+        } @else {
+          <ul class="space-y-2">
+            @for (post of topPosts(); track post.id; let index = $index) {
+              <li class="rounded-xl border border-ink-border bg-ink p-3 text-xs">
+                <div class="flex items-center justify-between">
+                  <span class="text-ink-muted">#{{ index + 1 }}</span>
+                  <span class="text-brand">{{ post.likeCount }} إعجاب</span>
+                </div>
+                <p class="mt-1 line-clamp-3 text-ink-fg">{{ post.body }}</p>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+    </aside>
+  </div>
+</div>

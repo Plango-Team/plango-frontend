@@ -1,0 +1,282 @@
+<div class="min-h-screen bg-ink text-ink-foreground">
+  <div class="mx-auto max-w-7xl px-4 pb-12 pt-4 sm:px-6 lg:px-8">
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="px-1 sm:px-0">
+        <h1 class="mt-3 text-2xl font-bold text-ink-fg sm:text-3xl">
+          شبكتك
+        </h1>
+        <p class="mt-3 max-w-3xl text-sm leading-6 text-ink-muted sm:text-base">
+          تابع الأصدقاء وتفاعل مع طلبات المتابعة وأدر شبكتك الاجتماعية.
+        </p>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="grid gap-3 sm:grid-cols-3">
+        <div class="rounded-2xl border border-brand/20 bg-brand/10 px-4 py-3">
+          <p class="text-[11px] uppercase tracking-[0.2em] text-brand">المتابعون</p>
+          <p class="mt-2 text-2xl font-bold text-ink-fg">{{ stats().followers }}</p>
+        </div>
+        <div class="rounded-2xl border border-ink-border bg-ink px-4 py-3">
+          <p class="text-[11px] uppercase tracking-[0.2em] text-ink-muted">أتابعهم</p>
+          <p class="mt-2 text-2xl font-bold text-ink-fg">{{ stats().following }}</p>
+        </div>
+        <div class="rounded-2xl border border-ink-border bg-ink px-4 py-3">
+          <p class="text-[11px] uppercase tracking-[0.2em] text-ink-muted">طلبات</p>
+          <p class="mt-2 text-2xl font-bold text-ink-fg">{{ stats().pending }}</p>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <label class="flex flex-1 items-center gap-3 rounded-2xl border border-ink-border bg-ink px-4 py-1.5">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5 text-ink-muted">
+            <circle cx="11" cy="11" r="6"></circle>
+            <path d="m20 20-4.35-4.35"></path>
+          </svg>
+          <input
+            type="text"
+            placeholder="ابحث عن اسم أو اسم مستخدم"
+            [value]="searchQuery()"
+            (input)="onSearchChange($any($event.target).value)"
+            class="w-full border-0 bg-transparent text-sm text-ink-fg outline-none focus:ring-0 placeholder:text-ink-muted"
+          />
+        </label>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex flex-wrap gap-2">
+        @for (tab of tabs(); track tab.key) {
+          <button
+            type="button"
+            (click)="selectTab(tab.key)"
+            [class]="activeTab() === tab.key
+              ? 'bg-ink-fg text-ink px-6 py-2 rounded-full text-sm hover:bg-ink-fg/90 transition-all'
+              : 'bg-ink-2 border border-ink-border px-6 py-2 rounded-full text-sm hover:bg-ink-3 transition-all duration-300'"
+          >
+            <span>{{ tab.label }}</span>
+            <span class="mr-2 text-xs opacity-80">{{ tab.count }}</span>
+          </button>
+        }
+      </div>
+
+      <!-- Loading State -->
+      @if (!socialStore.followDataLoaded()) {
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          @for (i of [1, 2, 3]; track i) {
+            <div class="animate-pulse rounded-[24px] border border-ink-border bg-ink/90 p-5">
+              <div class="flex items-center gap-3">
+                <div class="h-12 w-12 rounded-2xl bg-ink-3"></div>
+                <div class="flex-1 space-y-2">
+                  <div class="h-4 w-24 rounded bg-ink-3"></div>
+                  <div class="h-3 w-16 rounded bg-ink-3"></div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        @if (activeTab() === 'discover') {
+          @if (discoverProfiles().length === 0) {
+            <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-border p-12 text-center">
+              <h3 class="font-display text-lg text-ink-fg">لا توجد حسابات مطابقة</h3>
+              <p class="mt-2 text-sm text-ink-muted">جرّب البحث باسم آخر.</p>
+            </div>
+          } @else {
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              @for (profile of discoverProfiles(); track profile.id) {
+                <article class="rounded-[24px] border border-ink-border bg-ink/90 p-4 transition-all duration-200 hover:border-ink-fg/20 sm:p-5">
+                  <div class="flex items-center gap-3">
+                    <a
+                      [routerLink]="['/user/profile', profile.username]"
+                      class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br text-sm font-bold text-white"
+                      [ngClass]="getAvatarGradient(profile.displayName)"
+                    >
+                      {{ getInitials(profile.displayName) }}
+                    </a>
+                    <div class="min-w-0 flex-1">
+                      <a [routerLink]="['/user/profile', profile.username]" class="block truncate text-base font-bold text-ink-fg hover:underline">
+                        {{ profile.displayName }}
+                      </a>
+                      <p class="truncate text-sm text-ink-muted">&#64;{{ profile.username }}</p>
+                      <div class="mt-1 flex flex-wrap gap-1.5">
+                        <span class="rounded-full border border-ink-border bg-ink-2 px-2 py-0.5 text-[10px] text-ink-muted">
+                          {{ profile.kind === 'org' ? 'مؤسسة' : 'شخصي' }}
+                        </span>
+                        <span class="rounded-full border border-ink-border bg-ink-2 px-2 py-0.5 text-[10px] text-ink-muted">
+                          {{ profile.isPrivate ? 'خاص' : 'عام' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="toggleFollow(profile.id)"
+                    class="mt-4 w-full rounded-full px-4 py-2 text-sm font-semibold transition"
+                    [ngClass]="socialStore.followState(auth.user()?._id ?? null, profile.id) === 'none'
+                      ? 'bg-brand text-brand-foreground hover:bg-brand/90'
+                      : 'border border-ink-border bg-ink-2 text-ink-fg hover:bg-ink-3'"
+                  >
+                    {{ followLabel(profile.id, profile.isPrivate) }}
+                  </button>
+                </article>
+              }
+            </div>
+          }
+        }
+
+        <!-- Followers Tab -->
+        @if (activeTab() === 'followers') {
+          @if (filteredFollowers().length === 0) {
+            <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-border p-12 text-center">
+              <div class="grid h-16 w-16 place-items-center rounded-full bg-ink-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-7 w-7 text-ink-muted">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <line x1="19" x2="19" y1="8" y2="14"></line>
+                  <line x1="22" x2="16" y1="11" y2="11"></line>
+                </svg>
+              </div>
+              <h3 class="mt-4 font-display text-lg text-ink-fg">لا يوجد متابعون بعد</h3>
+              <p class="mt-2 text-sm text-ink-muted">عندما يتابعك أحد سيظهر هنا.</p>
+            </div>
+          } @else {
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              @for (item of filteredFollowers(); track item._id) {
+                <article class="group rounded-[24px] border border-ink-border bg-ink/90 p-4 sm:p-5 transition-all duration-200 hover:border-ink-fg/20">
+                  <div class="flex items-center gap-3">
+                    <a [routerLink]="['/user/profile', item.follower.username]"
+                      class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br text-sm font-bold text-white"
+                      [ngClass]="getAvatarGradient(item.follower.name)">
+                      {{ getInitials(item.follower.name) }}
+                    </a>
+                    <div class="min-w-0 flex-1">
+                      <a [routerLink]="['/user/profile', item.follower.username]"
+                        class="text-base font-bold text-ink-fg hover:underline truncate block">
+                        {{ item.follower.name }}
+                      </a>
+                      <p class="text-sm text-ink-muted truncate">&#64;{{ item.follower.username }}</p>
+                      @if (isPrivate(item.follower._id)) {
+                        <span class="mt-1 inline-flex rounded-full border border-ink-border px-2 py-0.5 text-[10px] text-ink-muted">خاص</span>
+                      }
+                    </div>
+                    <span class="rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-[11px] font-semibold text-brand">
+                      متابع
+                    </span>
+                  </div>
+                </article>
+              }
+            </div>
+          }
+        }
+
+        <!-- Following Tab -->
+        @if (activeTab() === 'following') {
+          @if (filteredFollowing().length === 0) {
+            <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-border p-12 text-center">
+              <div class="grid h-16 w-16 place-items-center rounded-full bg-ink-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-7 w-7 text-ink-muted">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M22 12h-6"></path>
+                </svg>
+              </div>
+              <h3 class="mt-4 font-display text-lg text-ink-fg">أنت لا تتابع أحداً بعد</h3>
+              <p class="mt-2 text-sm text-ink-muted">ابحث عن أشخاص وتابعهم لتظهر هنا.</p>
+            </div>
+          } @else {
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              @for (item of filteredFollowing(); track item._id) {
+                <article class="group rounded-[24px] border border-ink-border bg-ink/90 p-4 sm:p-5 transition-all duration-200 hover:border-ink-fg/20">
+                  <div class="flex items-center gap-3">
+                    <a [routerLink]="['/user/profile', item.following.username]"
+                      class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br text-sm font-bold text-white"
+                      [ngClass]="getAvatarGradient(item.following.name)">
+                      {{ getInitials(item.following.name) }}
+                    </a>
+                    <div class="min-w-0 flex-1">
+                      <a [routerLink]="['/user/profile', item.following.username]"
+                        class="text-base font-bold text-ink-fg hover:underline truncate block">
+                        {{ item.following.name }}
+                      </a>
+                      <p class="text-sm text-ink-muted truncate">&#64;{{ item.following.username }}</p>
+                      @if (isPrivate(item.following._id)) {
+                        <span class="mt-1 inline-flex rounded-full border border-ink-border px-2 py-0.5 text-[10px] text-ink-muted">خاص</span>
+                      }
+                    </div>
+                    <button
+                      type="button"
+                      (click)="unfollowUser(item.following._id)"
+                      class="rounded-full border border-ink-border px-3 py-1.5 text-sm font-semibold text-ink-fg hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400 transition-all duration-200">
+                      إلغاء المتابعة
+                    </button>
+                  </div>
+                </article>
+              }
+            </div>
+          }
+        }
+
+        <!-- Requests Tab -->
+        @if (activeTab() === 'requests') {
+          @if (filteredRequests().length === 0) {
+            <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-border p-12 text-center">
+              <div class="grid h-16 w-16 place-items-center rounded-full bg-ink-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-7 w-7 text-ink-muted">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M19 8v6"></path>
+                  <path d="M22 11h-6"></path>
+                </svg>
+              </div>
+              <h3 class="mt-4 font-display text-lg text-ink-fg">لا توجد طلبات متابعة</h3>
+              <p class="mt-2 text-sm text-ink-muted">لا يوجد أي طلب متابعة بانتظار موافقتك.</p>
+            </div>
+          } @else {
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              @for (item of filteredRequests(); track item._id) {
+                <article class="group rounded-[24px] border border-ink-border bg-ink/90 p-4 sm:p-5 transition-all duration-200 hover:border-ink-fg/20">
+                  <div class="flex items-start gap-3">
+                    <a [routerLink]="['/user/profile', item.follower.username]"
+                      class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br text-sm font-bold text-white"
+                      [ngClass]="getAvatarGradient(item.follower.name)">
+                      {{ getInitials(item.follower.name) }}
+                    </a>
+                    <div class="min-w-0 flex-1">
+                      <a [routerLink]="['/user/profile', item.follower.username]"
+                        class="text-base font-bold text-ink-fg hover:underline truncate block">
+                        {{ item.follower.name }}
+                      </a>
+                      <p class="text-sm text-ink-muted truncate">&#64;{{ item.follower.username }}</p>
+                      @if (item.follower.bio) {
+                        <p class="mt-2 text-sm leading-6 text-ink-muted line-clamp-2">{{ item.follower.bio }}</p>
+                      }
+                      <p class="mt-1 text-xs text-ink-muted/60">{{ formatDate(item.createdAt) }}</p>
+                    </div>
+                    <span class="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold text-amber-400">
+                      طلب جديد
+                    </span>
+                  </div>
+                  <div class="mt-4 flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      (click)="rejectRequest(item.follower._id)"
+                      class="rounded-full border border-ink-border px-4 py-1.5 text-sm font-semibold text-ink-fg hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400 transition-all duration-200">
+                      رفض
+                    </button>
+                    <button
+                      type="button"
+                      (click)="acceptRequest(item.follower._id)"
+                      class="rounded-full bg-brand px-4 py-1.5 text-sm font-semibold text-brand-foreground hover:bg-brand/90 transition-all duration-200">
+                      قبول
+                    </button>
+                  </div>
+                </article>
+              }
+            </div>
+          }
+        }
+      }
+    </div>
+  </div>
+</div>

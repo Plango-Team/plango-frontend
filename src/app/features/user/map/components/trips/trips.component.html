@@ -1,0 +1,196 @@
+<div class="mb-4 flex items-center justify-between gap-3">
+  <div class="flex flex-col gap-1">
+    <div class="flex items-center gap-2">
+      <app-icon [iconName]="'UserGroupIcon'" [iconSize]="16" [iconColor]="'#d32e18'"></app-icon>
+      <h1 class="text-lg font-semibold">الرحلات والمشاركات</h1>
+    </div>
+    <p class="text-xs text-ink-muted">مواعيدك ودعواتك من بيانات الخادم مباشرة</p>
+  </div>
+
+  @if (upcomingAppointments()[0]; as nextAppointment) {
+    <button
+      type="button"
+      (click)="invitModal.open(nextAppointment._id)"
+      class="flex items-center gap-2 rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-brand-foreground hover:bg-brand/90"
+    >
+      <app-icon [iconName]="'PlusSignIcon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+      دعوة
+    </button>
+  }
+  <app-invit-modal #invitModal></app-invit-modal>
+</div>
+
+<section class="space-y-3">
+  @for (appointment of upcomingAppointments(); track appointment._id) {
+    <article class="rounded-xl border border-ink-border bg-ink p-4">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h2 class="truncate text-sm font-semibold text-ink-fg">{{ appointment.title }}</h2>
+          <div class="mt-1 flex items-center gap-1.5 text-xs text-ink-muted">
+            <app-icon [iconName]="'Location01FreeIcons'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
+            <span class="truncate">{{ destinationLabel(appointment) }}</span>
+          </div>
+        </div>
+        <span class="rounded-full bg-brand/10 px-2 py-1 text-[10px] font-semibold text-brand">
+          {{ appointment.arrivalTime | date: 'h:mm a' }}
+        </span>
+      </div>
+
+      <div class="mt-4 grid grid-cols-3 gap-2 text-center text-[11px]">
+        <div class="rounded-lg bg-ink-2 p-2">
+          <div class="font-semibold text-ink-fg">{{ minutesRemaining(appointment) }}</div>
+          <div class="text-ink-muted">دقيقة للموعد</div>
+        </div>
+        <div class="rounded-lg bg-ink-2 p-2">
+          <div class="font-semibold text-ink-fg">{{ travelMinutes(appointment) }}</div>
+          <div class="text-ink-muted">دقيقة طريق</div>
+        </div>
+        <div class="rounded-lg bg-ink-2 p-2">
+          <div class="font-semibold text-ink-fg">{{ participantCount(appointment) }}</div>
+          <div class="text-ink-muted">مشاركون</div>
+        </div>
+      </div>
+
+      <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
+        <span class="text-[11px] text-ink-muted">
+          وسيلة التنقل: {{ transportLabel(appointment.transportation) }}
+        </span>
+        <div class="flex gap-2">
+          @if (canChat(appointment)) {
+            <button
+              type="button"
+              (click)="toggleChat(appointment)"
+              class="rounded-lg border border-brand/30 px-3 py-1.5 text-xs font-semibold text-brand hover:bg-brand/10"
+            >
+              {{ isChatOpen(appointment) ? 'إغلاق المحادثة' : 'المحادثة' }}
+            </button>
+          }
+          <button
+            type="button"
+            (click)="loadRoute(appointment)"
+            class="rounded-lg border border-ink-border px-3 py-1.5 text-xs text-ink-fg hover:bg-ink-3"
+          >
+            عرض المسار
+          </button>
+          <button
+            type="button"
+            (click)="invitModal.open(appointment._id)"
+            class="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand/90"
+          >
+            دعوة
+          </button>
+        </div>
+      </div>
+
+      @if (isChatOpen(appointment)) {
+        <section class="mt-4 rounded-xl border border-brand/20 bg-ink-3 p-3">
+          <div class="mb-3 flex items-start justify-between gap-3">
+            <div>
+              <h3 class="text-sm font-semibold text-ink-fg">محادثة الموعد</h3>
+              <p class="mt-1 text-[11px] text-ink-muted">مع {{ participantNames(appointment) }}</p>
+            </div>
+            <span
+              class="rounded-full px-2 py-1 text-[10px]"
+              [class.bg-emerald-500/10]="chatService.connected()"
+              [class.text-emerald-300]="chatService.connected()"
+              [class.bg-amber-500/10]="!chatService.connected()"
+              [class.text-amber-200]="!chatService.connected()"
+            >
+              {{ chatService.connected() ? 'متصل' : 'جاري الاتصال' }}
+            </span>
+          </div>
+
+          <div class="max-h-56 space-y-2 overflow-y-auto rounded-xl bg-ink p-2">
+            @if (chatLoading()) {
+              <div class="space-y-2">
+                <div class="h-10 animate-pulse rounded-xl bg-ink-2"></div>
+                <div class="h-10 animate-pulse rounded-xl bg-ink-2"></div>
+              </div>
+            } @else {
+              @for (message of chatMessages(); track message._id) {
+                <div [class]="messageClasses(message)">
+                  <div class="mb-1 text-[10px] opacity-75">
+                    {{ isMine(message) ? 'أنت' : senderName(message) }} ·
+                    {{ message.createdAt | date: 'h:mm a' }}
+                  </div>
+                  <p class="whitespace-pre-wrap break-words text-xs leading-5">{{ message.content }}</p>
+                </div>
+              } @empty {
+                <div class="rounded-xl border border-dashed border-ink-border p-4 text-center text-xs text-ink-muted">
+                  ابدأ المحادثة مع المشاركين في هذا الموعد.
+                </div>
+              }
+            }
+          </div>
+
+          @if (chatError()) {
+            <p class="mt-2 rounded-lg border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-100">
+              {{ chatError() }}
+            </p>
+          }
+
+          <form class="mt-3 flex gap-2" (submit)="sendChatMessage($event)">
+            <input
+              type="text"
+              maxlength="200"
+              [value]="chatDraft()"
+              (input)="updateChatDraft($event)"
+              placeholder="اكتب رسالة قصيرة..."
+              class="min-w-0 flex-1 rounded-lg border border-ink-border bg-ink px-3 py-2 text-xs text-ink-fg outline-none transition placeholder:text-ink-muted focus:border-brand"
+            />
+            <button
+              type="submit"
+              [disabled]="chatDraft().trim().length === 0"
+              class="rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-brand-foreground hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              إرسال
+            </button>
+          </form>
+        </section>
+      }
+    </article>
+  } @empty {
+    <div class="rounded-xl border border-dashed border-ink-border p-6 text-center text-sm text-ink-muted">
+      لا توجد رحلات قادمة. أضف موعداً أو فعالية إلى جدولك لتظهر هنا.
+    </div>
+  }
+</section>
+
+@if (pendingInvites().length > 0) {
+  <section class="mt-5">
+    <h2 class="mb-3 text-sm font-semibold text-ink-fg">دعوات بانتظارك</h2>
+    <div class="space-y-2">
+      @for (invite of pendingInvites(); track invite._id) {
+        <article class="rounded-xl border border-ink-border bg-ink p-3">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="truncate text-sm font-semibold text-ink-fg">
+                {{ invite.appointmentId.title }}
+              </div>
+              <div class="mt-1 text-xs text-ink-muted">
+                من {{ invite.senderId.name }} · {{ invite.appointmentId.arrivalTime | date: 'd MMM، h:mm a' }}
+              </div>
+            </div>
+            <div class="flex shrink-0 gap-2">
+              <button
+                type="button"
+                (click)="setLocModal.open(invite.appointmentId._id)"
+                class="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground"
+              >
+                قبول
+              </button>
+              <button
+                type="button"
+                (click)="appStore.declineInvitation(invite.appointmentId._id)"
+                class="rounded-lg border border-ink-border px-3 py-1.5 text-xs text-ink-muted hover:bg-ink-3"
+              >
+                رفض
+              </button>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+    <app-set-location-modal #setLocModal></app-set-location-modal>
+  </section>
+}
