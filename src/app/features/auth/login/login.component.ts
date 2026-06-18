@@ -8,6 +8,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { authStore } from '../auth.store';
 import { ILoginRequest } from '../../../core/models/iuser';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -72,8 +73,7 @@ export class LoginComponent implements OnInit {
   );
 
   signInWithGoogle(): void {
-    const proUrl = `${window.location.origin}/auth/login`;
-    window.location.href = `https://pplango.me/api/auth/google?redirect_uri=${encodeURIComponent(proUrl)}`;
+    window.location.href = `${environment.apiUrl}/auth/google`;
   }
 
   resendVerification(): void {

@@ -291,7 +291,7 @@ export const authStore = signalStore(
       patchState(store, { successMessage });
     }),
 
-    setAuthSession: signalMethod<{ user: IUser; token: string }>((session) => {
+    setAuthSession: signalMethod<{ user: IUser; token: string | null }>((session) => {
       patchState(store, {
         user: session.user,
         token: session.token,
@@ -351,6 +351,14 @@ export const authStore = signalStore(
       pipe(
         tap(() => patchState(store, { isLoading: true })),
         switchMap(() => {
+          if (
+            typeof window !== 'undefined' &&
+            window.location.pathname.startsWith('/auth/callback')
+          ) {
+            patchState(store, { isLoading: false });
+            return of(null);
+          }
+
           return authService.getCurrentUser().pipe(
             tap({
               next: (user) => {
