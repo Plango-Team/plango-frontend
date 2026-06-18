@@ -291,7 +291,7 @@ export const authStore = signalStore(
       patchState(store, { successMessage });
     }),
 
-    setAuthSession: signalMethod<{ user: IUser; token: string }>((session) => {
+    setAuthSession: signalMethod<{ user: IUser; token: string | null }>((session) => {
       patchState(store, {
         user: session.user,
         token: session.token,
