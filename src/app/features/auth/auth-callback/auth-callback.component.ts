@@ -3,7 +3,6 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { authStore } from '../auth.store';
-import { patchState } from '@ngrx/signals';
 
 @Component({
   selector: 'app-auth-callback',
@@ -38,16 +37,35 @@ export class AuthCallbackComponent implements OnInit {
   errorMessage = signal('');
 
   ngOnInit(): void {
-    this.authService.getCurrentUserWithCredentials().subscribe({
+    const token = this.readTokenFromFragment();
+    if (!token) {
+      this.status.set('error');
+      this.errorMessage.set('لم يتم استلام رمز تسجيل الدخول من Google.');
+      return;
+    }
+
+    localStorage.setItem('token', token);
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    this.authService.getCurrentUser().subscribe({
       next: (user) => {
-        patchState(this.store as any, (state:any) => ({ ...state, user:user }));
+        this.store.setAuthSession({ user, token });
         this.status.set('success');
-        this.router.navigate([this.authService.getHomeRoute(user)]);
+        void this.router.navigate([this.authService.getHomeRoute(user)]);
       },
       error: (err) => {
+        localStorage.removeItem('token');
         this.status.set('error');
         this.errorMessage.set(err?.error?.message || 'حدث خطأ أثناء استرجاع المستخدم.');
       },
     });
+  }
+
+  private readTokenFromFragment(): string | null {
+    const fragment = window.location.hash.startsWith('#')
+      ? window.location.hash.slice(1)
+      : window.location.hash;
+
+    return new URLSearchParams(fragment).get('token');
   }
 }
