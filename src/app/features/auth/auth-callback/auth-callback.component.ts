@@ -38,16 +38,18 @@ export class AuthCallbackComponent implements OnInit {
 
   ngOnInit(): void {
     const token = this.readTokenFromFragment();
-    if (token) {
-      localStorage.setItem('token', token);
-      window.history.replaceState({}, document.title, window.location.pathname);
+    if (!token) {
+      this.status.set('error');
+      this.errorMessage.set(
+        'لم تصل جلسة تسجيل الدخول من Google. يجب نشر تحديث تسجيل Google في الخادم أولاً.',
+      );
+      return;
     }
 
-    const currentUserRequest = token
-      ? this.authService.getCurrentUser()
-      : this.authService.getCurrentUserWithCredentials();
+    localStorage.setItem('token', token);
+    window.history.replaceState({}, document.title, window.location.pathname);
 
-    currentUserRequest.subscribe({
+    this.authService.getCurrentUser().subscribe({
       next: (user) => {
         this.store.setAuthSession({ user, token });
         this.status.set('success');
