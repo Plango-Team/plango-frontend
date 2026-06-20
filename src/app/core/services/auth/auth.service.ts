@@ -215,6 +215,10 @@ private buildHomeRoute(user: Pick<IUser, 'role'> & { accountType?: string }): st
     return this.http.patch<IMessageResponse>(`${this.authUrl}/update-name`, { name }, { withCredentials: true });
   }
 
+  checkUsername(username : string) : Observable<any> {
+    return this.http.get<any>(`${this.authUrl}/check-username?username=${encodeURIComponent(username)}`)
+  }
+
   requestChangePhone(newPhone: string, password: string): Observable<IMessageResponse> {
     return this.http.post<IMessageResponse>(`${this.authUrl}/phone/change`, { newPhone, password }, { withCredentials: true });
   }

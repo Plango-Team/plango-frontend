@@ -71,7 +71,7 @@ export class CalendarPageComponent {
   transports: { id: string; icon: string; ar: string; en: string }[] = [
     { id: 'driving', icon: 'Car01Icon', ar: 'سيارة', en: 'Driving' },
     { id: 'bicycling', icon: 'Bicycle01Icon', ar: 'دراجة', en: 'Bicycling' },
-    { id: 'walking', icon: 'Walking01Icon', ar: 'مشي', en: 'Walking' },
+    { id: 'walking', icon: 'Route01Icon', ar: 'مشي', en: 'Walking' },
     { id: 'other', icon: 'Bus01Icon', ar: 'مواصلات', en: 'Other' },
   ];
 

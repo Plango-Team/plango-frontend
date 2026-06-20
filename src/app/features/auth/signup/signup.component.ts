@@ -5,6 +5,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { authStore } from '../auth.store';
 import { AccountType, ISignUpRequest } from '../../../core/models/iuser';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../core/services/auth/auth.service';
 
 @Component({
   selector: 'app-signup',
@@ -16,6 +17,7 @@ import { FormsModule } from '@angular/forms';
 export class SignupComponent {
   public themeService = inject(ThemeService);
   public readonly store = inject(authStore);
+  authService = inject(AuthService)
 
   // 4 خطوات: 1=نوع الحساب, 2=الأساسيات, 3=اسم المستخدم, 4=الملف الشخصي
   currentStep = signal(1);
@@ -104,14 +106,41 @@ export class SignupComponent {
     return Object.keys(errors).length === 0;
   }
 
+  checkUsername():void{
+    const userN = this.username.trim().toLowerCase()
+    if(!userN) return
+    this.authService.checkUsername(userN).subscribe({
+      next : (res) => {
+        if(!res.data.isAvailable){
+          this.step3Errors.update(errors => ({
+          ...errors,
+          username : 'اسم المستخدم موجود بالفعل'
+        }))
+        }else {
+          this.step3Errors.update(errors => ({
+          ...errors,
+          username : ''
+        }))
+        this.currentStep.update(s => s+1)
+        }
+      },
+      error : () => {
+        this.step3Errors.update(errors => ({
+          ...errors,
+          username : 'حدث خطأ أثناء التحقق من اسم المستخدم'
+        }))
+      }
+    })
+  }
+
   validateStep3(): boolean {
     const errors: Record<string, string> = {};
     const value = this.username.trim().toLowerCase();
 
     if (!value) {
       errors['username'] = 'يرجى إدخال اسم المستخدم';
-    } else if (!/^[a-z0-9_]{3,24}$/.test(value)) {
-      errors['username'] = 'استخدم a-z, 0-9 أو _ فقط (3–24)';
+    } else if (!/^[a-z0-9]{4,30}$/.test(value)) {
+      errors['username'] = 'اسم المستخدم يجب ان يكون من 4 الي 30 حرفاً';
     }
 
     this.step3Errors.set(errors);
@@ -122,8 +151,10 @@ export class SignupComponent {
     if (this.currentStep() === 2 && !this.validateStep2()) {
       return;
     }
-    if (this.currentStep() === 3 && !this.validateStep3()) {
-      return;
+    if (this.currentStep() === 3) {
+      if(!this.validateStep3()) return
+      this.checkUsername();
+      return
     }
 
     if (this.currentStep() < this.totalSteps) {
