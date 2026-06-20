@@ -105,7 +105,7 @@ export const authStore = signalStore(
               next: (response) => {
                 patchState(store, {
                   isLoading: false,
-                  successMessage: 'تم إنشاء الحساب بنجاح! تحقق من بريدك الإلكتروني للتأكيد',
+                  successMessage: response.message,
                 });
                 router.navigate(['/auth/login']);
               },

@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, map, throwError } from 'rxjs';
 import {
   IAuthResponse,
@@ -213,6 +213,10 @@ private buildHomeRoute(user: Pick<IUser, 'role'> & { accountType?: string }): st
 
   changeName(name: string): Observable<IMessageResponse> {
     return this.http.patch<IMessageResponse>(`${this.authUrl}/update-name`, { name }, { withCredentials: true });
+  }
+
+  checkUsername(username : string) : Observable<any> {
+    return this.http.get<any>(`${this.authUrl}/check-username?username=${encodeURIComponent(username)}`)
   }
 
   requestChangePhone(newPhone: string, password: string): Observable<IMessageResponse> {

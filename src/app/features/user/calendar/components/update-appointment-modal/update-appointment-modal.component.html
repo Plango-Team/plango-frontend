@@ -15,13 +15,13 @@
     <form (ngSubmit)="submitAppointment()" class="space-y-4">
       <!-- Title -->
       <div class="space-y-1.5">
-        <label class="text-sm font-medium text-ink-fg">{{ ar ? 'عنوان الموعد' : 'Title' }}</label>
+        <label class="block text-right text-sm font-medium text-ink-fg">{{ ar ? 'عنوان الموعد' : 'Title' }}</label>
         <input
-          [(ngModel)]="updateApptTitle"
+          [(ngModel)]="updateApptTitle" 
           name="updateTitle"
           required
           class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          [placeholder]="ar ? 'اجتماع فريق التصميم' : 'Design team sync'"
+          [value]="currentApp.title"
         />
       </div>
 
@@ -72,7 +72,7 @@
       <!-- Date & Time -->
       <div class="grid grid-cols-2 gap-3">
         <div class="space-y-1.5">
-          <label class="text-sm font-medium text-ink-fg">{{ ar ? 'التاريخ' : 'Date' }}</label>
+          <label class="text-sm block text-right font-medium text-ink-fg">{{ ar ? 'التاريخ' : 'Date' }}</label>
           <input
             type="date"
             [(ngModel)]="updateApptDate"
@@ -82,7 +82,7 @@
           />
         </div>
         <div class="space-y-1.5">
-          <label class="text-sm font-medium text-ink-fg">{{ ar ? 'الوقت' : 'Time' }}</label>
+          <label class="text-sm block text-right font-medium text-ink-fg">{{ ar ? 'الوقت' : 'Time' }}</label>
           <div class="relative">
             <app-icon
               [iconName]="'TimeQuarter02Icon'"
@@ -103,11 +103,12 @@
 
       <!-- Transport mode grid -->
       <div class="space-y-1.5">
-        <label class="text-sm font-medium text-ink-fg">{{ ar ? 'وسيلة التنقل' : 'Transport' }}</label>
+        <label class="text-sm block text-right font-medium text-ink-fg">{{ ar ? 'وسيلة التنقل' : 'Transport' }}</label>
         <div class="grid grid-cols-4 gap-2">
           @for (t of transports; track t.id) {
             <button
               type="button"
+               [value]="currentApp.transportation"
               (click)="updateApptTransport = t.id"
               class="flex flex-col items-center gap-1 rounded-lg border px-2 py-3 text-xs transition"
               [ngClass]="updateApptTransport === t.id
@@ -123,7 +124,7 @@
 
       <!-- Buffer selection -->
       <div class="space-y-1.5">
-        <label class="text-sm font-medium text-ink-fg">{{
+        <label class="text-sm block text-right font-medium text-ink-fg">{{
           ar ? 'الوصول قبل الموعد بـ' : 'Arrive before by'
         }}</label>
         <div class="grid grid-cols-5 gap-2">
@@ -173,7 +174,7 @@
 
       <!--Repeat time-->
       <div class="space-y-1.5">
-        <label class="text-sm font-medium text-ink-fg">{{
+        <label class="text-sm block text-right font-medium text-ink-fg">{{
           ar ? 'التكرار' : 'Repeat'
         }}</label>
         <div class="grid grid-cols-4 gap-2">
@@ -198,7 +199,7 @@
       @if (repeat !== false && repeat !== 'none') {
         <div class="space-y-1.5">
         <div class="space-y-1.5">
-          <label class="text-sm font-medium text-ink-fg">{{ ar ? 'تكرار حتي' : 'Repeat Until' }}</label>
+          <label class="text-sm block text-right font-medium text-ink-fg">{{ ar ? 'تكرار حتي' : 'Repeat Until' }}</label>
           <input
             type="date"
             [(ngModel)]="repeatUntil"
@@ -211,7 +212,7 @@
 
       <!-- Notes -->
       <div class="space-y-1.5">
-        <label class="text-sm font-medium text-ink-fg">{{ ar ? 'ملاحظات' : 'Notes' }}</label>
+        <label class="text-sm block text-right font-medium text-ink-fg">{{ ar ? 'ملاحظات' : 'Notes' }}</label>
         <textarea
           [(ngModel)]="updateApptDescription"
           name="updatenotes"

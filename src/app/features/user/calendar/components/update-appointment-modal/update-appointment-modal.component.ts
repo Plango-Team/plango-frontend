@@ -33,6 +33,9 @@ private appointmentsStore = inject(AppointmentsStore);
   
   todayStr = computed(() => this.ymd(new Date()));
 
+  
+  currentAppId = ''
+  currentApp : Appointment
   updateApptTitle = '';
   updateApptDescription = '';
   updateApptOrigin = 'Home';
@@ -54,12 +57,11 @@ private appointmentsStore = inject(AppointmentsStore);
   isResolvingCurrentLocation = signal(false);
   isSubmittingAppointment = signal(false);
   apptError = signal<string | null>(null);
-  currentAppId = ''
 
   transports: { id: string; icon: string; ar: string; en: string }[] = [
       { id: 'driving', icon: 'Car01Icon', ar: 'سيارة', en: 'Driving' },
       { id: 'bicycling', icon: 'Bicycle01Icon', ar: 'دراجة', en: 'Bicycling' },
-      { id: 'walking', icon: 'Walking01Icon', ar: 'مشي', en: 'Walking' },
+      { id: 'walking', icon: 'Route01Icon', ar: 'مشي', en: 'Walking' },
       { id: 'other', icon: 'Bus01Icon', ar: 'مواصلات', en: 'Other' },
     ];
   
@@ -68,6 +70,7 @@ private appointmentsStore = inject(AppointmentsStore);
 
     openUpdateAppointment(appointment:Appointment) {
         if (!appointment) return;
+        this.currentApp = appointment
         this.currentAppId = appointment._id
         this.updateModal.nativeElement.showModal();
       }

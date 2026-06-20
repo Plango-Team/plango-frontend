@@ -5,17 +5,19 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { authStore } from '../auth.store';
 import { AccountType, ISignUpRequest } from '../../../core/models/iuser';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../core/services/auth/auth.service';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
   imports: [RouterLink, CommonModule, FormsModule],
   templateUrl: './signup.component.html',
-  styleUrl: './signup.component.css',
+  styleUrl: './signup.component.css', 
 })
 export class SignupComponent {
   public themeService = inject(ThemeService);
   public readonly store = inject(authStore);
+  authService = inject(AuthService)
 
   // 4 خطوات: 1=نوع الحساب, 2=الأساسيات, 3=اسم المستخدم, 4=الملف الشخصي
   currentStep = signal(1);
@@ -85,17 +87,50 @@ export class SignupComponent {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
       errors['email'] = 'تنسيق البريد الإلكتروني غير صحيح';
     }
-    if (!this.phoneNumber.trim()) {
+    const phoneValue = this.phoneNumber.trim();
+    const phoneRegex = /^\+201[0125]\d{8}$/
+    if (!phoneValue) {
       errors['phoneNumber'] = 'يرجى إدخال رقم الهاتف';
+    }else if(!phoneRegex.test(phoneValue)){
+      errors['phoneNumber'] = 'رقم الهاتف غير صحيح ،يجب ان يتكون من 11 رقم و يبدأ ب +2';
     }
-    if (!this.password.trim()) {
+    const passValue = this.password.trim();
+    const passwordRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passValue) {
       errors['password'] = 'يرجى إدخال كلمة المرور';
-    } else if (this.password.length < 6) {
-      errors['password'] = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+    } else if (!passwordRegex.test(passValue)) {
+      errors['password'] = 'يجب أن تحتوي كلمة المرور علي حرف كبير،حرف صغير، رقم،و رمز خاص و لا تقل عن 8 أحرف';
     }
 
     this.step2Errors.set(errors);
     return Object.keys(errors).length === 0;
+  }
+
+  checkUsername():void{
+    const userN = this.username.trim().toLowerCase()
+    if(!userN) return
+    this.authService.checkUsername(userN).subscribe({
+      next : (res) => {
+        if(!res.data.isAvailable){
+          this.step3Errors.update(errors => ({
+          ...errors,
+          username : 'اسم المستخدم موجود بالفعل'
+        }))
+        }else {
+          this.step3Errors.update(errors => ({
+          ...errors,
+          username : ''
+        }))
+        this.currentStep.update(s => s+1)
+        }
+      },
+      error : () => {
+        this.step3Errors.update(errors => ({
+          ...errors,
+          username : 'حدث خطأ أثناء التحقق من اسم المستخدم'
+        }))
+      }
+    })
   }
 
   validateStep3(): boolean {
@@ -104,8 +139,8 @@ export class SignupComponent {
 
     if (!value) {
       errors['username'] = 'يرجى إدخال اسم المستخدم';
-    } else if (!/^[a-z0-9_]{3,24}$/.test(value)) {
-      errors['username'] = 'استخدم a-z, 0-9 أو _ فقط (3–24)';
+    } else if (!/^[a-z0-9]{4,30}$/.test(value)) {
+      errors['username'] = 'اسم المستخدم يجب ان يكون من 4 الي 30 حرفاً';
     }
 
     this.step3Errors.set(errors);
@@ -116,8 +151,10 @@ export class SignupComponent {
     if (this.currentStep() === 2 && !this.validateStep2()) {
       return;
     }
-    if (this.currentStep() === 3 && !this.validateStep3()) {
-      return;
+    if (this.currentStep() === 3) {
+      if(!this.validateStep3()) return
+      this.checkUsername();
+      return
     }
 
     if (this.currentStep() < this.totalSteps) {
@@ -129,13 +166,13 @@ export class SignupComponent {
     if (this.currentStep() === 1) return true;
     if (this.currentStep() === 2) {
       return (
-        this.fullName.trim().length >= 2 &&
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email) &&
-        this.phoneNumber.trim().length > 0 &&
-        this.password.trim().length >= 6
+        this.fullName.trim().length > 0 &&
+        this.email.trim().length > 0 && 
+        this.phoneNumber.trim().length > 0 && 
+        this.password.trim().length > 0
       );
     }
-    if (this.currentStep() === 3) return this.usernameValid;
+    if(this.currentStep() === 3) return this.username.trim().length > 0
     return true;
   }
 
@@ -184,3 +221,4 @@ export class SignupComponent {
     this.store.signUp(signUpData);
   }
 }
+                                     
