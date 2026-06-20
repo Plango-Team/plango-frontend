@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [RouterLink, CommonModule, FormsModule],
   templateUrl: './signup.component.html',
-  styleUrl: './signup.component.css',
+  styleUrl: './signup.component.css', 
 })
 export class SignupComponent {
   public themeService = inject(ThemeService);
@@ -85,13 +85,19 @@ export class SignupComponent {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
       errors['email'] = 'تنسيق البريد الإلكتروني غير صحيح';
     }
-    if (!this.phoneNumber.trim()) {
+    const phoneValue = this.phoneNumber.trim();
+    const phoneRegex = /^\+201[0125]\d{8}$/
+    if (!phoneValue) {
       errors['phoneNumber'] = 'يرجى إدخال رقم الهاتف';
+    }else if(!phoneRegex.test(phoneValue)){
+      errors['phoneNumber'] = 'رقم الهاتف غير صحيح ،يجب ان يتكون من 11 رقم و يبدأ ب +2';
     }
-    if (!this.password.trim()) {
+    const passValue = this.password.trim();
+    const passwordRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passValue) {
       errors['password'] = 'يرجى إدخال كلمة المرور';
-    } else if (this.password.length < 6) {
-      errors['password'] = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+    } else if (!passwordRegex.test(passValue)) {
+      errors['password'] = 'يجب أن تحتوي كلمة المرور علي حرف كبير،حرف صغير، رقم،و رمز خاص و لا تقل عن 8 أحرف';
     }
 
     this.step2Errors.set(errors);
@@ -129,13 +135,13 @@ export class SignupComponent {
     if (this.currentStep() === 1) return true;
     if (this.currentStep() === 2) {
       return (
-        this.fullName.trim().length >= 2 &&
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email) &&
-        this.phoneNumber.trim().length > 0 &&
-        this.password.trim().length >= 6
+        this.fullName.trim().length > 0 &&
+        this.email.trim().length > 0 && 
+        this.phoneNumber.trim().length > 0 && 
+        this.password.trim().length > 0
       );
     }
-    if (this.currentStep() === 3) return this.usernameValid;
+    if(this.currentStep() === 3) return this.username.trim().length > 0
     return true;
   }
 
