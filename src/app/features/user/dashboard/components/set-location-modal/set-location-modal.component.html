@@ -44,11 +44,12 @@
           {{'إلغاء'}}
         </button>
             <button
-        (click)="onAcceptInvite(appID)"
+          (click)="onAcceptInvite(appID)"
           type="submit"
-          class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
+          [disabled]="!appID || appStore.activeInviteId() === appID"
+          class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground transition-colors hover:bg-brand/90 disabled:cursor-wait disabled:opacity-50"
         >
-          تأكيد
+          {{ appStore.activeInviteId() === appID ? 'جارٍ القبول...' : 'تأكيد القبول' }}
         </button>
       </div>
     </div>

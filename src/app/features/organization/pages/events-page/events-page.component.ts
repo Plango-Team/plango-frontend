@@ -4,7 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { LocationComboboxComponent } from '../../../../shared/components/location-combobox/location-combobox.component';
 import { Place, PlacesService } from '../../../../shared/services/places.service';
-import { EventCategory } from '../../../user/events/interfaces/Ievents';
+import {
+  EventCategory,
+  EventVisibility,
+} from '../../../user/events/interfaces/Ievents';
 import { OrganizationEvent } from '../../services/organization-events.service';
 import { OrganizationEventsStore } from '../../stores/organization-events.store';
 
@@ -23,6 +26,7 @@ export class OrganizationEventsPageComponent {
   private readonly placesService = inject(PlacesService);
 
   readonly filter = signal<EventsFilter>('upcoming');
+  readonly visibilityFilter = signal<'all' | EventVisibility>('all');
   readonly query = signal('');
   readonly editingId = signal<string | null>(null);
   readonly formError = signal<string | null>(null);
@@ -69,6 +73,16 @@ export class OrganizationEventsPageComponent {
     };
   });
 
+  readonly visibilityCounts = computed(() => ({
+    all: this.store.events().length,
+    public: this.store.events().filter((event) => event.visibility === 'public').length,
+    private: this.store.events().filter((event) => event.visibility === 'private').length,
+  }));
+
+  readonly totalAttendees = computed(() =>
+    this.store.events().reduce((total, event) => total + event.attendeesCount, 0),
+  );
+
   readonly visibleEvents = computed(() => {
     const now = Date.now();
     const query = this.query().trim().toLowerCase();
@@ -81,13 +95,18 @@ export class OrganizationEventsPageComponent {
         (this.filter() === 'past' && event.isActive && end < now) ||
         (this.filter() === 'ongoing' && event.isActive && start <= now && end >= now) ||
         (this.filter() === 'upcoming' && event.isActive && start > now);
+      const matchesVisibility =
+        this.visibilityFilter() === 'all' ||
+        event.visibility === this.visibilityFilter();
 
-      if (!matchesFilter || !query) return matchesFilter;
+      if (!matchesFilter || !matchesVisibility || !query) {
+        return matchesFilter && matchesVisibility;
+      }
       return [
         event.title,
         event.description,
-        event.location.addressName,
-        event.location.fullAddress,
+        event.location?.addressName,
+        event.location?.fullAddress,
         this.categoryLabel(event.category),
       ].some((value) => value?.toLowerCase().includes(query));
     });
@@ -108,6 +127,7 @@ export class OrganizationEventsPageComponent {
   }
 
   openEditModal(event: OrganizationEvent) {
+    const location = event.location;
     this.editingId.set(event._id);
     this.form = {
       title: event.title,
@@ -116,21 +136,26 @@ export class OrganizationEventsPageComponent {
       price: event.price ?? 0,
       startDate: this.toLocalDateTime(event.startDate),
       endDate: this.toLocalDateTime(event.endDate),
-      locationName: event.location.addressName || event.location.fullAddress || '',
+      locationName: location?.addressName || location?.fullAddress || '',
       imageUrl:
         event.images?.[0] && event.images[0] !== 'default-event.jpg'
           ? event.images[0]
           : '',
+      visibility: event.visibility,
     };
-    this.selectedPlace = {
-      id: event.location.placeId || `event_${event._id}`,
-      name: this.form.locationName,
-      area: event.location.fullAddress,
-      category: 'venue',
-      lng: event.location.coordinates[0],
-      lat: event.location.coordinates[1],
-      createdAt: Date.now(),
-    };
+    const coordinates = location?.coordinates;
+    this.selectedPlace =
+      coordinates?.length === 2 && Number.isFinite(coordinates[0]) && Number.isFinite(coordinates[1])
+        ? {
+            id: location?.placeId || `event_${event._id}`,
+            name: this.form.locationName,
+            area: location?.fullAddress,
+            category: 'venue',
+            lng: coordinates[0],
+            lat: coordinates[1],
+            createdAt: Date.now(),
+          }
+        : null;
     this.formError.set(null);
     this.eventModal.nativeElement.showModal();
   }
@@ -166,6 +191,7 @@ export class OrganizationEventsPageComponent {
     const end = new Date(this.form.endDate);
     if (
       this.form.title.trim().length < 3 ||
+      this.form.title.trim().length > 32 ||
       !this.form.description.trim() ||
       !place ||
       !Number.isFinite(place.lat) ||
@@ -196,6 +222,7 @@ export class OrganizationEventsPageComponent {
         placeId: place.id,
       },
       images: this.form.imageUrl.trim() ? [this.form.imageUrl.trim()] : undefined,
+      visibility: this.form.visibility,
     };
 
     const id = this.editingId();
@@ -217,7 +244,7 @@ export class OrganizationEventsPageComponent {
   }
 
   locationLabel(event: OrganizationEvent): string {
-    return event.location.addressName || event.location.fullAddress || 'الموقع غير محدد';
+    return event.location?.addressName || event.location?.fullAddress || 'الموقع غير محدد';
   }
 
   priceLabel(event: OrganizationEvent): string {
@@ -262,6 +289,16 @@ export class OrganizationEventsPageComponent {
     return image ?? null;
   }
 
+  visibilityLabel(event: OrganizationEvent): string {
+    return event.visibility === 'private' ? 'خاصة بالمتابعين' : 'عامة';
+  }
+
+  visibilityClasses(event: OrganizationEvent): string {
+    return event.visibility === 'private'
+      ? 'border-amber-500/30 bg-amber-500/10 text-amber-200'
+      : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200';
+  }
+
   countFor(filter: EventsFilter): number {
     return this.filterCounts()[filter];
   }
@@ -276,6 +313,7 @@ export class OrganizationEventsPageComponent {
       endDate: '',
       locationName: '',
       imageUrl: '',
+      visibility: 'public' as EventVisibility,
     };
   }
 

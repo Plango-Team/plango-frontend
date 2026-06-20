@@ -80,11 +80,21 @@ export const OrganizationEventsStore = signalStore(
         patchState(store, { saving: true, error: null });
         try {
           const created = await firstValueFrom(service.createEvent(event));
+          const normalizedCreated = {
+            ...created,
+            visibility: created.visibility ?? event.visibility,
+            attendeesCount: created.attendeesCount ?? 0,
+          };
           patchState(store, {
-            events: sortEvents([created, ...store.events()]),
+            events: sortEvents([normalizedCreated, ...store.events()]),
             saving: false,
           });
-          toast.success('تم نشر الفعالية', 'أصبحت متاحة الآن لمستخدمي PlanGo.');
+          toast.success(
+            'تم نشر الفعالية',
+            normalizedCreated.visibility === 'private'
+              ? 'ستظهر لمتابعي المؤسسة المقبولين.'
+              : 'أصبحت متاحة الآن لمستخدمي PlanGo.',
+          );
           return true;
         } catch {
           patchState(store, { saving: false, error: 'تعذر إنشاء الفعالية الجديدة.' });
@@ -101,9 +111,15 @@ export const OrganizationEventsStore = signalStore(
         patchState(store, { saving: true, activeEventId: id, error: null });
         try {
           const updated = await firstValueFrom(service.updateEvent(id, changes));
+          const current = store.events().find((event) => event._id === id);
+          const normalizedUpdated = {
+            ...updated,
+            visibility: updated.visibility ?? changes.visibility ?? current?.visibility ?? 'public',
+            attendeesCount: updated.attendeesCount ?? current?.attendeesCount ?? 0,
+          };
           patchState(store, {
             events: sortEvents(
-              store.events().map((event) => (event._id === id ? updated : event)),
+              store.events().map((event) => (event._id === id ? normalizedUpdated : event)),
             ),
             saving: false,
             activeEventId: null,

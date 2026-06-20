@@ -45,8 +45,31 @@
         class="h-11 w-full rounded-xl border border-ink-border bg-ink-2 px-4 text-sm text-ink-fg outline-none transition placeholder:text-ink-muted focus:border-brand"
       />
     </label>
-    <div class="text-xs text-ink-muted">
-      عرض {{ visibleEvents().length }} من {{ store.events().length }} فعالية
+    <div class="flex flex-wrap items-center gap-2">
+      @for (
+        item of [
+          { id: 'all', label: 'كل الظهور', count: visibilityCounts().all },
+          { id: 'public', label: 'عامة', count: visibilityCounts().public },
+          { id: 'private', label: 'للمتابعين', count: visibilityCounts().private }
+        ];
+        track item.id
+      ) {
+        <button
+          type="button"
+          (click)="visibilityFilter.set($any(item.id))"
+          class="rounded-full border px-3 py-1.5 text-[11px] transition"
+          [class]="
+            visibilityFilter() === item.id
+              ? 'border-brand bg-brand/10 text-brand'
+              : 'border-ink-border bg-ink-2 text-ink-muted hover:text-ink-fg'
+          "
+        >
+          {{ item.label }} · {{ item.count }}
+        </button>
+      }
+      <span class="text-xs text-ink-muted">
+        {{ totalAttendees() }} تسجيل إجمالي
+      </span>
     </div>
   </div>
 
@@ -106,6 +129,12 @@
                 </span>
                 <span class="rounded-full border border-ink-border bg-ink px-2.5 py-1 text-[11px] text-ink-muted">
                   {{ priceLabel(event) }}
+                </span>
+                <span [class]="'rounded-full border px-2.5 py-1 text-[11px] ' + visibilityClasses(event)">
+                  {{ visibilityLabel(event) }}
+                </span>
+                <span class="rounded-full border border-ink-border bg-ink px-2.5 py-1 text-[11px] text-ink-muted">
+                  {{ event.attendeesCount }} مسجل
                 </span>
               </div>
 
@@ -221,11 +250,14 @@
           [(ngModel)]="form.title"
           name="title"
           minlength="3"
-          maxlength="100"
+          maxlength="32"
           required
           placeholder="اسم واضح للفعالية"
           class="h-11 w-full rounded-xl border border-ink-border bg-ink px-3 text-sm text-ink-fg outline-none placeholder:text-ink-muted focus:border-brand"
         />
+        <span class="block text-[11px] text-ink-muted">
+          الحد الأقصى 32 حرفاً حتى يمكن تحويل الفعالية إلى موعد للمستخدم.
+        </span>
       </label>
 
       <label class="space-y-1.5 sm:col-span-2">
@@ -321,6 +353,38 @@
               {{ category.label }}
             </button>
           }
+        </div>
+      </fieldset>
+
+      <fieldset class="space-y-2 sm:col-span-2">
+        <legend class="text-sm text-ink-fg">من يمكنه رؤية الفعالية؟</legend>
+        <div class="grid gap-2 sm:grid-cols-2">
+          <button
+            type="button"
+            (click)="form.visibility = 'public'"
+            class="rounded-xl border p-4 text-right transition"
+            [class]="
+              form.visibility === 'public'
+                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-100'
+                : 'border-ink-border bg-ink text-ink-muted hover:text-ink-fg'
+            "
+          >
+            <strong class="block text-sm">فعالية عامة</strong>
+            <span class="mt-1 block text-[11px]">تظهر لكل مستخدمي المنصة.</span>
+          </button>
+          <button
+            type="button"
+            (click)="form.visibility = 'private'"
+            class="rounded-xl border p-4 text-right transition"
+            [class]="
+              form.visibility === 'private'
+                ? 'border-amber-500/40 bg-amber-500/10 text-amber-100'
+                : 'border-ink-border bg-ink text-ink-muted hover:text-ink-fg'
+            "
+          >
+            <strong class="block text-sm">للمتابعين فقط</strong>
+            <span class="mt-1 block text-[11px]">الخادم يتيحها لمتابعي المؤسسة المقبولين.</span>
+          </button>
         </div>
       </fieldset>
     </div>

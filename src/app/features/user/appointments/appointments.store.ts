@@ -1,18 +1,24 @@
 import { patchState, signalStore, withComputed, withMethods, withState, withHooks } from '@ngrx/signals';
 import { computed, effect, inject, untracked } from '@angular/core';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { pipe, switchMap, tap, catchError, of, EMPTY, forkJoin } from 'rxjs';
+import { pipe, switchMap, tap, catchError, of, EMPTY, firstValueFrom, forkJoin } from 'rxjs';
 import { AppointmentService } from '../calendar/services/appointment.service';
 import { authStore } from '../../auth/auth.store';
 import { Appointment, AppointmentPayload } from './interfaces/IAppointment';
-import { AcceptInvitePayload, InvitService, PendingInvite } from '../map/services/invit.service';
+import {
+  AcceptInvitePayload,
+  DisplayPendingInvite,
+  InvitService,
+  normalizePendingInvite,
+} from '../map/services/invit.service';
 
 export type AppointmentsState = {
   appointments: Appointment[];
   isLoading: boolean;
   error: string | null;
-  invitationWarnings:string[] | null
-  pendingInvites:PendingInvite[]
+  invitationWarnings: string[] | null;
+  pendingInvites: DisplayPendingInvite[];
+  activeInviteId: string | null;
 };
 
 export const AppointmentsStore = signalStore(
@@ -21,8 +27,9 @@ export const AppointmentsStore = signalStore(
     appointments: [],
     isLoading: false,
     error: null,
-    invitationWarnings:null,
-    pendingInvites:[]
+    invitationWarnings: null,
+    pendingInvites: [],
+    activeInviteId: null,
   }),
   withMethods((store, appointmentService = inject(AppointmentService),invitService=inject(InvitService), auth = inject(authStore)) => {
     const enrichAppointments = (appointments: Appointment[]) => {
@@ -74,6 +81,17 @@ export const AppointmentsStore = signalStore(
           ? appointments.map((item) => (item._id === appointment._id ? appointment : item))
           : [...appointments, appointment],
       });
+    },
+    async removeAppointmentNow(id: string): Promise<boolean> {
+      try {
+        await firstValueFrom(appointmentService.deleteAppointment(id));
+        patchState(store, {
+          appointments: store.appointments().filter((appointment) => appointment._id !== id),
+        });
+        return true;
+      } catch {
+        return false;
+      }
     },
     reloadAppointmentsNow() {
       const user = auth.user();
@@ -212,9 +230,12 @@ export const AppointmentsStore = signalStore(
         tap({
           next: (response) => {
             if (response.status === 'success') {
+              const pendingInvites = (response.data?.invites ?? [])
+                .map(normalizePendingInvite)
+                .filter((invite): invite is DisplayPendingInvite => invite !== null);
               patchState(store, {
-                pendingInvites: response.data.invites,
-                isLoading: false
+                pendingInvites,
+                isLoading: false,
               });
             }
           },
@@ -238,7 +259,9 @@ export const AppointmentsStore = signalStore(
 ),
 acceptInvitation: rxMethod<{ appointmentId: string; payload: AcceptInvitePayload }>(
   pipe(
-    tap(() => patchState(store, { isLoading: true, error: null })),
+    tap(({ appointmentId }) =>
+      patchState(store, { activeInviteId: appointmentId, error: null }),
+    ),
     switchMap(({ appointmentId, payload }) =>
       invitService.acceptInvitation(appointmentId, payload).pipe(
         tap({
@@ -250,7 +273,7 @@ acceptInvitation: rxMethod<{ appointmentId: string; payload: AcceptInvitePayload
 
               patchState(store, {
                 pendingInvites: updatedPending,
-                isLoading: false
+                activeInviteId: null,
               });
               const user = auth.user();
               if (user) {
@@ -269,14 +292,14 @@ acceptInvitation: rxMethod<{ appointmentId: string; payload: AcceptInvitePayload
           error: (err) => {
             patchState(store, { 
               error: err.error?.message || 'Failed to accept invitation', 
-              isLoading: false 
+              activeInviteId: null,
             });
           }
         }),
         catchError((err) => {
           patchState(store, { 
             error: err.error?.message || 'Failed to accept invitation', 
-            isLoading: false 
+            activeInviteId: null,
           });
           return of(null);
         })
@@ -286,7 +309,9 @@ acceptInvitation: rxMethod<{ appointmentId: string; payload: AcceptInvitePayload
 ),
 declineInvitation: rxMethod<string>(
   pipe(
-    tap(() => patchState(store, { isLoading: true, error: null })),
+    tap((appointmentId) =>
+      patchState(store, { activeInviteId: appointmentId, error: null }),
+    ),
     switchMap((appointmentId) =>
       invitService.declineInvitation(appointmentId).pipe(
         tap({
@@ -298,7 +323,7 @@ declineInvitation: rxMethod<string>(
 
               patchState(store, {
                 pendingInvites: updatedPending,
-                isLoading: false
+                activeInviteId: null,
               });
 
               console.log('تم رفض الدعوة بنجاح وتحديث الـ Store!');
@@ -307,14 +332,14 @@ declineInvitation: rxMethod<string>(
           error: (err) => {
             patchState(store, { 
               error: err.error?.message || 'Failed to decline invitation', 
-              isLoading: false 
+              activeInviteId: null,
             });
           }
         }),
         catchError((err) => {
           patchState(store, { 
             error: err.error?.message || 'Failed to decline invitation', 
-            isLoading: false 
+            activeInviteId: null,
           });
           return of(null);
         })

@@ -1,11 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, catchError, map, of, switchMap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
   CreateEventInput,
   IEvent,
 } from '../../user/events/interfaces/Ievents';
+import { EventService } from '../../user/events/services/event.service';
 
 export type OrganizationEvent = IEvent;
 export type CreateOrganizationEventInput = CreateEventInput;
@@ -20,6 +21,7 @@ interface ApiResponse<T> {
 @Injectable({ providedIn: 'root' })
 export class OrganizationEventsService {
   private readonly http = inject(HttpClient);
+  private readonly eventService = inject(EventService);
   private readonly api = `${environment.apiUrl}/events`;
 
   getEvents(): Observable<OrganizationEvent[]> {
@@ -27,13 +29,23 @@ export class OrganizationEventsService {
       .get<ApiResponse<{ results: number; events: OrganizationEvent[] }>>(
         `${this.api}/company/my-events`,
       )
-      .pipe(map((response) => response.data.events));
+      .pipe(
+        map((response) => response.data.events),
+        switchMap((events) => this.eventService.enrichEvents(events)),
+      );
   }
 
   createEvent(event: CreateOrganizationEventInput): Observable<OrganizationEvent> {
     return this.http
       .post<ApiResponse<{ event: OrganizationEvent }>>(this.api, event)
-      .pipe(map((response) => response.data.event));
+      .pipe(
+        map((response) => response.data.event),
+        switchMap((created) =>
+          this.eventService.getEvent(created._id).pipe(
+            catchError(() => of({ ...created, attendeesCount: 0 })),
+          ),
+        ),
+      );
   }
 
   updateEvent(
@@ -42,7 +54,14 @@ export class OrganizationEventsService {
   ): Observable<OrganizationEvent> {
     return this.http
       .patch<ApiResponse<{ event: OrganizationEvent }>>(`${this.api}/${id}`, changes)
-      .pipe(map((response) => response.data.event));
+      .pipe(
+        map((response) => response.data.event),
+        switchMap((updated) =>
+          this.eventService.getEvent(updated._id).pipe(
+            catchError(() => of(updated)),
+          ),
+        ),
+      );
   }
 
   deleteEvent(id: string): Observable<void> {

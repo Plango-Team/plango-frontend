@@ -128,7 +128,7 @@ departureTimeLabel(appointment: Appointment): string {
 participantCount(appointment: Appointment): number {
   return appointment.participants?.filter((participant) => participant.receiverId).length ?? 0;
 }
-getMinutesRemaining(arrivalTime:string | Date) : number{
+getMinutesRemaining(arrivalTime: string | Date | null): number {
   if (!arrivalTime) return -1;
   const now = new Date();
   const eventTime = new Date(arrivalTime);

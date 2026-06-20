@@ -10,6 +10,10 @@
     <h2 class="font-display text-2xl text-ink-fg">إضافة الفعالية إلى جدولك</h2>
     @if (selectedEvent(); as event) {
       <p class="mt-1 text-sm text-ink-muted">{{ event.title }}</p>
+      <p class="mt-1 text-xs text-ink-muted">
+        {{ event.visibility === 'private' ? 'للمتابعين فقط' : 'فعالية عامة' }}
+        · {{ event.attendeesCount }} مسجل
+      </p>
     }
 
     <div class="mt-6 space-y-4">

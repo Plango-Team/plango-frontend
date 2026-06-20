@@ -161,32 +161,43 @@
     <h2 class="mb-3 text-sm font-semibold text-ink-fg">دعوات بانتظارك</h2>
     <div class="space-y-2">
       @for (invite of pendingInvites(); track invite._id) {
-        <article class="rounded-xl border border-ink-border bg-ink p-3">
-          <div class="flex items-start justify-between gap-3">
+        @let inviteBusy = appStore.activeInviteId() === invite.appointmentId._id;
+        <article class="rounded-2xl border border-ink-border bg-ink p-4 transition hover:border-brand/30">
+          <div class="flex items-start gap-3">
+            <div class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand/10 text-xs font-bold text-brand">
+              {{ invite.senderId.name.charAt(0) }}
+            </div>
             <div class="min-w-0">
-              <div class="truncate text-sm font-semibold text-ink-fg">
+              <div class="text-xs text-ink-muted">دعوة من {{ invite.senderId.name }}</div>
+              <div class="mt-1 truncate text-sm font-semibold text-ink-fg">
                 {{ invite.appointmentId.title }}
               </div>
               <div class="mt-1 text-xs text-ink-muted">
-                من {{ invite.senderId.name }} · {{ invite.appointmentId.arrivalTime | date: 'd MMM، h:mm a' }}
+                @if (invite.appointmentId.arrivalTime; as arrivalTime) {
+                  {{ arrivalTime | date: 'd MMM، h:mm a' }}
+                } @else {
+                  الوقت غير محدد
+                }
               </div>
             </div>
-            <div class="flex shrink-0 gap-2">
-              <button
-                type="button"
-                (click)="setLocModal.open(invite.appointmentId._id)"
-                class="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground"
-              >
-                قبول
-              </button>
-              <button
-                type="button"
-                (click)="appStore.declineInvitation(invite.appointmentId._id)"
-                class="rounded-lg border border-ink-border px-3 py-1.5 text-xs text-ink-muted hover:bg-ink-3"
-              >
-                رفض
-              </button>
-            </div>
+          </div>
+          <div class="mt-4 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              (click)="setLocModal.open(invite.appointmentId._id)"
+              [disabled]="inviteBusy"
+              class="rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-brand-foreground transition hover:bg-brand/90 disabled:cursor-wait disabled:opacity-50"
+            >
+              قبول
+            </button>
+            <button
+              type="button"
+              (click)="appStore.declineInvitation(invite.appointmentId._id)"
+              [disabled]="inviteBusy"
+              class="rounded-lg border border-brand/35 px-3 py-2 text-xs font-semibold text-brand transition hover:bg-brand/10 disabled:cursor-wait disabled:opacity-50"
+            >
+              {{ inviteBusy ? 'جارٍ التنفيذ...' : 'رفض' }}
+            </button>
           </div>
         </article>
       }

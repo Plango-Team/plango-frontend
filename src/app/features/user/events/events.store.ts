@@ -23,7 +23,9 @@ const initialState: EventsState = {
   isLoading: false,
   error: null,
   joiningEventId: null,
+  leavingEventId: null,
   scheduledEventIds: [],
+  eventAppointmentIds: {},
   filters: {
     selectedCategory: 'all',
     selectedPrice: 'all',
@@ -49,6 +51,9 @@ export const EventsStore = signalStore(
       });
     }),
     totalCount: computed(() => events().length),
+    attendeeCount: computed(() =>
+      events().reduce((total, event) => total + event.attendeesCount, 0),
+    ),
     upcomingCount: computed(
       () => events().filter((event) => new Date(event.startDate).getTime() > Date.now()).length,
     ),
@@ -127,6 +132,15 @@ export const EventsStore = signalStore(
           patchState(store, {
             joiningEventId: null,
             scheduledEventIds: [...new Set([...store.scheduledEventIds(), eventId])],
+            eventAppointmentIds: {
+              ...store.eventAppointmentIds(),
+              [eventId]: appointment._id,
+            },
+            events: store.events().map((item) =>
+              item._id === eventId
+                ? { ...item, attendeesCount: item.attendeesCount + 1 }
+                : item,
+            ),
           });
           toast.success('تمت إضافة الفعالية إلى جدولك', 'ستظهر الآن ضمن مواعيدك القادمة.');
           return true;
@@ -146,6 +160,38 @@ export const EventsStore = signalStore(
           return false;
         }
       },
+
+      async removeFromSchedule(eventId: string): Promise<boolean> {
+        if (store.leavingEventId()) return false;
+        const appointmentId = store.eventAppointmentIds()[eventId];
+        if (!appointmentId) {
+          toast.error('تعذر العثور على الموعد المرتبط بهذه الفعالية.');
+          return false;
+        }
+
+        patchState(store, { leavingEventId: eventId, error: null });
+        const removed = await appointmentsStore.removeAppointmentNow(appointmentId);
+        if (!removed) {
+          patchState(store, { leavingEventId: null });
+          toast.error('تعذر إلغاء الحضور', 'حاول مرة أخرى من صفحة المواعيد.');
+          return false;
+        }
+
+        const eventAppointmentIds = { ...store.eventAppointmentIds() };
+        delete eventAppointmentIds[eventId];
+        patchState(store, {
+          leavingEventId: null,
+          scheduledEventIds: store.scheduledEventIds().filter((id) => id !== eventId),
+          eventAppointmentIds,
+          events: store.events().map((item) =>
+            item._id === eventId
+              ? { ...item, attendeesCount: Math.max(0, item.attendeesCount - 1) }
+              : item,
+          ),
+        });
+        toast.info('تم إلغاء حضور الفعالية وإزالتها من جدولك.');
+        return true;
+      },
     };
   }),
 
@@ -156,11 +202,18 @@ export const EventsStore = signalStore(
       onInit() {
         store.loadEvents();
         effect(() => {
-          const eventIds = appointmentsStore
+          const eventAppointmentIds = appointmentsStore
             .appointments()
-            .map((appointment) => appointment.eventId)
-            .filter((eventId): eventId is string => typeof eventId === 'string' && !!eventId);
-          patchState(store, { scheduledEventIds: [...new Set(eventIds)] });
+            .reduce<Record<string, string>>((result, appointment) => {
+              if (typeof appointment.eventId === 'string' && appointment.eventId) {
+                result[appointment.eventId] = appointment._id;
+              }
+              return result;
+            }, {});
+          patchState(store, {
+            scheduledEventIds: Object.keys(eventAppointmentIds),
+            eventAppointmentIds,
+          });
         });
       },
     };

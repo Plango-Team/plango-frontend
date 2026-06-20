@@ -42,6 +42,18 @@ export class PushNotificationService {
 
   constructor() {
     if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      if (!environment.production && typeof caches !== 'undefined') {
+        void caches
+          .keys()
+          .then((cacheNames) =>
+            Promise.all(
+              cacheNames
+                .filter((cacheName) => cacheName.startsWith('plango-shell-'))
+                .map((cacheName) => caches.delete(cacheName)),
+            ),
+          );
+      }
+
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data?.type === 'PLANGO_NOTIFICATION_RECEIVED') {
           this.incoming.next(event.data.payload ?? {});

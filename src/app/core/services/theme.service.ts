@@ -1,33 +1,41 @@
-import { Injectable, signal, effect } from '@angular/core';
+import { effect, Injectable, signal } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ThemeService {
-  // السيجنال اللي بيتحكم في حالة الدارك مود
-  isDark = signal<boolean>(false);
+  readonly isDark = signal(this.resolveInitialTheme());
 
   constructor() {
-    // 1. نشوف هل اليوزر كان مختار ثيم قبل كدة؟
-    const savedTheme = localStorage.getItem('plango-theme');
-
-    // 2. لو مفيش، نشوف إعدادات الويندوز/الموبايل بتاعته
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    // نحدد الحالة الابتدائية
-    const initialDark = savedTheme === 'dark' || (!savedTheme && systemDark);
-    this.isDark.set(initialDark);
-
-    // 3. أي تغيير في السيجنال، هيطبق الكلاس ويحفظ في الـ LocalStorage أوتوماتيك
     effect(() => {
       const isDarkActive = this.isDark();
       document.documentElement.classList.toggle('dark', isDarkActive);
-      localStorage.setItem('plango-theme', isDarkActive ? 'dark' : 'light');
+      document.documentElement.style.colorScheme = isDarkActive ? 'dark' : 'light';
+      document
+        .querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+        ?.setAttribute('content', isDarkActive ? '#141414' : '#fffaf9');
+
+      try {
+        localStorage.setItem('plango-theme', isDarkActive ? 'dark' : 'light');
+      } catch {
+        // Theme still works when storage is unavailable.
+      }
     });
   }
 
-  // دالة التبديل
   toggleTheme() {
     this.isDark.update((v) => !v);
+  }
+
+  private resolveInitialTheme(): boolean {
+    try {
+      const savedTheme = localStorage.getItem('plango-theme');
+      if (savedTheme === 'dark') return true;
+      if (savedTheme === 'light') return false;
+    } catch {
+      // Fall through to the system preference.
+    }
+
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
 }

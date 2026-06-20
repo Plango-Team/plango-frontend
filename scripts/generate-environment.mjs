@@ -64,7 +64,8 @@ importScripts('https://www.gstatic.com/firebasejs/12.14.0/firebase-messaging-com
 firebase.initializeApp(${JSON.stringify(firebaseConfig, null, 2)});
 
 const messaging = firebase.messaging();
-const CACHE_NAME = 'plango-shell-v1';
+const ENABLE_APP_CACHE = ${!isDevelopment};
+const CACHE_NAME = 'plango-shell-v2';
 const APP_SHELL = [
   '/',
   '/manifest.webmanifest',
@@ -138,6 +139,11 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 self.addEventListener('install', (event) => {
+  if (!ENABLE_APP_CACHE) {
+    self.skipWaiting();
+    return;
+  }
+
   event.waitUntil(
     caches
       .open(CACHE_NAME)
@@ -154,7 +160,11 @@ self.addEventListener('activate', (event) => {
       .then((cacheNames) =>
         Promise.all(
           cacheNames
-            .filter((cacheName) => cacheName !== CACHE_NAME)
+            .filter(
+              (cacheName) =>
+                cacheName.startsWith('plango-shell-') &&
+                (!ENABLE_APP_CACHE || cacheName !== CACHE_NAME),
+            )
             .map((cacheName) => caches.delete(cacheName)),
         ),
       )
@@ -163,6 +173,8 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  if (!ENABLE_APP_CACHE) return;
+
   const { request } = event;
 
   if (request.method !== 'GET') return;

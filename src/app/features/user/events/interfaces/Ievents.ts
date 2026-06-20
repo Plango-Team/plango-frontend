@@ -9,6 +9,7 @@ export type EventCategory =
 
 export type EventStatus = 'inactive' | 'expired' | 'upcoming' | 'ongoing';
 export type EventPriceFilter = 'all' | 'free' | 'paid';
+export type EventVisibility = 'public' | 'private';
 export type TransportationMode = 'driving' | 'walking' | 'bicycling' | 'other';
 
 export interface EventLocation {
@@ -38,6 +39,8 @@ export interface IEvent {
   images: string[];
   isActive: boolean;
   price?: number | null;
+  visibility: EventVisibility;
+  attendeesCount: number;
   distance?: number | null;
   status?: EventStatus;
   createdAt?: string;
@@ -67,6 +70,7 @@ export interface CreateEventInput {
   endDate: string;
   price?: number;
   images?: string[];
+  visibility: EventVisibility;
 }
 
 export interface EventsState {
@@ -74,7 +78,9 @@ export interface EventsState {
   isLoading: boolean;
   error: string | null;
   joiningEventId: string | null;
+  leavingEventId: string | null;
   scheduledEventIds: string[];
+  eventAppointmentIds: Record<string, string>;
   filters: {
     selectedCategory: 'all' | EventCategory;
     selectedPrice: EventPriceFilter;

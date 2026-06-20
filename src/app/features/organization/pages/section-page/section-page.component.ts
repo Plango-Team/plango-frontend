@@ -46,6 +46,6 @@ export class OrganizationSectionPageComponent {
   }
 
   eventLocation(event: OrganizationEvent): string {
-    return event.location.addressName || event.location.fullAddress || 'الموقع غير محدد';
+    return event.location?.addressName || event.location?.fullAddress || 'الموقع غير محدد';
   }
 }

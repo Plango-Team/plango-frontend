@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { CardComponent } from '../../../../../shared/ui/card/card.component';
 import { EventModalComponent } from '../../components/event-modal/event-modal.component';
 import { EventsStore } from '../../events.store';
@@ -7,7 +8,7 @@ import { EventCategory, IEvent } from '../../interfaces/Ievents';
 
 @Component({
   selector: 'app-events-page',
-  imports: [CardComponent, DatePipe, EventModalComponent],
+  imports: [CardComponent, DatePipe, EventModalComponent, RouterLink],
   templateUrl: './events-page.component.html',
   styleUrl: './events-page.component.css',
 })
@@ -34,7 +35,7 @@ export class EventsPageComponent {
   }
 
   locationLabel(event: IEvent): string {
-    return event.location.addressName || event.location.fullAddress || 'الموقع غير محدد';
+    return event.location?.addressName || event.location?.fullAddress || 'الموقع غير محدد';
   }
 
   priceLabel(event: IEvent): string {
@@ -60,13 +61,28 @@ export class EventsPageComponent {
   }
 
   canSchedule(event: IEvent): boolean {
-    return !this.isScheduled(event) && !this.hasStarted(event);
+    return !this.isScheduled(event) && !this.hasStarted(event) && event.title.length <= 32;
   }
 
   scheduleButtonLabel(event: IEvent): string {
     if (this.isScheduled(event)) return 'مضافة إلى جدولك';
     if (this.hasEnded(event)) return 'انتهت الفعالية';
     if (this.hasStarted(event)) return 'بدأت الفعالية';
+    if (event.title.length > 32) return 'العنوان غير متوافق مع المواعيد';
     return 'إضافة إلى الجدول';
+  }
+
+  visibilityLabel(event: IEvent): string {
+    return event.visibility === 'private' ? 'للمتابعين' : 'عامة';
+  }
+
+  visibilityClasses(event: IEvent): string {
+    return event.visibility === 'private'
+      ? 'border-amber-500/30 bg-amber-500/10 text-amber-200'
+      : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200';
+  }
+
+  isLeaving(event: IEvent): boolean {
+    return this.store.leavingEventId() === event._id;
   }
 }

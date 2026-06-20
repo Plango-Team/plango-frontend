@@ -30,13 +30,16 @@ export class SetLocationModalComponent {
   
   @ViewChild('setLocModal') setLocModal!: ElementRef<HTMLDialogElement>;
   open(appId:string){
-    this.appID = appId
+    this.appID = appId;
+    this.err.set('');
+    this.success.set('');
     this.setLocModal.nativeElement.showModal();
   }
   close(){
     this.setLocModal.nativeElement.close();
   }
   onAcceptInvite(appointmentId: string) {
+    if (!appointmentId || this.appStore.activeInviteId() === appointmentId) return;
     const userLoc = this.mapStore.userLocation()
     if (!userLoc) {
       this.err.set('فعّل الموقع الحالي قبل قبول الدعوة');

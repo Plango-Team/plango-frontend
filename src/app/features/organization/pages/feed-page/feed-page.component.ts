@@ -83,6 +83,6 @@ export class OrganizationFeedPageComponent {
   }
 
   locationLabel(event: IEvent): string {
-    return event.location.addressName || event.location.fullAddress || 'الموقع غير محدد';
+    return event.location?.addressName || event.location?.fullAddress || 'الموقع غير محدد';
   }
 }

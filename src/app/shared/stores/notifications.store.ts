@@ -57,6 +57,8 @@ type NotificationsState = {
 const STORAGE_KEY = 'plango.notifications.v1';
 const PAGE_SIZE = 20;
 const MAX_LOCAL_ITEMS = 100;
+const PASSIVE_REFRESH_COOLDOWN_MS = 30_000;
+const FALLBACK_POLL_INTERVAL_MS = 5 * 60_000;
 
 const recipientId = (recipient: BackendNotification['recipient']): string =>
   typeof recipient === 'string' ? recipient : recipient?._id ?? '';
@@ -134,6 +136,8 @@ export const NotificationsStore = signalStore(
     const api = inject(NotificationApiService);
     const push = inject(PushNotificationService);
     const toast = inject(ToastService);
+    let lastRemoteLoadAt = 0;
+    let pushSyncPromise: Promise<boolean> | null = null;
 
     const persistLocal = (items: AppNotification[]) => {
       try {
@@ -161,10 +165,19 @@ export const NotificationsStore = signalStore(
       });
     };
 
-    const loadPage = (page: number, append: boolean) => {
+    const loadPage = (page: number, append: boolean, force = false) => {
       const ownerId = store.currentOwnerId();
       if (ownerId === 'guest') return;
       if ((!append && store.isLoading()) || (append && store.isLoadingMore())) return;
+      if (
+        !append &&
+        !force &&
+        Date.now() - lastRemoteLoadAt < PASSIVE_REFRESH_COOLDOWN_MS
+      ) {
+        return;
+      }
+
+      if (!append) lastRemoteLoadAt = Date.now();
 
       patchState(store, {
         isLoading: !append,
@@ -232,8 +245,8 @@ export const NotificationsStore = signalStore(
         }
       },
 
-      load() {
-        loadPage(1, false);
+      load(force = false) {
+        loadPage(1, false, force);
       },
 
       loadMore() {
@@ -242,6 +255,7 @@ export const NotificationsStore = signalStore(
       },
 
       resetRemote() {
+        lastRemoteLoadAt = 0;
         commit(store.items().filter((item) => item.source === 'local'));
         patchState(store, {
           isLoading: false,
@@ -353,34 +367,42 @@ export const NotificationsStore = signalStore(
       },
 
       async syncPushToken(requestPermission = false): Promise<boolean> {
-        patchState(store, { pushRegistrationError: null });
-        try {
-          const token = await push.getRegistrationToken(requestPermission);
-          if (!token) {
-            patchState(store, { deviceRegistered: false });
+        if (!requestPermission && store.deviceRegistered()) return true;
+        if (pushSyncPromise) return pushSyncPromise;
+
+        pushSyncPromise = (async () => {
+          patchState(store, { pushRegistrationError: null });
+          try {
+            const token = await push.getRegistrationToken(requestPermission);
+            if (!token) {
+              patchState(store, { deviceRegistered: false });
+              return false;
+            }
+            await firstValueFrom(api.saveFcmToken(token));
+            patchState(store, {
+              deviceRegistered: true,
+              pushRegistrationError: null,
+            });
+            return true;
+          } catch (error) {
+            const message =
+              push.lastError() ||
+              (error instanceof Error ? error.message : 'تعذر تسجيل هذا الجهاز');
+            patchState(store, {
+              deviceRegistered: false,
+              pushRegistrationError: message,
+            });
+            if (requestPermission) {
+              toast.error('تعذر تفعيل إشعارات الجهاز', message);
+            }
             return false;
           }
-          await firstValueFrom(api.saveFcmToken(token));
-          patchState(store, {
-            deviceRegistered: true,
-            pushRegistrationError: null,
-          });
-          return true;
-        } catch (error) {
-          const message =
-            push.lastError() ||
-            (error instanceof Error ? error.message : 'تعذر تسجيل هذا الجهاز');
-          patchState(store, {
-            deviceRegistered: false,
-            pushRegistrationError: message,
-          });
-          if (requestPermission) {
-            toast.error(
-              'تعذر تفعيل إشعارات الجهاز',
-              message,
-            );
-          }
-          return false;
+        })();
+
+        try {
+          return await pushSyncPromise;
+        } finally {
+          pushSyncPromise = null;
         }
       },
     };
@@ -391,16 +413,24 @@ export const NotificationsStore = signalStore(
     const push = inject(PushNotificationService);
     const subscriptions = new Subscription();
     let refreshTimer: ReturnType<typeof setInterval> | null = null;
-    let wasRealtimeConnected = false;
 
-    const refreshWhenAuthenticated = () => {
+    const refreshWhenAuthenticated = (force = false) => {
+      if (auth.user() && document.visibilityState === 'visible') {
+        if (!force && realtime.connected()) return;
+        store.load(force);
+      }
+    };
+
+    const handleOnline = () => {
       if (auth.user()) {
-        store.load();
+        store.load(true);
       }
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') refreshWhenAuthenticated();
+      if (document.visibilityState === 'visible' && auth.user()) {
+        store.load();
+      }
     };
 
     return {
@@ -417,17 +447,8 @@ export const NotificationsStore = signalStore(
           }),
         );
 
-        window.addEventListener('focus', refreshWhenAuthenticated);
-        window.addEventListener('online', refreshWhenAuthenticated);
+        window.addEventListener('online', handleOnline);
         document.addEventListener('visibilitychange', handleVisibilityChange);
-
-        effect(() => {
-          const isConnected = realtime.connected();
-          if (isConnected && !wasRealtimeConnected) {
-            untracked(() => store.load());
-          }
-          wasRealtimeConnected = isConnected;
-        });
 
         effect(() => {
           const user = auth.user();
@@ -452,15 +473,17 @@ export const NotificationsStore = signalStore(
             store.load();
             void store.syncPushToken(false);
             if (!refreshTimer) {
-              refreshTimer = setInterval(refreshWhenAuthenticated, 60_000);
+              refreshTimer = setInterval(
+                () => refreshWhenAuthenticated(false),
+                FALLBACK_POLL_INTERVAL_MS,
+              );
             }
           });
         });
       },
       onDestroy() {
         if (refreshTimer) clearInterval(refreshTimer);
-        window.removeEventListener('focus', refreshWhenAuthenticated);
-        window.removeEventListener('online', refreshWhenAuthenticated);
+        window.removeEventListener('online', handleOnline);
         document.removeEventListener('visibilitychange', handleVisibilityChange);
         subscriptions.unsubscribe();
         realtime.disconnect();

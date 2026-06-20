@@ -72,7 +72,7 @@
         </div>
       }
 
-      <section class="mt-7 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-ink-border bg-ink-border sm:grid-cols-3 lg:grid-cols-6">
+      <section class="mt-7 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-ink-border bg-ink-border sm:grid-cols-4 lg:grid-cols-7">
         <div class="metric-cell">
           <span>المتابعون</span>
           <strong>{{ summary().followers }}</strong>
@@ -81,12 +81,17 @@
         <div class="metric-cell">
           <span>الفعاليات</span>
           <strong>{{ summary().events }}</strong>
-          <small>{{ summary().activeEvents }} فعالية متاحة</small>
+          <small>{{ summary().publicEvents }} عامة · {{ summary().privateEvents }} للمتابعين</small>
         </div>
         <div class="metric-cell">
           <span>الفعاليات القادمة</span>
           <strong class="text-brand">{{ summary().upcomingEvents }}</strong>
           <small>مجدولة بعد اليوم</small>
+        </div>
+        <div class="metric-cell">
+          <span>المسجلون</span>
+          <strong>{{ summary().attendees }}</strong>
+          <small>عبر المواعيد المرتبطة بالفعاليات</small>
         </div>
         <div class="metric-cell">
           <span>المنشورات</span>
@@ -204,10 +209,14 @@
                       <span [class]="'rounded-full border px-2 py-0.5 text-[10px] ' + statusClasses(eventStatus(event))">
                         {{ statusLabel(eventStatus(event)) }}
                       </span>
+                      <span class="rounded-full border border-ink-border px-2 py-0.5 text-[10px] text-ink-muted">
+                        {{ visibilityLabel(event) }}
+                      </span>
                     </div>
                     <div class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-muted">
                       <span>{{ event.startDate | date: 'd MMM y، h:mm a' }}</span>
                       <span>{{ locationLabel(event) }}</span>
+                      <span>{{ event.attendeesCount }} مسجل</span>
                     </div>
                   </div>
                   <span class="text-xs text-ink-muted">{{ categoryLabel(event.category) }}</span>

@@ -53,7 +53,7 @@ export class NotificationsPageComponent {
   }
 
   refresh() {
-    this.notificationsStore.load();
+    this.notificationsStore.load(true);
   }
 
   loadMore() {

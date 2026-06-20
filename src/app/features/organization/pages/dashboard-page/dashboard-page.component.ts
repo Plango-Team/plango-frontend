@@ -59,10 +59,17 @@ export class OrganizationDashboardPageComponent {
     const posts = this.posts();
     const now = Date.now();
     const totalLikes = posts.reduce((total, post) => total + post.likeCount, 0);
+    const attendees = events.reduce(
+      (total, event) => total + event.attendeesCount,
+      0,
+    );
 
     return {
       followers: this.followers().length,
       events: events.length,
+      publicEvents: events.filter((event) => event.visibility === 'public').length,
+      privateEvents: events.filter((event) => event.visibility === 'private').length,
+      attendees,
       activeEvents: events.filter(
         (event) => event.isActive && new Date(event.endDate).getTime() >= now,
       ).length,
@@ -230,6 +237,10 @@ export class OrganizationDashboardPageComponent {
   }
 
   locationLabel(event: OrganizationEvent): string {
-    return event.location.addressName || event.location.fullAddress || 'الموقع غير محدد';
+    return event.location?.addressName || event.location?.fullAddress || 'الموقع غير محدد';
+  }
+
+  visibilityLabel(event: OrganizationEvent): string {
+    return event.visibility === 'private' ? 'للمتابعين' : 'عامة';
   }
 }
