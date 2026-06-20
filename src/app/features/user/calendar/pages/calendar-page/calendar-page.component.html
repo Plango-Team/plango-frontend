@@ -227,7 +227,7 @@
             </div>
           } @else {
             <div class="space-y-2">
-              @for (a of dayAppts; track $index) {
+              @for (a of dayAppts; track a._id) {
                 <div
                   class="rounded-xl border border-ink-border bg-ink p-3 transition-all hover:bg-ink/60 cursor-pointer"
                 >
@@ -235,23 +235,31 @@
                     <div class="min-w-0">
                       <div class="truncate flex gap-2 font-medium text-ink-fg">{{ a.title }} 
                           <span>
-                          <button class="cursor-pointer" (click)="updateModal.openUpdateAppointment(a)">
+                          <button
+                            type="button"
+                            class="cursor-pointer"
+                            (click)="updateModal.openUpdateAppointment(a)"
+                            [attr.aria-label]="ar ? 'تعديل الموعد' : 'Edit appointment'"
+                          >
                             <app-icon
                             [iconName]="'PencilEdit02Icon'"
                             [iconSize]="12"
                             [iconColor]="'currentColor'"
                           ></app-icon>
-                          <app-update-appointment-modal #updateModal></app-update-appointment-modal>
                           </button>
                         </span>
                         <span>
-                            <button class="cursor-pointer" (click)="deledtAppModal.open(a._id)">
+                            <button
+                              type="button"
+                              class="cursor-pointer"
+                              (click)="deleteAppModal.open(a._id)"
+                              [attr.aria-label]="ar ? 'حذف الموعد' : 'Delete appointment'"
+                            >
                             <app-icon
                             [iconName]="'Delete02Icon'"
                             [iconSize]="12"
                             [iconColor]="'currentColor'"
                           ></app-icon>
-                          <app-delet-app-modal #deledtAppModal></app-delet-app-modal>
                           </button>
                         </span>
                       </div>
@@ -293,6 +301,9 @@
     </div>
   }
 </dialog>
+
+<app-update-appointment-modal #updateModal></app-update-appointment-modal>
+<app-delet-app-modal #deleteAppModal></app-delet-app-modal>
 
 <!-- ============================================== -->
 <!-- Add Appointment Dialog (Modal)                 -->

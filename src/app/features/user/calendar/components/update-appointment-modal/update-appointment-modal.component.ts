@@ -34,8 +34,7 @@ private appointmentsStore = inject(AppointmentsStore);
   todayStr = computed(() => this.ymd(new Date()));
 
   
-  currentAppId = ''
-  currentApp : Appointment
+  currentAppId = '';
   updateApptTitle = '';
   updateApptDescription = '';
   updateApptOrigin = 'Home';
@@ -68,17 +67,19 @@ private appointmentsStore = inject(AppointmentsStore);
     buffers = [0, 5, 10, 15, 30]; 
     prepOptions = [0, 10, 20, 30, 45, 60];
 
-    openUpdateAppointment(appointment:Appointment) {
-        if (!appointment) return;
-        this.currentApp = appointment
-        this.currentAppId = appointment._id
-        this.updateModal.nativeElement.showModal();
-      }
+  openUpdateAppointment(appointment: Appointment | null | undefined) {
+    if (!appointment?._id) return;
+
+    this.currentAppId = appointment._id;
+    this.populateForm(appointment);
+    this.updateModal.nativeElement.showModal();
+  }
     
-      closeUpdateAppointment() {
-        this.apptError.set(null);
-        this.updateModal.nativeElement.close();
-      }
+  closeUpdateAppointment() {
+    this.apptError.set(null);
+    this.updateModal.nativeElement.close();
+    this.currentAppId = '';
+  }
     
       onOriginPlaceSelected(place: Place) {
         this.setPlaceAsOrigin(place);
@@ -291,7 +292,65 @@ console.log(JSON.stringify(appt,null,2))
       return Number.isFinite(lat) && Number.isFinite(lng) && (lat !== 0 || lng !== 0);
     }
 
-    private resetApptForm() {
+  private populateForm(appointment: Appointment) {
+    const arrival = appointment.arrivalTime
+      ? new Date(appointment.arrivalTime)
+      : new Date();
+    const origin = appointment.startLocation;
+    const destination = appointment.destinationLocation;
+
+    this.updateApptTitle = appointment.title?.trim() || '';
+    this.updateApptDescription = appointment.description?.trim() || '';
+    this.updateApptOrigin =
+      origin?.addressName || origin?.fullAddress || origin?.fullAddres || '';
+    this.updateApptOriginFullAddress =
+      origin?.fullAddress || origin?.fullAddres || origin?.addressName || '';
+    this.updateApptDestination =
+      destination?.addressName ||
+      destination?.fullAddress ||
+      destination?.fullAddres ||
+      '';
+    this.updateApptDesFullAddress =
+      destination?.fullAddress ||
+      destination?.fullAddres ||
+      destination?.addressName ||
+      '';
+    this.updateApptOriginLng = origin?.coordinates?.[0] ?? null;
+    this.updateApptOriginLat = origin?.coordinates?.[1] ?? null;
+    this.updateApptDestLng = destination?.coordinates?.[0] ?? null;
+    this.updateApptDestLat = destination?.coordinates?.[1] ?? null;
+    this.updateApptDate = this.ymd(arrival);
+    this.updateApptTime = `${String(arrival.getHours()).padStart(2, '0')}:${String(
+      arrival.getMinutes(),
+    ).padStart(2, '0')}`;
+    this.updateApptTransport = this.normalizeTransportation(appointment.transportation);
+    this.updateApptBufferMin = Number(appointment.arrivalBuffer ?? 0);
+    this.updateApptPrepMin = Number(appointment.preparationTime ?? 0);
+    this.repeat = appointment.isRecurring
+      ? appointment.repeatType || 'weekly'
+      : 'none';
+    this.repeatUntil = appointment.repeatUntil
+      ? this.ymd(new Date(appointment.repeatUntil))
+      : this.updateApptDate;
+    this.apptError.set(null);
+  }
+
+  private normalizeTransportation(value: string | null | undefined): string {
+    const modes: Record<string, string> = {
+      car: 'driving',
+      drive: 'driving',
+      driving: 'driving',
+      walk: 'walking',
+      walking: 'walking',
+      bicycle: 'bicycling',
+      bicycling: 'bicycling',
+      publicTransport: 'other',
+      other: 'other',
+    };
+    return modes[value ?? ''] ?? 'driving';
+  }
+
+  private resetApptForm() {
     this.updateApptTitle = '';
     this.updateApptOrigin = this.ar ? 'موقعي الحالي' : 'Current location';
     this.updateApptDestination = '';
