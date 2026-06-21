@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ThemeService } from '../../../core/services/theme.service';
 import { authStore } from '../auth.store';
@@ -16,9 +17,13 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 export class ForgetPasswordComponent {
   public themeService = inject(ThemeService);
   public readonly store = inject(authStore);
+  private readonly authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   currentStep = signal<1 | 2 | 3 | 4 | 5>(1);
-  verifyMethod = ''
+  verifyMethod: 'email' | 'phone' | '' = '';
+  isSubmitting = signal(false);
 
   email = '';
   phone = '';
@@ -26,33 +31,28 @@ export class ForgetPasswordComponent {
   newPassword = '';
   confirmPassword = '';
 
-  // أخطاء الخطوة الحالية
   fieldError = signal<string>('');
+  token = signal<string | null>(null);
+  successMessageLocal = signal<string | null>(null);
 
   get otpCode(): string {
     return this.otpDigits().join('');
   }
 
-  // ─────── الخطوة 1: إرسال الإيميل ───────
-  authService = inject(AuthService);
-  private route = inject(ActivatedRoute);
-  token = signal<string | null>(null);
-  successMessageLocal = signal<string | null>(null);
-
   constructor() {
-    const queryToken = this.route.snapshot.queryParams['token'] as string | undefined;
-    const paramToken = this.route.snapshot.params['token'] as string | undefined;
+    const queryToken = this.route.snapshot.queryParamMap.get('token');
+    const paramToken = this.route.snapshot.paramMap.get('token');
     const tokenValue = queryToken || paramToken || null;
+
     this.token.set(tokenValue);
-    console.log('Extracted Token:', tokenValue);
     if (tokenValue) {
       this.currentStep.set(4);
     }
   }
 
-
   chooseVerifyMethod(method: 'email' | 'phone') {
     this.verifyMethod = method;
+    this.clearMessages();
     this.currentStep.set(2);
   }
 
@@ -65,56 +65,60 @@ export class ForgetPasswordComponent {
       this.fieldError.set('تنسيق البريد الإلكتروني غير صحيح');
       return;
     }
-    this.fieldError.set('');
-    this.store.clearError();
-    this.successMessageLocal.set(null);
+    this.clearMessages();
+    this.isSubmitting.set(true);
 
     this.authService.forgotPassword({ email: this.email }).subscribe({
       next: (res: any) => {
-        // prefer backend message
-        const message = res?.message ?? (res?.data?.message) ?? 'تم إرسال كود التحقق إلى بريدك الإلكتروني.';
+        const message =
+          res?.message ??
+          res?.data?.message ??
+          'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.';
         this.successMessageLocal.set(message);
         this.currentStep.set(3);
       },
       error: (err) => {
         const msg = err?.error?.message ?? err?.message ?? 'فشل إرسال الطلب.';
-        this.store.clearError();
         this.fieldError.set(msg);
       },
+    }).add(() => {
+      this.isSubmitting.set(false);
     });
   }
 
   submitPhone() {
-  if (!this.phone.trim()) {
-    this.fieldError.set('يرجى إدخال رقم الهاتف');
-    return;
+    this.phone = this.phone.trim();
+    if (!this.phone) {
+      this.fieldError.set('يرجى إدخال رقم الهاتف');
+      return;
+    }
+
+    if (!/^\+[1-9]\d{6,14}$/.test(this.phone)) {
+      this.fieldError.set('أدخل رقم الهاتف بالصيغة الدولية، مثال: +201001234567');
+      return;
+    }
+
+    this.clearMessages();
+    this.isSubmitting.set(true);
+
+    this.authService.requestResetOtp(this.phone).subscribe({
+      next: (res: any) => {
+        const message =
+          res?.message ??
+          res?.data?.message ??
+          'تم إرسال كود التحقق إلى حساب واتساب المرتبط برقمك.';
+        this.successMessageLocal.set(message);
+        this.currentStep.set(3);
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? err?.message ?? 'فشل إرسال كود التحقق.';
+        this.fieldError.set(msg);
+      },
+    }).add(() => {
+      this.isSubmitting.set(false);
+    });
   }
-  
-  if (!/^\+?[1-9]\d{1,14}$/.test(this.phone.trim())) {
-    this.fieldError.set('تنسيق رقم الهاتف غير صحيح (مثال: 201001234567+)');
-    return;
-  }
 
-  this.fieldError.set('');
-  this.store.clearError();
-  this.successMessageLocal.set(null);
-
-  this.authService.requestResetOtp(this.phone).subscribe({
-    next: (res: any) => {
-      const message = res?.message ?? res?.data?.message ?? 'تم إرسال كود التحقق (OTP) إلى حساب الواتساب الخاص بك.';
-      this.successMessageLocal.set(message);
-      
-      this.currentStep.set(3); 
-    },
-    error: (err) => {
-      const msg = err?.error?.message ?? err?.message ?? 'فشل إرسال كود التحقق.';
-      this.store.clearError();
-      this.fieldError.set(msg);
-    },
-  });
-}
-
-  // ─────── التعامل مع OTP Input ───────
   onOtpInput(event: Event, index: number) {
     const input = event.target as HTMLInputElement;
     const value = input.value;
@@ -130,7 +134,6 @@ export class ForgetPasswordComponent {
       return newDigits;
     });
 
-    // الانتقال للخانة التالية
     if (value && index < 5) {
       const nextInput = input.parentElement?.querySelectorAll('input')[index + 1] as HTMLInputElement;
       nextInput?.focus();
@@ -153,52 +156,50 @@ export class ForgetPasswordComponent {
 
     if (digits.length === 6) {
       this.otpDigits.set(digits.split(''));
-      // Focus last input
       const inputs = (event.target as HTMLInputElement).parentElement?.querySelectorAll('input');
       (inputs?.[5] as HTMLInputElement)?.focus();
     }
   }
 
-  // ─────── الخطوة 2: التحقق من OTP ───────
   verifyOtp() {
     if (this.otpCode.length !== 6) {
       this.fieldError.set('يرجى إدخال كود التحقق كاملاً (6 أرقام)');
       return;
     }
-    this.fieldError.set('');
-    this.store.clearError();
 
-    const checkInterval = setInterval(() => {
-      if (this.store.successMessage()) {
-        this.currentStep.set(5);
-        this.store.clearSuccess();
-        clearInterval(checkInterval);
-      }
-      if (this.store.error()) {
-        clearInterval(checkInterval);
-      }
-    }, 100);
+    this.clearMessages();
+    this.currentStep.set(4);
   }
 
-  // ─────── الخطوة 3: كلمة مرور جديدة ───────
   resetPassword() {
     if (!this.newPassword.trim()) {
       this.fieldError.set('يرجى إدخال كلمة المرور الجديدة');
       return;
     }
-    if (this.newPassword.length < 6) {
-      this.fieldError.set('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+    if (this.newPassword.length < 8) {
+      this.fieldError.set('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+      return;
+    }
+    if (!/[A-Z]/.test(this.newPassword) || !/[a-z]/.test(this.newPassword)) {
+      this.fieldError.set('كلمة المرور يجب أن تحتوي على حرف إنجليزي كبير وصغير');
+      return;
+    }
+    if (!/\d/.test(this.newPassword)) {
+      this.fieldError.set('كلمة المرور يجب أن تحتوي على رقم واحد على الأقل');
+      return;
+    }
+    if (!/[@$!%*?&^#]/.test(this.newPassword)) {
+      this.fieldError.set('كلمة المرور يجب أن تحتوي على رمز خاص مثل @ أو #');
       return;
     }
     if (this.newPassword !== this.confirmPassword) {
       this.fieldError.set('كلمة المرور غير متطابقة');
       return;
     }
-    this.fieldError.set('');
-    this.store.clearError();
 
     const tokenValue = this.token() ?? '';
-    console.log('Submitting reset password with token:', tokenValue);
+    this.clearMessages();
+    this.isSubmitting.set(true);
 
     if (tokenValue) {
       this.authService
@@ -207,81 +208,62 @@ export class ForgetPasswordComponent {
           newPassword: this.newPassword,
           confirmPassword: this.confirmPassword,
         })
+        .pipe(finalize(() => this.isSubmitting.set(false)))
         .subscribe({
-          next: () => {
-            this.currentStep.set(5);
-          },
+          next: () => this.completeReset(),
           error: (err) => {
             const msg = err?.error?.message ?? err?.message ?? 'فشل إعادة تعيين كلمة المرور.';
-            this.store.clearError();
             this.fieldError.set(msg);
           },
         });
       return;
     }
 
-    this.store.resetPassword({
-      email: this.email,
-      otp: this.otpCode,
-      newPassword: this.newPassword,
-    });
+    if (this.verifyMethod !== 'phone' || this.otpCode.length !== 6) {
+      this.isSubmitting.set(false);
+      this.fieldError.set('رابط أو كود إعادة التعيين غير صالح. ابدأ الطلب مرة أخرى.');
+      return;
+    }
 
-    const checkInterval = setInterval(() => {
-      if (this.store.successMessage()) {
-        this.currentStep.set(5);
-        clearInterval(checkInterval);
-      }
-      if (this.store.error()) {
-        clearInterval(checkInterval);
-      }
-    }, 100);
+    this.authService
+      .resetPasswordWithOtp({
+        phone: this.phone,
+        otp: this.otpCode,
+        newPassword: this.newPassword,
+        confirmPassword: this.confirmPassword,
+      })
+      .pipe(finalize(() => this.isSubmitting.set(false)))
+      .subscribe({
+        next: () => this.completeReset(),
+        error: (err) => {
+          const msg = err?.error?.message ?? err?.message ?? 'فشل إعادة تعيين كلمة المرور.';
+          this.fieldError.set(msg);
+        },
+      });
   }
 
-  resetPasswordOtp() {
-    if (!this.newPassword.trim()) {
-      this.fieldError.set('يرجى إدخال كلمة المرور الجديدة');
+  resendRecovery(): void {
+    this.otpDigits.set(['', '', '', '', '', '']);
+    if (this.verifyMethod === 'email') {
+      this.submitEmail();
       return;
     }
-    if (this.newPassword.length < 6) {
-      this.fieldError.set('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
-      return;
-    }
-    if (this.newPassword !== this.confirmPassword) {
-      this.fieldError.set('كلمة المرور غير متطابقة');
-      return;
-    }
-     if (this.otpCode.length !== 6) {
-      this.fieldError.set('يرجى إدخال كود التحقق كاملاً (6 أرقام)');
-      return;
-    }
+
+    this.submitPhone();
+  }
+
+  private clearMessages(): void {
     this.fieldError.set('');
+    this.successMessageLocal.set(null);
     this.store.clearError();
-
-      if(this.otpCode){
-        this.authService.resetPasswordWithOtp({
-          phone: this.phone,
-          otp: this.otpCode,
-          newPassword: this.newPassword,
-          confirmPassword: this.confirmPassword,
-        })
-        .subscribe({
-          next: () => {
-            this.currentStep.set(5);
-          },
-          error: (err) => {
-            const msg = err?.error?.message ?? err?.message ?? 'فشل إعادة تعيين كلمة المرور.';
-            this.store.clearError();
-            this.fieldError.set(msg);
-          },
-        });
-      return;
-      }
+    this.store.clearSuccess();
   }
 
-  // ─────── إعادة إرسال OTP ───────
-  // resendOtp() {
-  //   this.otpDigits.set(['', '', '', '', '', '']);
-  //   this.store.clearError();
-  //   this.store.forgotPassword({ email: this.email });
-  // }
+  private completeReset(): void {
+    this.currentStep.set(5);
+    this.successMessageLocal.set('تم تغيير كلمة المرور بنجاح.');
+    setTimeout(() => {
+      void this.router.navigate(['/auth/login'], { replaceUrl: true });
+    }, 2000);
+  }
 }

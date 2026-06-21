@@ -351,10 +351,21 @@ export const authStore = signalStore(
       pipe(
         tap(() => patchState(store, { isLoading: true })),
         switchMap(() => {
-          if (
-            typeof window !== 'undefined' &&
-            window.location.pathname.startsWith('/auth/callback')
-          ) {
+          const publicAuthPaths = [
+            '/auth/login',
+            '/auth/signup',
+            '/auth/forget-password',
+            '/auth/reset-password',
+            '/reset-password',
+            '/verify-email',
+            '/auth/verify-email',
+            '/auth/email/confirm-change',
+            '/auth/callback',
+          ];
+          const currentPath =
+            typeof window !== 'undefined' ? window.location.pathname : '';
+
+          if (publicAuthPaths.some((path) => currentPath.startsWith(path))) {
             patchState(store, { isLoading: false });
             return of(null);
           }

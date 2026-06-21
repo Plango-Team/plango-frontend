@@ -51,7 +51,10 @@ export class LoginComponent implements OnInit {
     const onVerifyPath = currentPath.includes('/verify-email');
 
     if (token && onLoginPath && !onVerifyPath) {
-      this.router.navigate(['/auth/forget-password'], { queryParams: { token } });
+      this.router.navigate(['/auth/reset-password'], {
+        queryParams: { token },
+        replaceUrl: true,
+      });
     }
   }
 
