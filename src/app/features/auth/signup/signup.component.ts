@@ -34,6 +34,7 @@ export class SignupComponent {
   email = '';
   phoneNumber = '';
   password = '';
+  confPassword = '';
   username = '';
   city = '';
   bio = '';
@@ -100,11 +101,17 @@ export class SignupComponent {
       errors['phoneNumber'] = this.language.instant('auth.signup.validation.phoneInvalid');
     }
     const passValue = this.password.trim();
+    const confPassValue = this.confPassword.trim();
     const passwordRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passValue) {
       errors['password'] = this.language.instant('auth.signup.validation.passwordRequired');
     } else if (!passwordRegex.test(passValue)) {
       errors['password'] = this.language.instant('auth.signup.validation.passwordInvalid');
+    }
+    if (!confPassValue) {
+      errors['confpassword'] = 'يرجى تأكيد كلمة المرور';
+    } else if(confPassValue !== passValue){
+      errors['confpassword'] = 'تأكيد كلمة المرور غير متطابق';
     }
 
     this.step2Errors.set(errors);
@@ -205,7 +212,7 @@ export class SignupComponent {
       firstName,
       lastName,
       displayName,
-      username,
+      username : this.username.trim().toLowerCase(),
       email: this.email,
       phoneNumber: this.phoneNumber,
       password: this.password,
@@ -222,7 +229,8 @@ export class SignupComponent {
         locationTracking: true,
       },
     };
-
+      console.log(signUpData)
     this.store.signUp(signUpData);
   }
 }
+                                               

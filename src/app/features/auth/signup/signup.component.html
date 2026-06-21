@@ -224,6 +224,21 @@
                     <p class="mt-1 text-xs text-brand">{{ step2Errors()['password'] }}</p>
                   }
                 </div>
+
+                <div class="space-y-1.5">
+                  <label class="text-sm font-medium text-ink-foreground">تأكيد كلمة المرور</label>
+                  <input
+                    type="password"
+                    [(ngModel)]="confPassword"
+                    name="confpassword"
+                    placeholder="••••••••"
+                    class="h-11 w-full rounded-lg border border-ink-border bg-ink px-3 text-ink-foreground placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand transition-colors"
+                    [class.border-red-500]="step2Errors()['confpassword']"
+                  />
+                  @if (step2Errors()['password']) {
+                    <p class="mt-1 text-xs text-brand">{{ step2Errors()['confpassword'] }}</p>
+                  }
+                </div>
               </div>
             </div>
           }
