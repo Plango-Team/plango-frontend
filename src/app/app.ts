@@ -5,6 +5,7 @@ import { initFlowbite } from 'flowbite/lib/esm/components';
 import { authStore } from './features/auth/auth.store';
 import { ToastOutletComponent } from './shared/components/toast-outlet/toast-outlet.component';
 import { NotificationsStore } from './shared/stores/notifications.store';
+import { LanguageService } from './core/services/language.service';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ export class App {
   protected readonly title = signal('PlanGo');
   private authStore = inject(authStore);
   private notificationsStore = inject(NotificationsStore);
+  private languageService = inject(LanguageService);
   // flowbite تاني
   constructor(private flowbiteService: FlowbiteService) {
     this.authStore.initAuth();

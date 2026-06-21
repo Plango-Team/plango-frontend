@@ -1,8 +1,8 @@
 <div class="px-4 pb-12 pt-5 sm:px-6 lg:px-8">
   <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
     <div>
-      <h1 class="font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">اكتشف الفعاليات</h1>
-      <p class="text-sm text-ink-muted">فعاليات حقيقية من مؤسسات PlanGo، أضفها مباشرة إلى جدولك.</p>
+      <h1 class="font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">{{ 'legacy.9f603d6f12af' | translate }}</h1>
+      <p class="text-sm text-ink-muted">{{ 'legacy.fdfb1eaf717b' | translate }}</p>
     </div>
     <button
       type="button"
@@ -10,32 +10,32 @@
       [disabled]="store.isLoading()"
       class="rounded-full border border-ink-border bg-ink-2 px-4 py-2 text-xs text-ink-fg hover:bg-ink-3 disabled:opacity-50"
     >
-      تحديث
+      {{ 'legacy.4309a75e6882' | translate }}
     </button>
   </div>
 
   <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
     <app-card customClass="text-ink-fg">
-      <p class="text-xs text-ink-muted">إجمالي الفعاليات</p>
+      <p class="text-xs text-ink-muted">{{ 'legacy.e82c451ddf1d' | translate }}</p>
       <div class="mt-2 font-display text-3xl">{{ store.totalCount() }}</div>
     </app-card>
     <app-card customClass="text-ink-fg">
-      <p class="text-xs text-ink-muted">قادمة</p>
+      <p class="text-xs text-ink-muted">{{ 'legacy.8b14e3ff2059' | translate }}</p>
       <div class="mt-2 font-display text-3xl text-brand">{{ store.upcomingCount() }}</div>
     </app-card>
     <app-card customClass="text-ink-fg">
-      <p class="text-xs text-ink-muted">تقام الآن</p>
+      <p class="text-xs text-ink-muted">{{ 'legacy.db97ddb1a036' | translate }}</p>
       <div class="mt-2 font-display text-3xl">{{ store.ongoingCount() }}</div>
     </app-card>
     <app-card customClass="text-ink-fg">
-      <p class="text-xs text-ink-muted">إجمالي المسجلين</p>
+      <p class="text-xs text-ink-muted">{{ 'legacy.b3e5f248dddf' | translate }}</p>
       <div class="mt-2 font-display text-3xl">{{ store.attendeeCount() }}</div>
     </app-card>
   </div>
 
   <div class="mt-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
     <div class="flex flex-wrap gap-2">
-      @for (category of categories; track category.id) {
+      @for (category of categories(); track category.id) {
         <button
           type="button"
           (click)="store.updateCategory(category.id)"
@@ -58,7 +58,7 @@
         [class]="store.filters.selectedPrice() === 'all' ? 'border-brand text-brand' : 'border-ink-border text-ink-muted'"
         class="rounded-full border bg-ink-2 px-4 py-2 text-xs"
       >
-        كل الأسعار
+        {{ 'legacy.0d7976f935dc' | translate }}
       </button>
       <button
         type="button"
@@ -66,7 +66,7 @@
         [class]="store.filters.selectedPrice() === 'free' ? 'border-brand text-brand' : 'border-ink-border text-ink-muted'"
         class="rounded-full border bg-ink-2 px-4 py-2 text-xs"
       >
-        مجاني
+        {{ 'legacy.67c20675caf8' | translate }}
       </button>
       <button
         type="button"
@@ -74,7 +74,7 @@
         [class]="store.filters.selectedPrice() === 'paid' ? 'border-brand text-brand' : 'border-ink-border text-ink-muted'"
         class="rounded-full border bg-ink-2 px-4 py-2 text-xs"
       >
-        مدفوع
+        {{ 'legacy.ad29ae3715f1' | translate }}
       </button>
     </div>
   </div>
@@ -93,7 +93,7 @@
         (click)="store.loadEvents()"
         class="mt-4 rounded-full border border-red-400/40 px-4 py-2 text-xs text-red-200"
       >
-        إعادة المحاولة
+        {{ 'legacy.2e47b5f289f1' | translate }}
       </button>
     </div>
   } @else {
@@ -125,9 +125,16 @@
             <div class="mt-4 space-y-1.5 text-xs text-ink-muted">
               <div>{{ event.startDate | date: 'd MMMM y، h:mm a' }}</div>
               <div>{{ locationLabel(event) }}</div>
-              <div>{{ event.attendeesCount }} مسجل في الفعالية</div>
+              <div>
+                {{
+                  language.text(
+                    event.attendeesCount + ' مسجل في الفعالية',
+                    event.attendeesCount + ' registered for this event'
+                  )
+                }}
+              </div>
               @if (distanceLabel(event); as distance) {
-                <div>{{ distance }} من موقعك</div>
+                <div>{{ language.text(distance + ' من موقعك', distance + ' from you') }}</div>
               }
             </div>
 
@@ -137,7 +144,7 @@
                   routerLink="/user/appointments"
                   class="rounded-lg bg-brand px-4 py-2 text-center text-sm font-medium text-brand-foreground hover:bg-brand/90"
                 >
-                  فتح الموعد
+                  {{ 'legacy.b8e260a291ee' | translate }}
                 </a>
                 <button
                   type="button"
@@ -145,7 +152,11 @@
                   [disabled]="isLeaving(event)"
                   class="rounded-lg border border-red-500/30 px-4 py-2 text-sm font-medium text-red-300 hover:bg-red-500/10 disabled:opacity-50"
                 >
-                  {{ isLeaving(event) ? 'جارٍ الإلغاء...' : 'إلغاء الحضور' }}
+                  {{
+                    isLeaving(event)
+                      ? language.text('جارٍ الإلغاء...', 'Cancelling...')
+                      : language.text('إلغاء الحضور', 'Cancel attendance')
+                  }}
                 </button>
               </div>
             } @else {
@@ -162,8 +173,8 @@
         </article>
       } @empty {
         <div class="md:col-span-2 xl:col-span-3 rounded-2xl border border-dashed border-ink-border p-12 text-center">
-          <h2 class="font-display text-lg text-ink-fg">لا توجد فعاليات ضمن هذا الفلتر</h2>
-          <p class="mt-2 text-sm text-ink-muted">جرّب فئة أو سعراً مختلفاً.</p>
+          <h2 class="font-display text-lg text-ink-fg">{{ 'legacy.3e48806320bf' | translate }}</h2>
+          <p class="mt-2 text-sm text-ink-muted">{{ 'legacy.184e620b1b06' | translate }}</p>
         </div>
       }
     </div>

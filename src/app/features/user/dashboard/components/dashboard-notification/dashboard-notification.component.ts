@@ -1,9 +1,10 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { Component, signal } from '@angular/core';
 import { IconComponent } from '../../../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-dashboard-notification',
-  imports: [IconComponent],
+  imports: [TranslatePipe, IconComponent],
   templateUrl: './dashboard-notification.component.html',
   styleUrl: './dashboard-notification.component.css',
 })

@@ -15,6 +15,7 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { IconComponent } from '../icon/icon.component';
 import { PlacesService, Place } from '../../services/places.service';
+import { LanguageService } from '../../../core/services/language.service';
 
 @Component({
   selector: 'app-location-combobox',
@@ -27,30 +28,30 @@ import { PlacesService, Place } from '../../services/places.service';
           [iconName]="'Location01Icon'"
           [iconSize]="16"
           [iconColor]="'var(--color-ink-muted)'"
-          class="absolute right-3 top-1/2 z-10 -translate-y-1/2 pointer-events-none"
+          class="pointer-events-none absolute start-3 top-1/2 z-10 -translate-y-1/2"
         ></app-icon>
         <input
           [ngModel]="value()"
           (ngModelChange)="onInput($event)"
           (focus)="onFocus()"
           (keydown.enter)="searchNow($event)"
-          [placeholder]="placeholder()"
+          [placeholder]="placeholder() || language.text('ابحث عن مكان...', 'Search for a place...')"
           [attr.aria-expanded]="open()"
           [attr.aria-busy]="isSearching()"
-          class="h-10 w-full rounded-lg border border-ink-border bg-ink pr-10 pl-10 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          class="h-10 w-full rounded-lg border border-ink-border bg-ink px-10 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
         />
 
         @if (isSearching()) {
-          <div class="absolute left-3 top-1/2 -translate-y-1/2">
+          <div class="absolute end-3 top-1/2 -translate-y-1/2">
             <div class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-brand border-t-transparent"></div>
           </div>
         } @else {
           <button
             type="button"
             (click)="searchNow()"
-            class="absolute left-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md text-ink-muted transition-colors hover:bg-ink-3 hover:text-ink-fg"
-            [title]="searchLabel()"
-            [attr.aria-label]="searchLabel()"
+            class="absolute end-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md text-ink-muted transition-colors hover:bg-ink-3 hover:text-ink-fg"
+            [title]="searchLabel() || language.text('بحث', 'Search')"
+            [attr.aria-label]="searchLabel() || language.text('بحث', 'Search')"
           >
             <app-icon [iconName]="'Search01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
           </button>
@@ -62,7 +63,7 @@ import { PlacesService, Place } from '../../services/places.service';
           @if (results().length === 0 && !isSearching()) {
             <div class="flex items-center gap-2 px-3 py-2.5 text-xs text-ink-muted">
               <app-icon [iconName]="'Search01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
-              لا توجد نتائج
+              {{ language.text('لا توجد نتائج', 'No results') }}
             </div>
           }
           @for (p of results(); track p.id) {
@@ -80,7 +81,7 @@ import { PlacesService, Place } from '../../services/places.service';
               </span>
               @if (p.distanceKm) {
                 <span class="shrink-0 text-[11px] text-ink-muted tabular-nums">
-                  {{ p.distanceKm }} كم
+                  {{ p.distanceKm }} {{ language.text('كم', 'km') }}
                 </span>
               }
             </button>
@@ -92,7 +93,12 @@ import { PlacesService, Place } from '../../services/places.service';
               class="mt-1 flex w-full items-center gap-2 rounded-md border border-dashed border-ink-border px-3 py-2 text-start text-sm text-ink-fg transition-colors hover:bg-ink-3"
             >
               <app-icon [iconName]="'Add01Icon'" [iconSize]="14" [iconColor]="'var(--color-brand)'"></app-icon>
-              إضافة "{{ value() }}" كمكان جديد
+              {{
+                language.text(
+                  'إضافة "' + value() + '" كمكان جديد',
+                  'Add "' + value() + '" as a new place'
+                )
+              }}
             </button>
           }
         </div>
@@ -102,12 +108,13 @@ import { PlacesService, Place } from '../../services/places.service';
 })
 export class LocationComboboxComponent implements OnInit, OnDestroy {
   private placesService = inject(PlacesService);
+  readonly language = inject(LanguageService);
   private subs: Subscription[] = [];
 
   value = input<string>('');
-  placeholder = input<string>('ابحث عن مكان...');
+  placeholder = input<string>('');
   allowCreate = input<boolean>(true);
-  searchLabel = input<string>('بحث');
+  searchLabel = input<string>('');
   valueChange = output<string>();
   placeSelected = output<Place>();
 

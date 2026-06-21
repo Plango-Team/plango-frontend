@@ -1,9 +1,11 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { DatePipe } from '@angular/common';
 import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { LocationComboboxComponent } from '../../../../shared/components/location-combobox/location-combobox.component';
 import { Place, PlacesService } from '../../../../shared/services/places.service';
+import { LanguageService } from '../../../../core/services/language.service';
 import {
   EventCategory,
   EventVisibility,
@@ -16,7 +18,7 @@ type EventsFilter = 'upcoming' | 'ongoing' | 'past' | 'inactive' | 'all';
 @Component({
   selector: 'app-organization-events-page',
   standalone: true,
-  imports: [FormsModule, DatePipe, LocationComboboxComponent],
+  imports: [TranslatePipe, FormsModule, DatePipe, LocationComboboxComponent],
   templateUrl: './events-page.component.html',
 })
 export class OrganizationEventsPageComponent {
@@ -24,6 +26,7 @@ export class OrganizationEventsPageComponent {
 
   readonly store = inject(OrganizationEventsStore);
   private readonly placesService = inject(PlacesService);
+  readonly language = inject(LanguageService);
 
   readonly filter = signal<EventsFilter>('upcoming');
   readonly visibilityFilter = signal<'all' | EventVisibility>('all');
@@ -31,26 +34,44 @@ export class OrganizationEventsPageComponent {
   readonly editingId = signal<string | null>(null);
   readonly formError = signal<string | null>(null);
 
-  readonly categories: { id: EventCategory; label: string }[] = [
-    { id: 'technology', label: 'تقنية' },
-    { id: 'education', label: 'تعليم' },
-    { id: 'music', label: 'موسيقى' },
-    { id: 'sports', label: 'رياضة' },
-    { id: 'photography', label: 'تصوير' },
-    { id: 'art', label: 'فن' },
-    { id: 'other', label: 'أخرى' },
-  ];
+  readonly categories = computed<{ id: EventCategory; label: string }[]>(() => [
+    { id: 'technology', label: this.language.text('تقنية', 'Technology') },
+    { id: 'education', label: this.language.text('تعليم', 'Education') },
+    { id: 'music', label: this.language.text('موسيقى', 'Music') },
+    { id: 'sports', label: this.language.text('رياضة', 'Sports') },
+    { id: 'photography', label: this.language.text('تصوير', 'Photography') },
+    { id: 'art', label: this.language.text('فن', 'Art') },
+    { id: 'other', label: this.language.text('أخرى', 'Other') },
+  ]);
 
   form = this.emptyForm();
   selectedPlace: Place | null = null;
 
-  readonly filterTabs: Array<{ id: EventsFilter; label: string }> = [
-    { id: 'upcoming', label: 'القادمة' },
-    { id: 'ongoing', label: 'الجارية' },
-    { id: 'past', label: 'السابقة' },
-    { id: 'inactive', label: 'الموقوفة' },
-    { id: 'all', label: 'الكل' },
-  ];
+  readonly filterTabs = computed<Array<{ id: EventsFilter; label: string }>>(() => [
+    { id: 'upcoming', label: this.language.text('القادمة', 'Upcoming') },
+    { id: 'ongoing', label: this.language.text('الجارية', 'Ongoing') },
+    { id: 'past', label: this.language.text('السابقة', 'Past') },
+    { id: 'inactive', label: this.language.text('الموقوفة', 'Inactive') },
+    { id: 'all', label: this.language.text('الكل', 'All') },
+  ]);
+
+  readonly visibilityTabs = computed(() => [
+    {
+      id: 'all' as const,
+      label: this.language.text('كل الظهور', 'All visibility'),
+      count: this.visibilityCounts().all,
+    },
+    {
+      id: 'public' as const,
+      label: this.language.text('عامة', 'Public'),
+      count: this.visibilityCounts().public,
+    },
+    {
+      id: 'private' as const,
+      label: this.language.text('للمتابعين', 'Followers only'),
+      count: this.visibilityCounts().private,
+    },
+  ]);
 
   readonly filterCounts = computed(() => {
     const now = Date.now();
@@ -202,7 +223,10 @@ export class OrganizationEventsPageComponent {
       end <= start
     ) {
       this.formError.set(
-        'أكمل العنوان والوصف والموقع، وتأكد أن وقت النهاية بعد وقت البداية.',
+        this.language.text(
+          'أكمل العنوان والوصف والموقع، وتأكد أن وقت النهاية بعد وقت البداية.',
+          'Complete the title, description, and location, and make sure the end time is after the start time.',
+        ),
       );
       return;
     }
@@ -233,23 +257,39 @@ export class OrganizationEventsPageComponent {
   }
 
   async deleteEvent(event: OrganizationEvent) {
-    if (!confirm(`حذف فعالية "${event.title}"؟ سيتم حذف المواعيد المرتبطة بها أيضاً.`)) {
+    if (
+      !confirm(
+        this.language.text(
+          `حذف فعالية "${event.title}"؟ سيتم حذف المواعيد المرتبطة بها أيضاً.`,
+          `Delete "${event.title}"? Its linked appointments will also be deleted.`,
+        ),
+      )
+    ) {
       return;
     }
     await this.store.deleteEvent(event._id);
   }
 
   categoryLabel(category: EventCategory): string {
-    return this.categories.find((item) => item.id === category)?.label ?? category;
+    return this.categories().find((item) => item.id === category)?.label ?? category;
   }
 
   locationLabel(event: OrganizationEvent): string {
-    return event.location?.addressName || event.location?.fullAddress || 'الموقع غير محدد';
+    return (
+      event.location?.addressName ||
+      event.location?.fullAddress ||
+      this.language.text('الموقع غير محدد', 'Location not specified')
+    );
   }
 
   priceLabel(event: OrganizationEvent): string {
     const price = event.price ?? 0;
-    return price ? `${price.toLocaleString('ar-EG')} ج.م` : 'مجاني';
+    return price
+      ? this.language.text(
+          `${this.language.formatNumber(price)} ج.م`,
+          `EGP ${this.language.formatNumber(price)}`,
+        )
+      : this.language.text('مجاني', 'Free');
   }
 
   eventStatus(event: OrganizationEvent): 'upcoming' | 'ongoing' | 'past' | 'inactive' {
@@ -262,10 +302,10 @@ export class OrganizationEventsPageComponent {
 
   statusLabel(event: OrganizationEvent): string {
     const labels = {
-      upcoming: 'قادمة',
-      ongoing: 'جارية الآن',
-      past: 'انتهت',
-      inactive: 'موقوفة',
+      upcoming: this.language.text('قادمة', 'Upcoming'),
+      ongoing: this.language.text('جارية الآن', 'Ongoing'),
+      past: this.language.text('انتهت', 'Ended'),
+      inactive: this.language.text('موقوفة', 'Inactive'),
     };
     return labels[this.eventStatus(event)];
   }
@@ -290,7 +330,9 @@ export class OrganizationEventsPageComponent {
   }
 
   visibilityLabel(event: OrganizationEvent): string {
-    return event.visibility === 'private' ? 'خاصة بالمتابعين' : 'عامة';
+    return event.visibility === 'private'
+      ? this.language.text('خاصة بالمتابعين', 'Followers only')
+      : this.language.text('عامة', 'Public');
   }
 
   visibilityClasses(event: OrganizationEvent): string {

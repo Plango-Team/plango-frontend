@@ -14,6 +14,8 @@ import { AuthService } from '../../services/auth/auth.service';
 import { TasksStore } from '../../../features/user/tasks/tasks.store';
 import { EventsStore } from '../../../features/user/events/events.store';
 import { OrganizationEventsStore } from '../../../features/organization/stores/organization-events.store';
+import { LanguageService } from '../../services/language.service';
+import { TranslatePipe } from '@ngx-translate/core';
 
 type SearchKind = 'page' | 'profile' | 'post' | 'task' | 'event';
 
@@ -30,12 +32,13 @@ type DashboardSearchResult = {
 
 @Component({
   selector: 'app-navbar',
-  imports: [IconComponent, RouterLink],
+  imports: [IconComponent, RouterLink, TranslatePipe],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
 })
 export class NavbarComponent {
   public themeService = inject(ThemeService);
+  public language = inject(LanguageService);
   public authStore = inject(authStore);
   public authService = inject(AuthService);
   public router = inject(Router)
@@ -65,7 +68,9 @@ export class NavbarComponent {
   public isNotificationsOpen = signal(false);
   public isSearchOpen = signal(false);
   public searchQuery = signal('');
-  public ar = true;
+  get ar(): boolean {
+    return this.language.isArabic();
+  }
 
   @ViewChild('profileMenuWrap') profileMenuWrap?: ElementRef<HTMLElement>;
   @ViewChild('notificationsMenuWrap') notificationsMenuWrap?: ElementRef<HTMLElement>;
@@ -78,53 +83,55 @@ export class NavbarComponent {
       {
         id: 'page-dashboard',
         kind: 'page',
-        title: 'لوحة التحكم',
-        subtitle: 'العودة إلى الصفحة الرئيسية للحساب',
-        badge: 'صفحة',
+        title: this.language.text('لوحة التحكم', 'Dashboard'),
+        subtitle: this.language.text('العودة إلى الصفحة الرئيسية للحساب', 'Return to account home'),
+        badge: this.language.text('صفحة', 'Page'),
         route: [base, 'dashboard'],
         token: '⌂',
-        keywords: ['dashboard', 'home', 'الرئيسية'],
+        keywords: ['dashboard', 'home', this.language.text('الرئيسية', 'feed')],
       },
       {
         id: 'page-feed',
         kind: 'page',
-        title: 'المنشورات',
-        subtitle: 'منشورات المجتمع والتحديثات',
-        badge: 'صفحة',
+        title: this.language.text('المنشورات', 'Posts'),
+        subtitle: this.language.text('منشورات المجتمع والتحديثات', 'Community posts and updates'),
+        badge: this.language.text('صفحة', 'Page'),
         route: [base, 'feed'],
-        token: 'م',
+        token: this.language.text('م', 'P'),
         keywords: ['feed', 'posts', 'social'],
       },
       {
         id: 'page-events',
         kind: 'page',
-        title: this.isOrganization() ? 'فعاليات المؤسسة' : 'الفعاليات',
+        title: this.isOrganization()
+          ? this.language.text('فعاليات المؤسسة', 'Organization events')
+          : this.language.text('الفعاليات', 'Events'),
         subtitle: this.isOrganization()
-          ? 'إنشاء وإدارة فعاليات المؤسسة'
-          : 'استكشاف الفعاليات المتاحة',
-        badge: 'صفحة',
+          ? this.language.text('إنشاء وإدارة فعاليات المؤسسة', 'Create and manage organization events')
+          : this.language.text('استكشاف الفعاليات المتاحة', 'Explore available events'),
+        badge: this.language.text('صفحة', 'Page'),
         route: [base, 'events'],
-        token: 'ف',
+        token: this.language.text('ف', 'E'),
         keywords: ['events', 'event'],
       },
       {
         id: 'page-notifications',
         kind: 'page',
-        title: 'الإشعارات',
-        subtitle: 'آخر التنبيهات والطلبات',
-        badge: 'صفحة',
+        title: this.language.text('الإشعارات', 'Notifications'),
+        subtitle: this.language.text('آخر التنبيهات والطلبات', 'Latest alerts and requests'),
+        badge: this.language.text('صفحة', 'Page'),
         route: [base, 'notifications'],
-        token: 'إ',
+        token: this.language.text('إ', 'N'),
         keywords: ['notifications', 'alerts'],
       },
       {
         id: 'page-settings',
         kind: 'page',
-        title: 'الإعدادات',
-        subtitle: 'الملف والأمان والخصوصية',
-        badge: 'صفحة',
+        title: this.language.text('الإعدادات', 'Settings'),
+        subtitle: this.language.text('الملف والأمان والخصوصية', 'Profile, security, and privacy'),
+        badge: this.language.text('صفحة', 'Page'),
         route: [base, 'settings'],
-        token: 'ض',
+        token: this.language.text('ض', 'S'),
         keywords: ['settings', 'account', 'security'],
       },
     ];
@@ -136,22 +143,22 @@ export class NavbarComponent {
         {
           id: 'page-posts',
           kind: 'page',
-          title: 'إدارة المنشورات',
-          subtitle: 'مراجعة منشورات المؤسسة والتفاعل معها',
-          badge: 'صفحة',
+          title: this.language.text('إدارة المنشورات', 'Manage posts'),
+          subtitle: this.language.text('مراجعة منشورات المؤسسة والتفاعل معها', 'Review organization posts and engagement'),
+          badge: this.language.text('صفحة', 'Page'),
           route: [base, 'posts'],
-          token: 'ن',
+          token: this.language.text('ن', 'P'),
           keywords: ['posts', 'manage'],
         },
         shared[2],
         {
           id: 'page-followers',
           kind: 'page',
-          title: 'المتابعون',
-          subtitle: 'المتابعون والطلبات والعلاقات',
-          badge: 'صفحة',
+          title: this.language.text('المتابعون', 'Followers'),
+          subtitle: this.language.text('المتابعون والطلبات والعلاقات', 'Followers, requests, and relationships'),
+          badge: this.language.text('صفحة', 'Page'),
           route: [base, 'followers'],
-          token: 'ت',
+          token: this.language.text('ت', 'F'),
           keywords: ['followers', 'following', 'requests'],
         },
         shared[3],
@@ -164,43 +171,43 @@ export class NavbarComponent {
       {
         id: 'page-tasks',
         kind: 'page',
-        title: 'المهام',
-        subtitle: 'المهام والمواعيد النهائية',
-        badge: 'صفحة',
+        title: this.language.text('المهام', 'Tasks'),
+        subtitle: this.language.text('المهام والمواعيد النهائية', 'Tasks and deadlines'),
+        badge: this.language.text('صفحة', 'Page'),
         route: [base, 'tasks'],
-        token: 'هـ',
+        token: this.language.text('هـ', 'T'),
         keywords: ['tasks', 'todos'],
       },
       {
         id: 'page-calendar',
         kind: 'page',
-        title: 'التقويم',
-        subtitle: 'مواعيدك وجدولك',
-        badge: 'صفحة',
+        title: this.language.text('التقويم', 'Calendar'),
+        subtitle: this.language.text('مواعيدك وجدولك', 'Your appointments and schedule'),
+        badge: this.language.text('صفحة', 'Page'),
         route: [base, 'calendar'],
-        token: 'ق',
+        token: this.language.text('ق', 'C'),
         keywords: ['calendar', 'schedule'],
       },
       shared[2],
       {
         id: 'page-network',
         kind: 'page',
-        title: 'الشبكة',
-        subtitle: 'الأشخاص والمؤسسات والمتابعات',
-        badge: 'صفحة',
+        title: this.language.text('الشبكة', 'Network'),
+        subtitle: this.language.text('الأشخاص والمؤسسات والمتابعات', 'People, organizations, and follows'),
+        badge: this.language.text('صفحة', 'Page'),
         route: [base, 'network'],
-        token: 'ش',
+        token: this.language.text('ش', 'N'),
         keywords: ['network', 'people', 'follow'],
       },
       shared[1],
       {
         id: 'page-appointments',
         kind: 'page',
-        title: 'المواعيد',
-        subtitle: 'المواعيد المرتبطة بجدولك',
-        badge: 'صفحة',
+        title: this.language.text('المواعيد', 'Appointments'),
+        subtitle: this.language.text('المواعيد المرتبطة بجدولك', 'Appointments linked to your schedule'),
+        badge: this.language.text('صفحة', 'Page'),
         route: [base, 'appointments'],
-        token: 'و',
+        token: this.language.text('و', 'A'),
         keywords: ['appointments'],
       },
       shared[3],
@@ -229,7 +236,10 @@ export class NavbarComponent {
           kind: 'profile',
           title: profile.displayName,
           subtitle: `@${profile.username}${profile.city ? ` · ${profile.city}` : ''}`,
-          badge: profile.kind === 'org' ? 'مؤسسة' : 'شخص',
+          badge:
+            profile.kind === 'org'
+              ? this.language.text('مؤسسة', 'Organization')
+              : this.language.text('شخص', 'Person'),
           route: [this.profileRoutePrefix(), profile.username],
           token: this.tokenFor(profile.displayName),
           keywords: [profile.username, profile.bio ?? '', profile.city ?? ''],
@@ -255,10 +265,13 @@ export class NavbarComponent {
           id: `event-${event._id}`,
           kind: 'event',
           title: event.title,
-          subtitle: event.location?.addressName || event.location?.fullAddress || 'فعالية',
-          badge: 'فعالية',
+          subtitle:
+            event.location?.addressName ||
+            event.location?.fullAddress ||
+            this.language.text('فعالية', 'Event'),
+          badge: this.language.text('فعالية', 'Event'),
           route: [this.dashboardBase(), 'events'],
-          token: 'ف',
+          token: this.language.text('ف', 'E'),
           keywords: [event.category, event.description],
         }),
       );
@@ -280,9 +293,9 @@ export class NavbarComponent {
               kind: 'task',
               title: task.title,
               subtitle: task.description || this.taskStatusLabel(task.status),
-              badge: 'مهمة',
+              badge: this.language.text('مهمة', 'Task'),
               route: ['/user', 'tasks'],
-              token: 'هـ',
+              token: this.language.text('هـ', 'T'),
               keywords: [task.priority, task.status],
             }),
           );
@@ -302,11 +315,16 @@ export class NavbarComponent {
         return {
           id: `post-${post.id}`,
           kind: 'post',
-          title: author ? `منشور من ${author.displayName}` : 'منشور',
+          title: author
+            ? this.language.text(
+                `منشور من ${author.displayName}`,
+                `Post by ${author.displayName}`,
+              )
+            : this.language.text('منشور', 'Post'),
           subtitle: post.body,
-          badge: 'منشور',
+          badge: this.language.text('منشور', 'Post'),
           route: [this.dashboardBase(), 'feed'],
-          token: 'م',
+          token: this.language.text('م', 'P'),
           keywords: [author?.username ?? ''],
         };
       });
@@ -487,8 +505,8 @@ export class NavbarComponent {
   }
 
   private taskStatusLabel(status: string): string {
-    if (status === 'completed') return 'مكتملة';
-    if (status === 'lated') return 'متأخرة';
-    return 'قيد التنفيذ';
+    if (status === 'completed') return this.language.text('مكتملة', 'Completed');
+    if (status === 'lated') return this.language.text('متأخرة', 'Overdue');
+    return this.language.text('قيد التنفيذ', 'In progress');
   }
 }

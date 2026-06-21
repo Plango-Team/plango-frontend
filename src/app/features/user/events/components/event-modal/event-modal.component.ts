@@ -1,4 +1,5 @@
-import { Component, ElementRef, ViewChild, inject, signal } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
+import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { LocationComboboxComponent } from '../../../../../shared/components/location-combobox/location-combobox.component';
@@ -8,16 +9,18 @@ import {
   IEvent,
   TransportationMode,
 } from '../../interfaces/Ievents';
+import { LanguageService } from '../../../../../core/services/language.service';
 
 @Component({
   selector: 'app-event-modal',
-  imports: [FormsModule, LocationComboboxComponent],
+  imports: [TranslatePipe, FormsModule, LocationComboboxComponent],
   templateUrl: './event-modal.component.html',
   styleUrl: './event-modal.component.css',
 })
 export class EventModalComponent {
   readonly store = inject(EventsStore);
   private readonly placesService = inject(PlacesService);
+  readonly language = inject(LanguageService);
 
   @ViewChild('eventModal') eventModal!: ElementRef<HTMLDialogElement>;
 
@@ -29,12 +32,12 @@ export class EventModalComponent {
   originPlace: Place | null = null;
   transportation: TransportationMode = 'driving';
 
-  readonly transports: { id: TransportationMode; label: string }[] = [
-    { id: 'driving', label: 'سيارة' },
-    { id: 'walking', label: 'مشي' },
-    { id: 'bicycling', label: 'دراجة' },
-    { id: 'other', label: 'وسيلة أخرى' },
-  ];
+  readonly transports = computed<{ id: TransportationMode; label: string }[]>(() => [
+    { id: 'driving', label: this.language.text('سيارة', 'Car') },
+    { id: 'walking', label: this.language.text('مشي', 'Walking') },
+    { id: 'bicycling', label: this.language.text('دراجة', 'Bicycle') },
+    { id: 'other', label: this.language.text('وسيلة أخرى', 'Other') },
+  ]);
 
   open(event: IEvent) {
     this.selectedEvent.set(event);
@@ -43,7 +46,10 @@ export class EventModalComponent {
     this.transportation = 'driving';
     this.error.set(
       new Date(event.startDate).getTime() <= Date.now()
-        ? 'لا يمكن إضافة فعالية بدأت بالفعل إلى جدول المواعيد.'
+        ? this.language.text(
+            'لا يمكن إضافة فعالية بدأت بالفعل إلى جدول المواعيد.',
+            'An event that has already started cannot be added to your schedule.',
+          )
         : null,
     );
     this.eventModal.nativeElement.showModal();
@@ -65,7 +71,12 @@ export class EventModalComponent {
 
   async useCurrentLocation() {
     if (!navigator.geolocation || this.resolvingLocation()) {
-      this.error.set('خدمة تحديد الموقع غير متاحة على هذا الجهاز.');
+      this.error.set(
+        this.language.text(
+          'خدمة تحديد الموقع غير متاحة على هذا الجهاز.',
+          'Location services are unavailable on this device.',
+        ),
+      );
       return;
     }
 
@@ -87,7 +98,7 @@ export class EventModalComponent {
         place ??
         ({
           id: `current_${latitude}_${longitude}`,
-          name: 'موقعي الحالي',
+          name: this.language.text('موقعي الحالي', 'My current location'),
           category: 'other',
           lat: latitude,
           lng: longitude,
@@ -95,7 +106,12 @@ export class EventModalComponent {
         } satisfies Place);
       this.originName = this.originPlace.name;
     } catch {
-      this.error.set('تعذر تحديد موقعك. اختر نقطة الانطلاق من البحث.');
+      this.error.set(
+        this.language.text(
+          'تعذر تحديد موقعك. اختر نقطة الانطلاق من البحث.',
+          'Could not determine your location. Choose a starting point from search.',
+        ),
+      );
     } finally {
       this.resolvingLocation.set(false);
     }
@@ -112,7 +128,12 @@ export class EventModalComponent {
     this.error.set(null);
 
     if (new Date(event.startDate).getTime() <= Date.now()) {
-      this.error.set('لا يمكن إضافة فعالية بدأت بالفعل إلى جدول المواعيد.');
+      this.error.set(
+        this.language.text(
+          'لا يمكن إضافة فعالية بدأت بالفعل إلى جدول المواعيد.',
+          'An event that has already started cannot be added to your schedule.',
+        ),
+      );
       return;
     }
 
@@ -128,7 +149,12 @@ export class EventModalComponent {
       !Number.isFinite(place.lng) ||
       (place.lat === 0 && place.lng === 0)
     ) {
-      this.error.set('اختر نقطة انطلاق صحيحة من نتائج البحث.');
+      this.error.set(
+        this.language.text(
+          'اختر نقطة انطلاق صحيحة من نتائج البحث.',
+          'Choose a valid starting point from the search results.',
+        ),
+      );
       return;
     }
 

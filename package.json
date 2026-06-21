@@ -37,6 +37,8 @@
     "@hugeicons/core-free-icons": "^4.0.0",
     "@mapbox/polyline": "^1.2.1",
     "@ngrx/signals": "^21.1.0",
+    "@ngx-translate/core": "^18.0.0",
+    "@ngx-translate/http-loader": "^18.0.0",
     "@types/aos": "^3.0.7",
     "@types/mapbox__polyline": "^1.0.5",
     "aos": "^2.3.4",

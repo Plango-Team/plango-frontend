@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -7,17 +8,19 @@ import { PostComposerComponent } from '../../../user/social/components/post-comp
 import { PostCardComponent } from '../../../user/social/components/post-card/post-card.component';
 import { EventsStore } from '../../../user/events/events.store';
 import { IEvent } from '../../../user/events/interfaces/Ievents';
+import { LanguageService } from '../../../../core/services/language.service';
 
 @Component({
   selector: 'app-organization-feed-page',
   standalone: true,
-  imports: [RouterLink, DatePipe, PostComposerComponent, PostCardComponent],
+  imports: [TranslatePipe, RouterLink, DatePipe, PostComposerComponent, PostCardComponent],
   templateUrl: './feed-page.component.html',
 })
 export class OrganizationFeedPageComponent {
   readonly authStore = inject(authStore);
   readonly socialStore = inject(SocialStore);
   readonly eventsStore = inject(EventsStore);
+  readonly language = inject(LanguageService);
 
   readonly currentProfileId = computed(() => {
     const socialProfile = this.socialStore.myProfile();
@@ -71,7 +74,10 @@ export class OrganizationFeedPageComponent {
 
   ownerDisplayName(event: IEvent): string {
     if (typeof event.companyId !== 'string') return event.companyId.name;
-    return this.socialStore.findProfile({ id: event.companyId })?.displayName ?? 'مؤسسة';
+    return (
+      this.socialStore.findProfile({ id: event.companyId })?.displayName ??
+      this.language.text('مؤسسة', 'Organization')
+    );
   }
 
   ownerUsername(event: IEvent): string | null {
@@ -83,6 +89,10 @@ export class OrganizationFeedPageComponent {
   }
 
   locationLabel(event: IEvent): string {
-    return event.location?.addressName || event.location?.fullAddress || 'الموقع غير محدد';
+    return (
+      event.location?.addressName ||
+      event.location?.fullAddress ||
+      this.language.text('الموقع غير محدد', 'Location not specified')
+    );
   }
 }

@@ -4,10 +4,13 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { authStore } from '../auth.store';
 import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
+import { LanguageService } from '../../../core/services/language.service';
+import { ApiErrorService } from '../../../core/services/api-error.service';
 
 @Component({
   selector: 'app-phone-verify',
-  imports: [IconComponent, FormsModule],
+  imports: [IconComponent, FormsModule, TranslatePipe],
   templateUrl: './phone-verify.component.html',
   styleUrl: './phone-verify.component.css',
 })
@@ -16,6 +19,8 @@ export class PhoneVerifyComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   readonly store = inject(authStore);
+  private language = inject(LanguageService);
+  private apiErrors = inject(ApiErrorService);
   code: string | number = '';
   phone = signal<string>('');
   mode = signal<string>('confirm_new');
@@ -37,7 +42,7 @@ export class PhoneVerifyComponent implements OnInit {
   onConfirmOTP(): void {
     const codeValue = String(this.code ?? '').trim();
     if (!/^\d{6}$/.test(codeValue)) {
-      this.err.set('أدخل رمز التحقق المكوّن من 6 أرقام.');
+      this.err.set(this.language.instant('auth.phoneVerify.invalidCode'));
       return;
     }
 
@@ -53,7 +58,13 @@ export class PhoneVerifyComponent implements OnInit {
         },
         error: (error) => {
           this.isSubmitting.set(false);
-          this.err.set(error?.error?.message || 'رمز التحقق غير صحيح، حاول مرة أخرى.');
+          this.err.set(
+            this.apiErrors.message(
+              error,
+              'رمز التحقق غير صحيح، حاول مرة أخرى.',
+              'The verification code is incorrect. Try again.',
+            ),
+          );
         },
       });
     } else if (this.mode() === 'confirm_new') {
@@ -65,7 +76,13 @@ export class PhoneVerifyComponent implements OnInit {
         },
         error: (error) => {
           this.isSubmitting.set(false);
-          this.err.set(error?.error?.message || 'رمز تأكيد الرقم الجديد غير صحيح، حاول مرة أخرى.');
+          this.err.set(
+            this.apiErrors.message(
+              error,
+              'رمز تأكيد الرقم الجديد غير صحيح، حاول مرة أخرى.',
+              'The new phone verification code is incorrect. Try again.',
+            ),
+          );
         },
       });
     }

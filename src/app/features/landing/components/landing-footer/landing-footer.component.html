@@ -11,18 +11,18 @@
           />
         </a>
         <p class="mt-4 max-w-xs text-sm leading-relaxed text-ink-muted">
-          منصة عربية ذكية للتخطيط، التنبيه، والوصول في الوقت المثالي دائماً.
+          {{ 'legacy.d75bec67548e' | translate }}
         </p>
       </div>
 
       @for (group of groups(); track group.title) {
         <section>
-          <h4 class="text-sm font-medium text-accent-500">{{ group.title }}</h4>
+          <h4 class="text-sm font-medium text-accent-500">{{ group.title | translate }}</h4>
           <ul class="mt-4 space-y-2.5">
             @for (link of group.links; track link) {
               <li>
                 <a href="#" class="text-sm text-ink-muted transition hover:text-ink-fg">{{
-                  link
+                  link | translate
                 }}</a>
               </li>
             }
@@ -34,10 +34,10 @@
     <div
       class="mt-12 flex flex-col items-center justify-between gap-3 border-t border-ink-border pt-6 text-xs text-ink-muted md:flex-row"
     >
-      <span>{{ copyrightText() }}</span>
+      <span>{{ copyrightText() | translate: { year: currentYear } }}</span>
       <div class="flex items-center gap-4">
         @for (link of legalLinks(); track link.label) {
-          <a [href]="link.href" class="transition hover:text-ink-fg">{{ link.label }}</a>
+          <a [href]="link.href" class="transition hover:text-ink-fg">{{ link.label | translate }}</a>
         }
       </div>
     </div>

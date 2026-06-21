@@ -9,11 +9,11 @@
     <div class="mb-4">
       @if (!showPassword()) {
         <h2 class="font-display text-2xl text-ink-fg">
-        هل انت متأكد انك تريد حذف حسابك ؟
+        {{ 'legacy.01cf6d6253d9' | translate }}
       </h2>
       }@else {
         <h2 class="font-display text-2xl text-ink-fg">
-        من فضلك ادخل كلمة المرور للتأكيد
+        {{ 'legacy.aa303626e120' | translate }}
       </h2>
       }
     </div>
@@ -22,7 +22,9 @@
 
       @if(showPassword()){
         <div class="relative space-y-1.5">
-        <label class="text-sm font-medium text-ink-fg">{{'كلمة المرور' }}</label>
+        <label class="text-sm font-medium text-ink-fg">
+          {{ language.text('كلمة المرور', 'Password') }}
+        </label>
         <input
           type="password"
           [(ngModel)]="password"
@@ -44,7 +46,7 @@
           (click)="close()" 
           class="rounded-lg border border-ink-border bg-transparent px-4 py-2 text-sm font-medium text-ink-fg hover:bg-ink-3 transition-colors"
         >
-          {{'إلغاء'}}
+          {{ 'common.cancel' | translate }}
         </button>
         @if (!showPassword()) {
             <button
@@ -52,7 +54,7 @@
           type="submit"
           class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
         >
-        نعم
+        {{ 'legacy.d045bef8e536' | translate }}
         </button>
         }@else {
             <button
@@ -60,7 +62,7 @@
           type="submit"
           class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
         >
-        تأكيد
+        {{ 'legacy.911aafd4ce2b' | translate }}
         </button>
         }
       </div>

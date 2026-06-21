@@ -1,9 +1,9 @@
 <section class="mt-8 bg-(--card-bg) pt-4 rounded-2xl shadow-lg shadow-(--main-shadow-color)">
   <div class="flex items-center justify-between px-3 pb-4 border-b border-(--border-color)">
-    <h2 class="text-2xl font-bold text-(--fg-color)">مواعيدك القادمة</h2>
+    <h2 class="text-2xl font-bold text-(--fg-color)">{{ 'legacy.fd9c15b206e3' | translate }}</h2>
     <button class="text-sm text-primary-500 flex items-center gap-0.5 cursor-pointer hover:scale-110 transition-all duration-500">
       <app-icon [iconName]="'Delete02Icon'" [iconSize]="14" [iconColor]="'#d32e18'"></app-icon>
-        مسح الكل
+        {{ 'legacy.6a7442e26955' | translate }}
     </button>
   </div>
 
@@ -29,7 +29,7 @@
     } @empty {
       <div class="flex items-center justify-center gap-2 text-center py-10 rounded-2xl border border-dashed border-gray-200">
         <app-icon [iconName]="'SearchSlash'" [iconColor]="'#d32e18'"></app-icon>
-        <p class="text-primary-500 text-lg">لا توجد تنبيهات مؤخراً</p>
+        <p class="text-primary-500 text-lg">{{ 'legacy.e00f578e7ebf' | translate }}</p>
       </div>
     }
   </div>

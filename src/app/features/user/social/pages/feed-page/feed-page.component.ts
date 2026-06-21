@@ -1,5 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SocialStore } from '../../social.store';
 import { authStore } from '../../../../auth/auth.store';
@@ -8,13 +8,13 @@ import { PostComposerComponent } from '../../components/post-composer/post-compo
 import { IconComponent } from '../../../../../shared/components/icon/icon.component';
 import { EventsStore } from '../../../events/events.store';
 import { IEvent } from '../../../events/interfaces/Ievents';
+import { LanguageService } from '../../../../../core/services/language.service';
 
 @Component({
   selector: 'app-feed-page',
   standalone: true,
   imports: [
     CommonModule,
-    DatePipe,
     RouterModule,
     PostCardComponent,
     PostComposerComponent,
@@ -23,10 +23,15 @@ import { IEvent } from '../../../events/interfaces/Ievents';
   template: `
     <div class="mb-6 px-4 mt-4 sm:px-6 lg:px-8">
       <h1 class="font-display text-2xl tracking-tight sm:text-3xl text-ink-fg">
-        آخر المنشورات
+        {{ language.text('آخر المنشورات', 'Latest posts') }}
       </h1>
       <p class="text-sm text-ink-muted">
-        آخر التحديثات من مجتمع PlanGo.
+        {{
+          language.text(
+            'آخر التحديثات من مجتمع PlanGo.',
+            'The latest updates from the PlanGo community.'
+          )
+        }}
       </p>
     </div>
 
@@ -46,23 +51,28 @@ import { IEvent } from '../../../events/interfaces/Ievents';
               (click)="socialStore.loadAll()"
               class="mt-4 rounded-full border border-red-400/40 px-4 py-2 text-xs text-red-200"
             >
-              إعادة المحاولة
+              {{ language.text('إعادة المحاولة', 'Try again') }}
             </button>
           </div>
         } @else if (posts().length === 0) {
           <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-border p-12 text-center">
             <app-icon iconName="SparklesIcon" [iconSize]="24" iconColor="var(--color-brand)"></app-icon>
             <h3 class="mt-4 font-display text-lg text-ink-fg">
-              لا توجد منشورات بعد
+              {{ language.text('لا توجد منشورات بعد', 'No posts yet') }}
             </h3>
             <p class="mt-2 text-sm text-ink-muted max-w-sm">
-              تابع مؤسسات وأصدقاء لترى منشوراتهم وفعالياتهم هنا.
+              {{
+                language.text(
+                  'تابع مؤسسات وأصدقاء لترى منشوراتهم وفعالياتهم هنا.',
+                  'Follow organizations and people to see their posts and events here.'
+                )
+              }}
             </p>
             <a
               routerLink="/user/network"
               class="mt-6 rounded-full bg-brand px-4 py-2 text-xs font-medium text-brand-foreground hover:bg-brand/90"
             >
-              اكتشف الشبكة
+              {{ language.text('اكتشف الشبكة', 'Discover people') }}
             </a>
           </div>
         } @else {
@@ -76,7 +86,11 @@ import { IEvent } from '../../../events/interfaces/Ievents';
               [disabled]="socialStore.postsLoadingMore()"
               class="mx-auto rounded-full border border-ink-border bg-ink-2 px-5 py-2 text-xs font-medium text-ink-fg hover:bg-ink-3 disabled:opacity-50"
             >
-              {{ socialStore.postsLoadingMore() ? 'جارٍ التحميل...' : 'تحميل منشورات أقدم' }}
+              {{
+                socialStore.postsLoadingMore()
+                  ? language.text('جارٍ التحميل...', 'Loading...')
+                  : language.text('تحميل منشورات أقدم', 'Load older posts')
+              }}
             </button>
           }
         }
@@ -87,10 +101,12 @@ import { IEvent } from '../../../events/interfaces/Ievents';
         <div class="rounded-2xl border border-ink-border bg-ink-2 p-4">
           <div class="mb-3 flex items-center gap-2 text-sm font-medium text-ink-fg">
             <app-icon iconName="Calendar01Icon" [iconSize]="16" iconColor="var(--color-brand)"></app-icon>
-            فعاليات قادمة لمتابعينك
+            {{ language.text('فعاليات قادمة من حسابات تتابعها', 'Upcoming events from accounts you follow') }}
           </div>
           @if (upcomingEvents().length === 0) {
-            <p class="text-xs text-ink-muted">لا فعاليات قادمة حالياً.</p>
+            <p class="text-xs text-ink-muted">
+              {{ language.text('لا توجد فعاليات قادمة حالياً.', 'There are no upcoming events right now.') }}
+            </p>
           } @else {
             <div class="space-y-2">
               @for (event of upcomingEvents(); track event._id) {
@@ -102,7 +118,7 @@ import { IEvent } from '../../../events/interfaces/Ievents';
                     {{ event.title }}
                   </div>
                   <div class="mt-1 text-[11px] text-ink-muted">
-                    {{ event.startDate | date: 'd MMM، h:mm a' }} · {{ companyName(event) }}
+                    {{ eventDate(event) }} · {{ companyName(event) }}
                   </div>
                 </a>
               }
@@ -114,7 +130,7 @@ import { IEvent } from '../../../events/interfaces/Ievents';
         <div class="rounded-2xl border border-ink-border bg-ink-2 p-4">
           <div class="mb-3 flex items-center gap-2 text-sm font-medium text-ink-fg">
             <app-icon iconName="UserGroupIcon" [iconSize]="16" iconColor="var(--color-brand)"></app-icon>
-            مؤسسات مقترحة
+            {{ language.text('مؤسسات مقترحة', 'Suggested organizations') }}
           </div>
           <div class="space-y-2">
             @for (org of suggestedOrgs(); track $index) {
@@ -134,7 +150,9 @@ import { IEvent } from '../../../events/interfaces/Ievents';
               </a>
             }
             @if (suggestedOrgs().length === 0) {
-              <p class="text-xs text-ink-muted py-2">لا توجد اقتراحات حالياً</p>
+              <p class="text-xs text-ink-muted py-2">
+                {{ language.text('لا توجد اقتراحات حالياً.', 'There are no suggestions right now.') }}
+              </p>
             }
           </div>
         </div>
@@ -146,6 +164,7 @@ export class FeedPageComponent {
   socialStore = inject(SocialStore);
   authStore = inject(authStore);
   eventsStore = inject(EventsStore);
+  readonly language = inject(LanguageService);
 
   posts = computed(() => {
     const user = this.authStore.user();
@@ -176,6 +195,17 @@ export class FeedPageComponent {
   );
 
   companyName(event: IEvent): string {
-    return typeof event.companyId === 'string' ? 'مؤسسة PlanGo' : event.companyId.name;
+    return typeof event.companyId === 'string'
+      ? this.language.text('مؤسسة PlanGo', 'PlanGo organization')
+      : event.companyId.name;
+  }
+
+  eventDate(event: IEvent): string {
+    return this.language.formatDate(event.startDate, {
+      day: 'numeric',
+      month: 'short',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
   }
 }

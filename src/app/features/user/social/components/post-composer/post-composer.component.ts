@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SocialStore } from '../../social.store';
 import { authStore } from '../../../../auth/auth.store';
+import { LanguageService } from '../../../../../core/services/language.service';
 
 @Component({
   selector: 'app-post-composer',
@@ -32,7 +33,7 @@ import { authStore } from '../../../../auth/auth.store';
           [disabled]="!body.trim() || body.trim().length > 500"
           class="rounded-full bg-brand px-4 py-1.5 text-xs font-medium text-brand-foreground hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          نشر
+          {{ language.text('نشر', 'Post') }}
         </button>
       </div>
     </form>
@@ -41,6 +42,7 @@ import { authStore } from '../../../../auth/auth.store';
 export class PostComposerComponent {
   socialStore = inject(SocialStore);
   authStore = inject(authStore);
+  readonly language = inject(LanguageService);
 
   placeholder = input<string>();
 
@@ -49,7 +51,12 @@ export class PostComposerComponent {
   get placeholderText(): string {
     if (this.placeholder()) return this.placeholder()!;
     const kind = this.socialStore.myProfile()?.kind;
-    return kind === 'org' ? 'شارك تحديثاً مع متابعينك...' : 'بم تفكّر؟';
+    return kind === 'org'
+      ? this.language.text(
+          'شارك تحديثاً مع متابعيك...',
+          'Share an update with your followers...'
+        )
+      : this.language.text('بم تفكّر؟', 'What are you thinking?');
   }
 
   onSubmit() {

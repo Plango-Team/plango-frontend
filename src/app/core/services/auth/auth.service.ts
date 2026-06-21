@@ -25,65 +25,68 @@ export class AuthService {
   private readonly authUrl = `${this.baseUrl}/auth`;
 
   private normalizeUser(backendUser: any): IUser {
-  // 1. تصحيح الـ Template Literals وكتابة الـ Backticks بشكل سليم تماماً
-  const rawFirstName = backendUser.firstName ?? '';
-  const rawLastName = backendUser.lastName ?? '';
-  const fallbackName = `${rawFirstName} ${rawLastName}`.trim();
+    // 1. تصحيح الـ Template Literals وكتابة الـ Backticks بشكل سليم تماماً
+    const rawFirstName = backendUser.firstName ?? '';
+    const rawLastName = backendUser.lastName ?? '';
+    const fallbackName = `${rawFirstName} ${rawLastName}`.trim();
 
-  const displayName = (
-    backendUser.name ?? 
-    backendUser.displayName ?? 
-    (fallbackName ? fallbackName : 'مستخدم جديد')
-  ).trim();
+    const displayName = (
+      backendUser.name ??
+      backendUser.displayName ??
+      (fallbackName ? fallbackName : 'مستخدم جديد')
+    ).trim();
 
-  // 2. بناء الأوبجكت ليتطابق مع الـ IUser interface الجديد بالملّي
-  return {
-    _id: backendUser._id ?? backendUser.id ?? '',
-    name: displayName,
-    email: backendUser.email ?? '',
-    role: backendUser.role ?? 'user',
-    accountType:
-      backendUser.accountType ??
-      (backendUser.role === 'org' ? 'organization' : 'personal'),
-    location: backendUser.location ?? backendUser.city ?? 'Cairo',
-    bio: backendUser.bio,
-    username: backendUser.username ?? backendUser.userName ?? displayName.toLowerCase().replace(/\s+/g, '_'),
-    isPrivate: backendUser.isPrivate ?? backendUser.privateFollows ?? false,
-    provider: backendUser.provider ?? 'local',
-    phone: backendUser.phone ?? backendUser.phoneNumber ?? '',
-    isEmailVerified: backendUser.isEmailVerified ?? false,
-    isPhoneVerified: backendUser.isPhoneVerified ?? false,
-    
-    passwordChangeCooldownHours: backendUser.passwordChangeCooldownHours ?? 0,
-    emailChangeCooldownHours: backendUser.emailChangeCooldownHours ?? 0,
-    phoneChangeCooldownHours: backendUser.phoneChangeCooldownHours ?? 0,
-    
-    // تأمين تحويل التواريخ بشكل سليم
-    lastLoginAt: backendUser.lastLoginAt ? new Date(backendUser.lastLoginAt) : new Date(),
-    createdAt: backendUser.createdAt ? new Date(backendUser.createdAt) : new Date()
-  };
-}
+    // 2. بناء الأوبجكت ليتطابق مع الـ IUser interface الجديد بالملّي
+    return {
+      _id: backendUser._id ?? backendUser.id ?? '',
+      name: displayName,
+      email: backendUser.email ?? '',
+      role: backendUser.role ?? 'user',
+      accountType:
+        backendUser.accountType ?? (backendUser.role === 'org' ? 'organization' : 'personal'),
+      location: backendUser.location ?? backendUser.city ?? 'Cairo',
+      bio: backendUser.bio,
+      username:
+        backendUser.username ??
+        backendUser.userName ??
+        displayName.toLowerCase().replace(/\s+/g, '_'),
+      isPrivate: backendUser.isPrivate ?? backendUser.privateFollows ?? false,
+      provider: backendUser.provider ?? 'local',
+      phone: backendUser.phone ?? backendUser.phoneNumber ?? '',
+      isEmailVerified: backendUser.isEmailVerified ?? false,
+      isPhoneVerified: backendUser.isPhoneVerified ?? false,
 
-private buildHomeRoute(user: Pick<IUser, 'role'> & { accountType?: string }): string {
-  if (user.role === 'admin') {
-    return '/admin';
+      passwordChangeCooldownHours: backendUser.passwordChangeCooldownHours ?? 0,
+      emailChangeCooldownHours: backendUser.emailChangeCooldownHours ?? 0,
+      phoneChangeCooldownHours: backendUser.phoneChangeCooldownHours ?? 0,
+
+      // تأمين تحويل التواريخ بشكل سليم
+      lastLoginAt: backendUser.lastLoginAt ? new Date(backendUser.lastLoginAt) : new Date(),
+      createdAt: backendUser.createdAt ? new Date(backendUser.createdAt) : new Date(),
+    };
   }
 
-  return user.role === 'org' || user.accountType === 'organization' ? '/organization' : '/user';
-}
+  private buildHomeRoute(user: Pick<IUser, 'role'> & { accountType?: string }): string {
+    if (user.role === 'admin') {
+      return '/admin';
+    }
+
+    return user.role === 'org' || user.accountType === 'organization' ? '/organization' : '/user';
+  }
 
   /**
-   * تسجيل الدخول باستخدام API حقيقي 
+   * تسجيل الدخول باستخدام API حقيقي
    */
   login(credentials: ILoginRequest): Observable<IAuthResponse> {
     return this.http.post<IWrappedResponse<any>>(`${this.authUrl}/login`, credentials).pipe(
       map((response) => {
-        const token = response.data?.token ?? response.data?.accessToken ?? response.data?.access_token ?? '';
+        const token =
+          response.data?.token ?? response.data?.accessToken ?? response.data?.access_token ?? '';
         if (!token || !response.data?.user) {
           throw new Error(response.message || 'Unexpected login response');
         }
 
-        return { 
+        return {
           token,
           user: this.normalizeUser(response.data.user),
           expiresIn: 3600,
@@ -137,7 +140,11 @@ private buildHomeRoute(user: Pick<IUser, 'role'> & { accountType?: string }): st
     return this.http.post<IMessageResponse>(`${this.authUrl}/reset-password`, data);
   }
 
-  resetPasswordWithToken(data: { token: string; newPassword: string; confirmPassword: string }): Observable<IMessageResponse> {
+  resetPasswordWithToken(data: {
+    token: string;
+    newPassword: string;
+    confirmPassword: string;
+  }): Observable<IMessageResponse> {
     return this.http.post<IMessageResponse>(`${this.authUrl}/reset-password/token`, data);
   }
 
@@ -153,15 +160,20 @@ private buildHomeRoute(user: Pick<IUser, 'role'> & { accountType?: string }): st
     return this.http.post<IMessageResponse>(`${this.authUrl}/phone/send-otp`, { phone });
   }
 
-  verifyPhone(phone: string , otp:string): Observable<IMessageResponse> {
-    return this.http.post<any>(`${this.authUrl}/phone/verify`, { phone ,otp});
+  verifyPhone(phone: string, otp: string): Observable<IMessageResponse> {
+    return this.http.post<any>(`${this.authUrl}/phone/verify`, { phone, otp });
   }
 
   requestResetOtp(phone: string): Observable<IMessageResponse> {
     return this.http.post<IMessageResponse>(`${this.authUrl}/forgot-password/otp`, { phone });
   }
 
-  resetPasswordWithOtp(data: { phone: string; otp: string; newPassword: string ; confirmPassword : string }): Observable<IMessageResponse> {
+  resetPasswordWithOtp(data: {
+    phone: string;
+    otp: string;
+    newPassword: string;
+    confirmPassword: string;
+  }): Observable<IMessageResponse> {
     return this.http.post<IMessageResponse>(`${this.authUrl}/reset-password/otp`, data);
   }
   /**
@@ -175,63 +187,91 @@ private buildHomeRoute(user: Pick<IUser, 'role'> & { accountType?: string }): st
    * جلب بيانات المستخدم الحالي من API حقيقي
    */
   getCurrentUser(): Observable<IUser> {
-    return this.http.get<IWrappedResponse<any>>(`${this.authUrl}/me`)
-      .pipe(map(response => this.normalizeUser(response.data.user)),
-        catchError((err) => {
+    return this.http.get<IWrappedResponse<any>>(`${this.authUrl}/me`).pipe(
+      map((response) => this.normalizeUser(response.data.user)),
+      catchError((err) => {
         if (err.status === 401) {
           return this.getCurrentUserWithCredentials();
         }
         return throwError(() => err);
-      }));
+      }),
+    );
   }
 
   /**
    * جلب بيانات المستخدم الحالي باستخدام HttpOnly cookie
-   */ 
+   */
   getCurrentUserWithCredentials(): Observable<IUser> {
     return this.http
       .get<IWrappedResponse<any>>(`${this.authUrl}/me`, { withCredentials: true })
       .pipe(map((response) => this.normalizeUser(response.data.user)));
   }
 
-  changePassword(payload:any): Observable<any> {
-    return this.http.post<any>(`${this.authUrl}/change-password`, payload, { withCredentials: true });
+  changePassword(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.authUrl}/change-password`, payload, {
+      withCredentials: true,
+    });
   }
 
   updateUser(userId: string, patch: Partial<IUser>): Observable<IUser> {
-    return this.http.patch<IUser>(`${this.baseUrl}/users/${userId}`, patch).pipe(
-      map((user) => this.normalizeUser(user)),
-    );
+    return this.http
+      .patch<IUser>(`${this.baseUrl}/users/${userId}`, patch)
+      .pipe(map((user) => this.normalizeUser(user)));
   }
-  requestChangeEmail(payload: { newEmail: string; password: string }): Observable<IMessageResponse> {
-    return this.http.post<IMessageResponse>(`${this.authUrl}/email/change`, payload, { withCredentials: true });
+  requestChangeEmail(payload: {
+    newEmail: string;
+    password: string;
+  }): Observable<IMessageResponse> {
+    return this.http.post<IMessageResponse>(`${this.authUrl}/email/change`, payload, {
+      withCredentials: true,
+    });
   }
 
-  confirmEmailChange(token:string): Observable<IMessageResponse>{
-    return this.http.get<IMessageResponse>(`${this.authUrl}/email/confirm-change?token=${encodeURIComponent(token)}`, { withCredentials: true });
+  confirmEmailChange(token: string): Observable<IMessageResponse> {
+    return this.http.get<IMessageResponse>(
+      `${this.authUrl}/email/confirm-change?token=${encodeURIComponent(token)}`,
+      { withCredentials: true },
+    );
   }
 
   changeName(name: string): Observable<IMessageResponse> {
-    return this.http.patch<IMessageResponse>(`${this.authUrl}/update-name`, { name }, { withCredentials: true });
+    return this.http.patch<IMessageResponse>(
+      `${this.authUrl}/update-name`,
+      { name },
+      { withCredentials: true },
+    );
   }
 
-  checkUsername(username : string) : Observable<any> {
-    return this.http.get<any>(`${this.authUrl}/check-username?username=${encodeURIComponent(username)}`)
+  checkUsername(username: string): Observable<any> {
+    return this.http.get<any>(
+      `${this.authUrl}/check-username?username=${encodeURIComponent(username)}`,
+    );
   }
 
   requestChangePhone(newPhone: string, password: string): Observable<IMessageResponse> {
-    return this.http.post<IMessageResponse>(`${this.authUrl}/phone/change`, { newPhone, password }, { withCredentials: true });
+    return this.http.post<IMessageResponse>(
+      `${this.authUrl}/phone/change`,
+      { newPhone, password },
+      { withCredentials: true },
+    );
   }
 
   confirmPhoneChange(otp: string): Observable<IMessageResponse> {
-    return this.http.post<IMessageResponse>(`${this.authUrl}/phone/confirm-change`,{otp}, { withCredentials: true });
+    return this.http.post<IMessageResponse>(
+      `${this.authUrl}/phone/confirm-change`,
+      { otp },
+      { withCredentials: true },
+    );
   }
 
-  deleteAccount(password:string): Observable<IMessageResponse>{
-    return this.http.delete<IMessageResponse>(`${this.authUrl}/delete-account`,{body : {password},withCredentials : true})
+  deleteAccount(password: string): Observable<IMessageResponse> {
+    return this.http.delete<IMessageResponse>(`${this.authUrl}/delete-account`, {
+      body: { password },
+      withCredentials: true,
+    });
   }
 
   getHomeRoute(user: Pick<IUser, 'role'> & { accountType?: string }): string {
-  return this.buildHomeRoute(user);
-}
+    return this.buildHomeRoute(user);
+  }
 }

@@ -26,7 +26,7 @@
               [href]="link.href"
               class="rounded-md px-3 py-1.5 text-sm text-ink-muted transition hover:bg-ink-3 hover:text-ink-fg"
             >
-              {{ link.label }}
+              {{ link.label | translate }}
             </a>
           }
         </nav>
@@ -65,9 +65,9 @@
             }
           </button>
 
-          <!-- <button
+          <button
             type="button"
-            aria-label="toggle language"
+            [attr.aria-label]="'common.switchLanguage' | translate"
             class="flex h-9 items-center gap-1.5 rounded-lg border border-ink-border/60 bg-ink-2/60 px-2.5 text-xs font-medium text-ink-fg transition hover:bg-ink-3"
             (click)="toggleLocale()"
           >
@@ -81,8 +81,8 @@
                 stroke-width="1.7"
               />
             </svg>
-            {{ locale() === 'ar' ? 'EN' : 'AR' }}
-          </button> -->
+            {{ language.isArabic() ? 'EN' : 'AR' }}
+          </button>
         </div>
 
         @if (!store.isAuthenticated()) {
@@ -90,13 +90,13 @@
             routerLink="/auth/login"
             class="px-3 py-1.5 text-sm text-ink-muted transition hover:text-ink-fg"
           >
-            تسجيل الدخول
+            {{ 'auth.login.action' | translate }}
           </a>
           <a
             routerLink="/auth/signup"
             class="inline-flex h-9 items-center rounded-lg bg-ink-fg px-4 text-sm text-ink transition hover:bg-ink-fg/90"
           >
-            ابدأ مجاناً
+            {{ 'common.startFree' | translate }}
           </a>
         } @else {
           <div class="relative">
@@ -150,10 +150,10 @@
                 >
                   {{
                     store.user()?.role === 'admin'
-                      ? 'لوحة الادمن'
+                      ? ('navigation.adminDashboard' | translate)
                       : ($any(store.user())?.accountType === 'organization'
-                        ? 'لوحة المؤسسة'
-                        : 'لوحة التحكم')
+                        ? ('navigation.organizationDashboard' | translate)
+                        : ('navigation.dashboard' | translate))
                   }}
                 </a>
 
@@ -162,7 +162,7 @@
                   (click)="logout()"
                   class="block w-full px-3 py-2.5 text-right text-sm text-red-400 transition hover:bg-red-500/10"
                 >
-                  تسجيل الخروج
+                  {{ 'auth.logout' | translate }}
                 </button>
               </div>
             }
@@ -205,7 +205,7 @@
 
           <button
             type="button"
-            aria-label="toggle language"
+            [attr.aria-label]="'common.switchLanguage' | translate"
             class="flex h-9 items-center gap-1.5 rounded-lg border border-ink-border/60 bg-ink-2/60 px-2.5 text-xs font-medium text-ink-fg transition hover:bg-ink-3"
             (click)="toggleLocale()"
           >
@@ -219,7 +219,7 @@
                 stroke-width="1.7"
               />
             </svg>
-            {{ locale() === 'ar' ? 'EN' : 'AR' }}
+            {{ language.isArabic() ? 'EN' : 'AR' }}
           </button>
         </div>
 
@@ -266,7 +266,7 @@
               (click)="closeMobileMenu()"
               class="rounded-md px-3 py-2 text-sm text-ink-muted hover:bg-ink-3 hover:text-ink-fg"
             >
-              {{ link.label }}
+              {{ link.label | translate }}
             </a>
           }
           @if (!store.isAuthenticated()) {
@@ -276,14 +276,14 @@
                 (click)="closeMobileMenu()"
                 class="w-full rounded-lg border border-ink-border bg-transparent px-3 py-2 text-center text-sm text-ink-fg hover:bg-ink-3"
               >
-                دخول
+                {{ 'auth.login.action' | translate }}
               </a>
               <a
                 routerLink="/auth/signup"
                 (click)="closeMobileMenu()"
                 class="w-full rounded-lg bg-ink-fg px-3 py-2 text-center text-sm text-ink hover:bg-ink-fg/90"
               >
-                ابدأ مجاناً
+                {{ 'common.startFree' | translate }}
               </a>
             </div>
           } @else {
@@ -315,10 +315,10 @@
                 >
                   {{
                     store.user()?.role === 'admin'
-                      ? 'لوحة الادمن'
+                      ? ('navigation.adminDashboard' | translate)
                       : ($any(store.user())?.accountType === 'organization'
-                        ? 'لوحة المؤسسة'
-                        : 'لوحة التحكم')
+                        ? ('navigation.organizationDashboard' | translate)
+                        : ('navigation.dashboard' | translate))
                   }}
                 </a>
                 <button
@@ -326,7 +326,7 @@
                   (click)="logout()"
                   class="w-full rounded-lg bg-red-500/10 px-3 py-2 text-center text-sm text-red-400 hover:bg-red-500/20"
                 >
-                  خروج
+                  {{ 'auth.logout' | translate }}
                 </button>
               </div>
             </div>

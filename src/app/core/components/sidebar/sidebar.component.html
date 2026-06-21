@@ -37,7 +37,7 @@
         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition text-ink-muted hover:bg-ink-3 hover:text-ink-fg"
       >
         <app-icon [iconName]="item.icon" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
-        {{ item.label }}
+        {{ language.text(item.labelAr, item.labelEn) }}
       </a>
     }
   </nav>
@@ -52,8 +52,8 @@
         ></app-icon>
         <span class="font-medium">{{
           authStore.user()?.role === 'org'
-            ? 'لوحة المؤسسة المتقدمة'
-            : 'ترقية للنسخة الاحترافية'
+            ? language.text('لوحة المؤسسة المتقدمة', 'Advanced organization dashboard')
+            : language.text('ترقية للنسخة الاحترافية', 'Upgrade to Pro')
         }}</span>
       </div>
       <p class="mt-1 text-[11px] text-ink-muted">{{ quickActionDescription() }}</p>

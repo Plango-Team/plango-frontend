@@ -1,0 +1,8 @@
+.navbar-actions {
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+}
+
+.navbar-actions::-webkit-scrollbar {
+  display: none;
+}
