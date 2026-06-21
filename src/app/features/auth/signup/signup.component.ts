@@ -34,6 +34,7 @@ export class SignupComponent {
   email = '';
   phoneNumber = '';
   password = '';
+  confirmPassword = '';
   username = '';
   city = '';
   bio = '';
@@ -100,11 +101,22 @@ export class SignupComponent {
       errors['phoneNumber'] = this.language.instant('auth.signup.validation.phoneInvalid');
     }
     const passValue = this.password.trim();
-    const passwordRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const confirmPasswordValue = this.confirmPassword.trim();
+    const passwordRegex =
+      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&^#])[A-Za-z\d@$!%*?&^#]{8,}$/;
     if (!passValue) {
       errors['password'] = this.language.instant('auth.signup.validation.passwordRequired');
     } else if (!passwordRegex.test(passValue)) {
       errors['password'] = this.language.instant('auth.signup.validation.passwordInvalid');
+    }
+    if (!confirmPasswordValue) {
+      errors['confirmPassword'] = this.language.instant(
+        'auth.signup.validation.confirmPasswordRequired',
+      );
+    } else if (confirmPasswordValue !== passValue) {
+      errors['confirmPassword'] = this.language.instant(
+        'auth.signup.validation.passwordsMismatch',
+      );
     }
 
     this.step2Errors.set(errors);
@@ -178,7 +190,8 @@ export class SignupComponent {
         this.fullName.trim().length > 0 &&
         this.email.trim().length > 0 && 
         this.phoneNumber.trim().length > 0 && 
-        this.password.trim().length > 0
+        this.password.trim().length > 0 &&
+        this.confirmPassword.trim().length > 0
       );
     }
     if(this.currentStep() === 3) return this.username.trim().length > 0
@@ -222,7 +235,7 @@ export class SignupComponent {
         locationTracking: true,
       },
     };
-
     this.store.signUp(signUpData);
   }
 }
+                                               
