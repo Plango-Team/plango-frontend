@@ -228,4 +228,4 @@ export class SignupComponent {
     this.store.signUp(signUpData);
   }
 }
-                                     
+                                               
