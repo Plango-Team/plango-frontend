@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -6,7 +7,7 @@ import { IEvent } from '../../../events/interfaces/Ievents';
 
 @Component({
   selector: 'app-dashboard-events',
-  imports: [DatePipe, RouterLink],
+  imports: [TranslatePipe, DatePipe, RouterLink],
   templateUrl: './dashboard-events.component.html',
   styleUrl: './dashboard-events.component.css',
 })
@@ -21,6 +22,6 @@ export class DashboardEventsComponent {
   );
 
   locationLabel(event: IEvent): string {
-    return event.location.addressName || event.location.fullAddress || 'الموقع غير محدد';
+    return event.location?.addressName || event.location?.fullAddress || 'الموقع غير محدد';
   }
 }

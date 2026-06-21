@@ -1,12 +1,12 @@
 <div class="px-4 py-6 sm:px-6 lg:px-8" dir="rtl">
   <header class="flex flex-col gap-4 border-b border-ink-border pb-6 lg:flex-row lg:items-end lg:justify-between">
     <div>
-      <div class="text-sm text-brand">المواعيد والفعاليات</div>
+      <div class="text-sm text-brand">{{ 'legacy.670e42ebde10' | translate }}</div>
       <h1 class="mt-1 font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">
-        جدولك المتصل بالخريطة
+        {{ 'legacy.04572e12edd5' | translate }}
       </h1>
       <p class="mt-2 max-w-2xl text-sm text-ink-muted">
-        كل موعد هنا قادم من الخادم. الفعاليات التي تضيفها للجدول تظهر كمواعيد جاهزة للتتبع والدعوات.
+        {{ 'legacy.acbcb00e0fc3' | translate }}
       </p>
     </div>
 
@@ -17,19 +17,23 @@
         [disabled]="appointmentStore.isLoading()"
         class="rounded-full border border-ink-border px-4 py-2 text-xs font-semibold text-ink-fg transition hover:bg-ink-2 disabled:opacity-50"
       >
-        {{ appointmentStore.isLoading() ? 'جارٍ التحديث...' : 'تحديث' }}
+        {{
+          appointmentStore.isLoading()
+            ? language.text('جارٍ التحديث...', 'Refreshing...')
+            : language.text('تحديث', 'Refresh')
+        }}
       </button>
       <a
         routerLink="/user/calendar"
         class="rounded-full bg-brand px-4 py-2 text-xs font-semibold text-brand-foreground transition hover:bg-brand/90"
       >
-        موعد جديد
+        {{ 'legacy.fed297dceb07' | translate }}
       </a>
       <a
         routerLink="/user/events"
         class="rounded-full border border-ink-border px-4 py-2 text-xs font-semibold text-ink-fg transition hover:bg-ink-2"
       >
-        تصفح الفعاليات
+        {{ 'legacy.f82565a238bd' | translate }}
       </a>
     </div>
   </header>
@@ -38,26 +42,26 @@
     <div class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/25 bg-amber-500/5 px-4 py-3">
       <p class="text-xs text-amber-200">{{ appointmentStore.error() }}</p>
       <button type="button" (click)="refresh()" class="text-xs font-medium text-amber-100 hover:underline">
-        إعادة المحاولة
+        {{ 'legacy.2e47b5f289f1' | translate }}
       </button>
     </div>
   }
 
   <section class="mt-6 grid gap-px overflow-hidden rounded-2xl border border-ink-border bg-ink-border sm:grid-cols-3">
     <div class="bg-ink-2 p-5">
-      <span class="text-xs text-ink-muted">المواعيد القادمة</span>
+      <span class="text-xs text-ink-muted">{{ 'legacy.7d5d1fd70e95' | translate }}</span>
       <strong class="mt-2 block font-display text-3xl text-ink-fg">{{ upcomingAppointments().length }}</strong>
-      <small class="text-xs text-ink-muted">جاهزة للخريطة والدعوات</small>
+      <small class="text-xs text-ink-muted">{{ 'legacy.85819f35a51d' | translate }}</small>
     </div>
     <div class="bg-ink-2 p-5">
-      <span class="text-xs text-ink-muted">من الفعاليات</span>
+      <span class="text-xs text-ink-muted">{{ 'legacy.a1c6df58011e' | translate }}</span>
       <strong class="mt-2 block font-display text-3xl text-brand">{{ eventAppointments().length }}</strong>
-      <small class="text-xs text-ink-muted">أضيفت عبر زر الجدولة</small>
+      <small class="text-xs text-ink-muted">{{ 'legacy.e45b1aa67540' | translate }}</small>
     </div>
     <div class="bg-ink-2 p-5">
-      <span class="text-xs text-ink-muted">دعوات بانتظارك</span>
+      <span class="text-xs text-ink-muted">{{ 'legacy.6e94af356470' | translate }}</span>
       <strong class="mt-2 block font-display text-3xl text-ink-fg">{{ appointmentStore.pendingInvites().length }}</strong>
-      <small class="text-xs text-ink-muted">قبول الدعوة يضيفها لجدولك</small>
+      <small class="text-xs text-ink-muted">{{ 'legacy.e422180d8eef' | translate }}</small>
     </div>
   </section>
 
@@ -65,10 +69,10 @@
     <section class="rounded-2xl border border-ink-border bg-ink-2">
       <div class="flex items-center justify-between gap-3 border-b border-ink-border p-5 sm:px-6">
         <div>
-          <h2 class="font-display text-xl text-ink-fg">القادم</h2>
-          <p class="mt-1 text-xs text-ink-muted">مرتبة حسب أقرب وقت وصول.</p>
+          <h2 class="font-display text-xl text-ink-fg">{{ 'legacy.9258a415988a' | translate }}</h2>
+          <p class="mt-1 text-xs text-ink-muted">{{ 'legacy.10321e7cc3dc' | translate }}</p>
         </div>
-        <a routerLink="/user/map" class="text-xs font-medium text-brand hover:underline">الخريطة</a>
+        <a routerLink="/user/map" class="text-xs font-medium text-brand hover:underline">{{ 'legacy.65d841ec098c' | translate }}</a>
       </div>
 
       @if (appointmentStore.isLoading() && upcomingAppointments().length === 0) {
@@ -79,14 +83,14 @@
         </div>
       } @else if (upcomingAppointments().length === 0) {
         <div class="p-10 text-center">
-          <h3 class="font-display text-xl text-ink-fg">لا توجد مواعيد قادمة</h3>
-          <p class="mt-2 text-sm text-ink-muted">أنشئ موعداً أو أضف فعالية إلى جدولك.</p>
+          <h3 class="font-display text-xl text-ink-fg">{{ 'legacy.ad492c75adeb' | translate }}</h3>
+          <p class="mt-2 text-sm text-ink-muted">{{ 'legacy.572e6b819479' | translate }}</p>
           <div class="mt-5 flex flex-wrap justify-center gap-2">
             <a routerLink="/user/calendar" class="rounded-full bg-brand px-4 py-2 text-xs font-semibold text-brand-foreground">
-              إضافة موعد
+              {{ 'legacy.cbac0e7e0615' | translate }}
             </a>
             <a routerLink="/user/events" class="rounded-full border border-ink-border px-4 py-2 text-xs font-semibold text-ink-fg">
-              فعاليات
+              {{ 'legacy.1d67a8c71de3' | translate }}
             </a>
           </div>
         </div>
@@ -107,19 +111,19 @@
                 </div>
                 <div class="mt-4 grid gap-2 text-xs sm:grid-cols-4">
                   <div class="rounded-xl bg-ink p-3">
-                    <span class="text-ink-muted">المسافة</span>
+                    <span class="text-ink-muted">{{ 'legacy.a374bb89a295' | translate }}</span>
                     <strong class="mt-1 block text-ink-fg">{{ distanceLabel(appointment) }}</strong>
                   </div>
                   <div class="rounded-xl bg-ink p-3">
-                    <span class="text-ink-muted">الطريق</span>
+                    <span class="text-ink-muted">{{ 'legacy.0aa1b79f6af6' | translate }}</span>
                     <strong class="mt-1 block text-ink-fg">{{ travelTimeLabel(appointment) }}</strong>
                   </div>
                   <div class="rounded-xl bg-ink p-3">
-                    <span class="text-ink-muted">التنقل</span>
+                    <span class="text-ink-muted">{{ 'legacy.4b4d1cb6b3e0' | translate }}</span>
                     <strong class="mt-1 block text-ink-fg">{{ transportLabel(appointment.transportation) }}</strong>
                   </div>
                   <div class="rounded-xl bg-ink p-3">
-                    <span class="text-ink-muted">المشاركون</span>
+                    <span class="text-ink-muted">{{ 'legacy.b1e37d3d199d' | translate }}</span>
                     <strong class="mt-1 block text-ink-fg">{{ participantCount(appointment) }}</strong>
                   </div>
                 </div>
@@ -132,7 +136,7 @@
                   class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2 text-xs font-semibold text-brand-foreground hover:bg-brand/90"
                 >
                   <app-icon [iconName]="'Location01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
-                  عرض على الخريطة
+                  {{ 'legacy.f62adf00bc0b' | translate }}
                 </button>
                 <button
                   type="button"
@@ -140,7 +144,7 @@
                   class="inline-flex items-center justify-center gap-2 rounded-lg border border-ink-border px-4 py-2 text-xs font-semibold text-ink-muted hover:bg-ink"
                 >
                   <app-icon [iconName]="'Delete01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
-                  حذف
+                  {{ 'legacy.2d2bbdc2d694' | translate }}
                 </button>
               </div>
             </article>
@@ -151,48 +155,82 @@
 
     <aside class="space-y-6">
       <section class="rounded-2xl border border-ink-border bg-ink-2 p-5 sm:p-6">
-        <h2 class="font-display text-xl text-ink-fg">الدعوات</h2>
-        <p class="mt-1 text-xs text-ink-muted">طلبات مشاركة المواعيد من مستخدمين آخرين.</p>
+        <h2 class="font-display text-xl text-ink-fg">{{ 'legacy.450f9fb8e6d5' | translate }}</h2>
+        <p class="mt-1 text-xs text-ink-muted">{{ 'legacy.525904555087' | translate }}</p>
 
         <div class="mt-5 space-y-3">
           @for (invite of appointmentStore.pendingInvites(); track invite._id) {
-            <article class="rounded-xl border border-ink-border bg-ink p-4">
-              <div class="flex items-start justify-between gap-3">
+            @let inviteBusy = appointmentStore.activeInviteId() === invite.appointmentId._id;
+            <article class="rounded-2xl border border-ink-border bg-ink p-4 transition hover:border-brand/30">
+              <div class="flex items-start gap-3">
+                <div class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand/10 text-sm font-bold text-brand">
+                  {{ invite.senderId.name.charAt(0) }}
+                </div>
                 <div class="min-w-0">
-                  <h3 class="truncate text-sm font-semibold text-ink-fg">{{ invite.appointmentId.title }}</h3>
-                  <p class="mt-1 text-xs text-ink-muted">
-                    من {{ invite.senderId.name }} · {{ invite.appointmentId.arrivalTime | date: 'd MMM، h:mm a' }}
+                  <p class="text-xs text-ink-muted">
+                    {{ 'legacy.fcbb49852326' | translate }}
+                    <span class="font-semibold text-ink-fg">{{ invite.senderId.name }}</span>
+                    @if (invite.senderId.username) {
+                      <span dir="ltr">@{{ invite.senderId.username }}</span>
+                    }
                   </p>
+                  <h3 class="mt-1 truncate text-sm font-semibold text-ink-fg">
+                    {{ invite.appointmentId.title }}
+                  </h3>
+                  <p class="mt-1 text-xs text-ink-muted">
+                    @if (invite.appointmentId.arrivalTime; as arrivalTime) {
+                      {{ arrivalTime | date: 'EEEE، d MMM - h:mm a' }}
+                    } @else {
+                      {{ 'legacy.9e6ecb6a461e' | translate }}
+                    }
+                  </p>
+                  @if (
+                    invite.appointmentId.destinationLocation?.addressName ||
+                    invite.appointmentId.destinationLocation?.fullAddress
+                  ) {
+                    <p class="mt-1 truncate text-xs text-ink-muted">
+                      {{
+                        invite.appointmentId.destinationLocation?.addressName ||
+                          invite.appointmentId.destinationLocation?.fullAddress
+                      }}
+                    </p>
+                  }
                 </div>
               </div>
-              <div class="mt-4 flex gap-2">
+              <div class="mt-4 grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   (click)="setLocModal.open(invite.appointmentId._id)"
-                  class="flex-1 rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-brand-foreground"
+                  [disabled]="inviteBusy"
+                  class="rounded-lg bg-brand px-3 py-2.5 text-xs font-semibold text-brand-foreground transition hover:bg-brand/90 disabled:cursor-wait disabled:opacity-50"
                 >
-                  قبول
+                  {{ 'legacy.317e88c5782e' | translate }}
                 </button>
                 <button
                   type="button"
                   (click)="appointmentStore.declineInvitation(invite.appointmentId._id)"
-                  class="flex-1 rounded-lg border border-ink-border px-3 py-2 text-xs text-ink-muted hover:bg-ink-3"
+                  [disabled]="inviteBusy"
+                  class="rounded-lg border border-brand/35 px-3 py-2.5 text-xs font-semibold text-brand transition hover:bg-brand/10 disabled:cursor-wait disabled:opacity-50"
                 >
-                  رفض
+                  {{
+                    inviteBusy
+                      ? language.text('جارٍ التنفيذ...', 'Processing...')
+                      : language.text('رفض', 'Decline')
+                  }}
                 </button>
               </div>
             </article>
           } @empty {
             <div class="rounded-xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted">
-              لا توجد دعوات حالياً
+              {{ 'legacy.640ba155d468' | translate }}
             </div>
           }
         </div>
       </section>
 
       <section class="rounded-2xl border border-ink-border bg-ink-2 p-5 sm:p-6">
-        <h2 class="font-display text-xl text-ink-fg">آخر المواعيد</h2>
-        <p class="mt-1 text-xs text-ink-muted">سجل مختصر من بيانات الخادم.</p>
+        <h2 class="font-display text-xl text-ink-fg">{{ 'legacy.f2b71d351d30' | translate }}</h2>
+        <p class="mt-1 text-xs text-ink-muted">{{ 'legacy.2575e8e84d9b' | translate }}</p>
         <div class="mt-5 space-y-3">
           @for (appointment of previousAppointments(); track appointment._id) {
             <article class="rounded-xl bg-ink p-4">
@@ -208,7 +246,7 @@
             </article>
           } @empty {
             <div class="rounded-xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted">
-              لا يوجد سجل مواعيد بعد
+              {{ 'legacy.f667de508358' | translate }}
             </div>
           }
         </div>

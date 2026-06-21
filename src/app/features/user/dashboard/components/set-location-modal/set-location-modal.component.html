@@ -8,7 +8,7 @@
   >
     <div class="mb-4">
         <h2 class="font-display text-2xl text-ink-fg">
-    ادخل وسيلة التنقل
+    {{ 'legacy.456e7b137d45' | translate }}
       </h2>
     </div>
 
@@ -41,14 +41,19 @@
           (click)="close()" 
           class="rounded-lg border border-ink-border bg-transparent px-4 py-2 text-sm font-medium text-ink-fg hover:bg-ink-3 transition-colors"
         >
-          {{'إلغاء'}}
+          {{ 'common.cancel' | translate }}
         </button>
             <button
-        (click)="onAcceptInvite(appID)"
+          (click)="onAcceptInvite(appID)"
           type="submit"
-          class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
+          [disabled]="!appID || appStore.activeInviteId() === appID"
+          class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground transition-colors hover:bg-brand/90 disabled:cursor-wait disabled:opacity-50"
         >
-          تأكيد
+          {{
+            appStore.activeInviteId() === appID
+              ? language.text('جارٍ القبول...', 'Accepting...')
+              : language.text('تأكيد القبول', 'Confirm acceptance')
+          }}
         </button>
       </div>
     </div>

@@ -10,6 +10,7 @@ import {
   LinkableAppointment,
 } from './services/task.service';
 import { authStore } from '../../auth/auth.store';
+import { ApiErrorService } from '../../../core/services/api-error.service';
 
 export type TasksState = {
   tasks: Task[];
@@ -26,18 +27,26 @@ export const TasksStore = signalStore(
     isLoading: false,
     error: null,
   }),
-  withMethods((store, taskService = inject(TaskService)) => {
+  withMethods((
+    store,
+    taskService = inject(TaskService),
+    apiErrors = inject(ApiErrorService),
+  ) => {
     const loadTasks = rxMethod<void>(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null })),
         switchMap(() =>
           taskService.getTasks().pipe(
-            tap({
-              next: (tasks) => patchState(store, { tasks, isLoading: false }),
-              error: (err) => patchState(store, { error: err.message, isLoading: false }),
-            }),
-            catchError(() => {
-              patchState(store, { error: 'Failed to load tasks', isLoading: false });
+            tap((tasks) => patchState(store, { tasks, isLoading: false })),
+            catchError((error) => {
+              patchState(store, {
+                error: apiErrors.message(
+                  error,
+                  'تعذر تحميل المهام.',
+                  'Could not load tasks.',
+                ),
+                isLoading: false,
+              });
               return of(null);
             })
           )
@@ -49,10 +58,17 @@ export const TasksStore = signalStore(
       pipe(
         switchMap(() =>
           taskService.getLinkableAppointments().pipe(
-            tap({
-              next: (appointments) => patchState(store, { linkableAppointments: appointments }),
-            }),
-            catchError(() => of(null))
+            tap((appointments) => patchState(store, { linkableAppointments: appointments })),
+            catchError((error) => {
+              patchState(store, {
+                error: apiErrors.message(
+                  error,
+                  'تعذر تحميل المواعيد القابلة للربط.',
+                  'Could not load linkable appointments.',
+                ),
+              });
+              return of(null);
+            })
           )
         )
       )
@@ -83,10 +99,16 @@ export const TasksStore = signalStore(
                 // Background refresh to guarantee everything is in sync
                 loadTasks();
               },
-              error: (err) => patchState(store, { error: err.message, isLoading: false }),
             }),
-            catchError(() => {
-              patchState(store, { error: 'Failed to create task', isLoading: false });
+            catchError((error) => {
+              patchState(store, {
+                error: apiErrors.message(
+                  error,
+                  'تعذر إنشاء المهمة.',
+                  'Could not create the task.',
+                ),
+                isLoading: false,
+              });
               return of(null);
             })
           )
@@ -114,7 +136,16 @@ export const TasksStore = signalStore(
                   }),
                 }),
             }),
-            catchError(() => of(null))
+            catchError((error) => {
+              patchState(store, {
+                error: apiErrors.message(
+                  error,
+                  'تعذر تحديث المهمة.',
+                  'Could not update the task.',
+                ),
+              });
+              return of(null);
+            })
           )
         )
       )
@@ -129,7 +160,16 @@ export const TasksStore = signalStore(
                 tasks: store.tasks().filter((t) => t._id !== id),
               })
             ),
-            catchError(() => of(null))
+            catchError((error) => {
+              patchState(store, {
+                error: apiErrors.message(
+                  error,
+                  'تعذر حذف المهمة.',
+                  'Could not delete the task.',
+                ),
+              });
+              return of(null);
+            })
           )
         )
       )

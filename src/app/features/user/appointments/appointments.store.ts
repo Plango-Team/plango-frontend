@@ -1,18 +1,25 @@
 import { patchState, signalStore, withComputed, withMethods, withState, withHooks } from '@ngrx/signals';
 import { computed, effect, inject, untracked } from '@angular/core';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { pipe, switchMap, tap, catchError, of, EMPTY, forkJoin } from 'rxjs';
+import { pipe, switchMap, tap, catchError, of, EMPTY, firstValueFrom, forkJoin } from 'rxjs';
 import { AppointmentService } from '../calendar/services/appointment.service';
 import { authStore } from '../../auth/auth.store';
 import { Appointment, AppointmentPayload } from './interfaces/IAppointment';
-import { AcceptInvitePayload, InvitService, PendingInvite } from '../map/services/invit.service';
+import {
+  AcceptInvitePayload,
+  DisplayPendingInvite,
+  InvitService,
+  normalizePendingInvite,
+} from '../map/services/invit.service';
+import { ApiErrorService } from '../../../core/services/api-error.service';
 
 export type AppointmentsState = {
   appointments: Appointment[];
   isLoading: boolean;
   error: string | null;
-  invitationWarnings:string[] | null
-  pendingInvites:PendingInvite[]
+  invitationWarnings: string[] | null;
+  pendingInvites: DisplayPendingInvite[];
+  activeInviteId: string | null;
 };
 
 export const AppointmentsStore = signalStore(
@@ -21,10 +28,22 @@ export const AppointmentsStore = signalStore(
     appointments: [],
     isLoading: false,
     error: null,
-    invitationWarnings:null,
-    pendingInvites:[]
+    invitationWarnings: null,
+    pendingInvites: [],
+    activeInviteId: null,
   }),
-  withMethods((store, appointmentService = inject(AppointmentService),invitService=inject(InvitService), auth = inject(authStore)) => {
+  withMethods((
+    store,
+    appointmentService = inject(AppointmentService),
+    invitService = inject(InvitService),
+    auth = inject(authStore),
+    apiErrors = inject(ApiErrorService),
+  ) => {
+    const errorMessage = (
+      error: unknown,
+      arabic: string,
+      english: string,
+    ) => apiErrors.message(error, arabic, english);
     const enrichAppointments = (appointments: Appointment[]) => {
       if (!appointments.length) {
         return of([] as Appointment[]);
@@ -54,12 +73,16 @@ export const AppointmentsStore = signalStore(
             return of([] as Appointment[]);
           }
           return loadAppointmentsWithDetails(userId).pipe(
-            tap({
-              next: (appointments) => patchState(store, { appointments, isLoading: false }),
-              error: (err) => patchState(store, { error: err.message, isLoading: false }),
-            }),
+            tap((appointments) => patchState(store, { appointments, isLoading: false })),
             catchError((err) => {
-               patchState(store, { error: err.error?.message || err.message || 'Failed to load appointments', isLoading: false });
+               patchState(store, {
+                 error: errorMessage(
+                   err,
+                   'تعذر تحميل المواعيد.',
+                   'Could not load appointments.',
+                 ),
+                 isLoading: false,
+               });
                return of([] as Appointment[]);
             })
           );
@@ -75,6 +98,24 @@ export const AppointmentsStore = signalStore(
           : [...appointments, appointment],
       });
     },
+    async removeAppointmentNow(id: string): Promise<boolean> {
+      try {
+        await firstValueFrom(appointmentService.deleteAppointment(id));
+        patchState(store, {
+          appointments: store.appointments().filter((appointment) => appointment._id !== id),
+        });
+        return true;
+      } catch (error) {
+        patchState(store, {
+          error: errorMessage(
+            error,
+            'تعذر حذف الموعد.',
+            'Could not delete the appointment.',
+          ),
+        });
+        return false;
+      }
+    },
     reloadAppointmentsNow() {
       const user = auth.user();
       if (!user) return;
@@ -83,7 +124,11 @@ export const AppointmentsStore = signalStore(
         next: (appointments) => patchState(store, { appointments, isLoading: false }),
         error: (err) =>
           patchState(store, {
-            error: err.error?.message || err.message || 'Failed to load appointments',
+            error: errorMessage(
+              err,
+              'تعذر تحميل المواعيد.',
+              'Could not load appointments.',
+            ),
             isLoading: false,
           }),
       });
@@ -102,8 +147,14 @@ export const AppointmentsStore = signalStore(
               });
             },}),
             catchError((err) => {
-               patchState(store, { error: err.error?.message || 'Failed to create appointment', isLoading: false });
-               console.log(err)
+               patchState(store, {
+                 error: errorMessage(
+                   err,
+                   'تعذر إنشاء الموعد.',
+                   'Could not create the appointment.',
+                 ),
+                 isLoading: false,
+               });
                return of(null);
             })
           )
@@ -128,10 +179,16 @@ export const AppointmentsStore = signalStore(
               });
             }
           },
-          error: (err) => patchState(store, { error: err.message, isLoading: false })
         }),
-        catchError(() => {
-          patchState(store, { error: 'Failed to update appointment', isLoading: false });
+        catchError((error) => {
+          patchState(store, {
+            error: errorMessage(
+              error,
+              'تعذر تحديث الموعد.',
+              'Could not update the appointment.',
+            ),
+            isLoading: false,
+          });
           return of(null);
         })
       )
@@ -146,6 +203,13 @@ export const AppointmentsStore = signalStore(
               appointments: store.appointments().filter(a => a._id !== id)
             });}),
             catchError((err) => {
+              patchState(store, {
+                error: errorMessage(
+                  err,
+                  'تعذر حذف الموعد.',
+                  'Could not delete the appointment.',
+                ),
+              });
               return EMPTY;
             }
           )
@@ -162,6 +226,13 @@ export const AppointmentsStore = signalStore(
               });
             }), 
             catchError((err) => {
+              patchState(store, {
+                error: errorMessage(
+                  err,
+                  'تعذر حذف سلسلة المواعيد.',
+                  'Could not delete the appointment series.',
+                ),
+              });
               return EMPTY;
             }
           )
@@ -183,19 +254,16 @@ export const AppointmentsStore = signalStore(
                     invitationWarnings: warnings
                   });
                   
-                  console.log('تم إرسال الدعوات بنجاح من الـ Store!');
                 }
               },
-              error: (err) => {
-                patchState(store, { 
-                  error: err.error?.message || 'Failed to send invitations', 
-                  isLoading: false 
-                });
-              }
             }),
             catchError((err) => {
               patchState(store, { 
-                error: err.error?.message || 'Failed to send invitations', 
+                error: errorMessage(
+                  err,
+                  'تعذر إرسال الدعوات.',
+                  'Could not send invitations.',
+                ),
                 isLoading: false 
               });
               return of(null);
@@ -212,22 +280,23 @@ export const AppointmentsStore = signalStore(
         tap({
           next: (response) => {
             if (response.status === 'success') {
+              const pendingInvites = (response.data?.invites ?? [])
+                .map(normalizePendingInvite)
+                .filter((invite): invite is DisplayPendingInvite => invite !== null);
               patchState(store, {
-                pendingInvites: response.data.invites,
-                isLoading: false
+                pendingInvites,
+                isLoading: false,
               });
             }
           },
-          error: (err) => {
-            patchState(store, { 
-              error: err.error?.message || 'Failed to load pending invitations', 
-              isLoading: false 
-            });
-          }
         }),
         catchError((err) => {
           patchState(store, { 
-            error: err.error?.message || 'Failed to load pending invitations', 
+            error: errorMessage(
+              err,
+              'تعذر تحميل الدعوات المعلقة.',
+              'Could not load pending invitations.',
+            ),
             isLoading: false 
           });
           return of(null);
@@ -238,7 +307,9 @@ export const AppointmentsStore = signalStore(
 ),
 acceptInvitation: rxMethod<{ appointmentId: string; payload: AcceptInvitePayload }>(
   pipe(
-    tap(() => patchState(store, { isLoading: true, error: null })),
+    tap(({ appointmentId }) =>
+      patchState(store, { activeInviteId: appointmentId, error: null }),
+    ),
     switchMap(({ appointmentId, payload }) =>
       invitService.acceptInvitation(appointmentId, payload).pipe(
         tap({
@@ -250,7 +321,7 @@ acceptInvitation: rxMethod<{ appointmentId: string; payload: AcceptInvitePayload
 
               patchState(store, {
                 pendingInvites: updatedPending,
-                isLoading: false
+                activeInviteId: null,
               });
               const user = auth.user();
               if (user) {
@@ -258,7 +329,11 @@ acceptInvitation: rxMethod<{ appointmentId: string; payload: AcceptInvitePayload
                 loadAppointmentsWithDetails(user._id).subscribe({
                   next: (appointments) => patchState(store, { appointments, isLoading: false }),
                   error: (err) => patchState(store, {
-                    error: err.error?.message || err.message || 'Failed to load appointments',
+                    error: errorMessage(
+                      err,
+                      'تعذر تحميل المواعيد.',
+                      'Could not load appointments.',
+                    ),
                     isLoading: false
                   }),
                 });
@@ -266,17 +341,15 @@ acceptInvitation: rxMethod<{ appointmentId: string; payload: AcceptInvitePayload
 
             }
           },
-          error: (err) => {
-            patchState(store, { 
-              error: err.error?.message || 'Failed to accept invitation', 
-              isLoading: false 
-            });
-          }
         }),
         catchError((err) => {
           patchState(store, { 
-            error: err.error?.message || 'Failed to accept invitation', 
-            isLoading: false 
+            error: errorMessage(
+              err,
+              'تعذر قبول الدعوة.',
+              'Could not accept the invitation.',
+            ),
+            activeInviteId: null,
           });
           return of(null);
         })
@@ -286,7 +359,9 @@ acceptInvitation: rxMethod<{ appointmentId: string; payload: AcceptInvitePayload
 ),
 declineInvitation: rxMethod<string>(
   pipe(
-    tap(() => patchState(store, { isLoading: true, error: null })),
+    tap((appointmentId) =>
+      patchState(store, { activeInviteId: appointmentId, error: null }),
+    ),
     switchMap((appointmentId) =>
       invitService.declineInvitation(appointmentId).pipe(
         tap({
@@ -298,23 +373,19 @@ declineInvitation: rxMethod<string>(
 
               patchState(store, {
                 pendingInvites: updatedPending,
-                isLoading: false
+                activeInviteId: null,
               });
-
-              console.log('تم رفض الدعوة بنجاح وتحديث الـ Store!');
             }
           },
-          error: (err) => {
-            patchState(store, { 
-              error: err.error?.message || 'Failed to decline invitation', 
-              isLoading: false 
-            });
-          }
         }),
         catchError((err) => {
           patchState(store, { 
-            error: err.error?.message || 'Failed to decline invitation', 
-            isLoading: false 
+            error: errorMessage(
+              err,
+              'تعذر رفض الدعوة.',
+              'Could not decline the invitation.',
+            ),
+            activeInviteId: null,
           });
           return of(null);
         })

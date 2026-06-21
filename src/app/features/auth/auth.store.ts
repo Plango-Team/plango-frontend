@@ -23,6 +23,8 @@ import { AuthService } from '../../core/services/auth/auth.service';
 import { computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { PushNotificationService } from '../../shared/services/push-notification.service';
+import { ApiErrorService } from '../../core/services/api-error.service';
+import { LanguageService } from '../../core/services/language.service';
 
 export type AuthState = {
   user: IUser | null;
@@ -54,6 +56,8 @@ export const authStore = signalStore(
     authService = inject(AuthService),
     router = inject(Router),
     pushNotifications = inject(PushNotificationService),
+    apiErrors = inject(ApiErrorService),
+    language = inject(LanguageService),
   ) => ({
     goToHome: signalMethod<void>(() => {
       const user = store.user();
@@ -85,7 +89,11 @@ export const authStore = signalStore(
               error: (err) => {
                 patchState(store, {
                   isLoading: false,
-                  error: err.message || 'حدث خطأ أثناء تسجيل الدخول',
+                  error: apiErrors.message(
+                    err,
+                    'حدث خطأ أثناء تسجيل الدخول',
+                    'An error occurred while signing in.',
+                  ),
                 });
               },
             }),
@@ -110,10 +118,20 @@ export const authStore = signalStore(
                   isLoading: false,
                   error: Berror || 'حدث خطأ أثناء إنشاء الحساب',
                 });
-                return of(null)
-              }),
-            ),
-            ),
+                router.navigate(['/auth/login']);
+              },
+              error: (err) => {
+                patchState(store, {
+                  isLoading: false,
+                  error: apiErrors.message(
+                    err,
+                    'حدث خطأ أثناء إنشاء الحساب',
+                    'An error occurred while creating the account.',
+                  ),
+                });
+              },
+            }),
+            catchError(() => of(null)),
           ),
     ),
 
@@ -133,7 +151,11 @@ export const authStore = signalStore(
               error: (err) => {
                 patchState(store, {
                   isLoading: false,
-                  error: err.message || 'حدث خطأ أثناء إرسال كود التحقق',
+                  error: apiErrors.message(
+                    err,
+                    'حدث خطأ أثناء إرسال كود التحقق',
+                    'An error occurred while sending the verification code.',
+                  ),
                 });
               },
             }),
@@ -187,7 +209,11 @@ export const authStore = signalStore(
               error: (err) => {
                 patchState(store, {
                   isLoading: false,
-                  error: err.message || 'حدث خطأ أثناء تفعيل البريد الإلكتروني',
+                  error: apiErrors.message(
+                    err,
+                    'حدث خطأ أثناء تفعيل البريد الإلكتروني',
+                    'An error occurred while verifying the email address.',
+                  ),
                 });
               },
             }),
@@ -213,7 +239,11 @@ export const authStore = signalStore(
               error: (err) => {
                 patchState(store, {
                   isLoading: false,
-                  error: err.message || 'حدث خطأ أثناء إعادة إرسال التحقق',
+                  error: apiErrors.message(
+                    err,
+                    'حدث خطأ أثناء إعادة إرسال التحقق',
+                    'An error occurred while resending verification.',
+                  ),
                 });
               },
             }),
@@ -241,7 +271,11 @@ export const authStore = signalStore(
               error: (err) => {
                 patchState(store, {
                   isLoading: false,
-                  error: err.message || 'حدث خطأ أثناء تغيير كلمة المرور',
+                  error: apiErrors.message(
+                    err,
+                    'حدث خطأ أثناء تغيير كلمة المرور',
+                    'An error occurred while changing the password.',
+                  ),
                 });
               },
             }),
@@ -310,7 +344,13 @@ export const authStore = signalStore(
         switchMap((changes) => {
           const current = store.user();
           if (!current) {
-            patchState(store, { isLoading: false, error: 'لا يوجد مستخدم مسجّل حالياً' });
+            patchState(store, {
+              isLoading: false,
+              error: language.text(
+                'لا يوجد مستخدم مسجّل حالياً',
+                'No user is currently signed in.',
+              ),
+            });
             return of(null);
           }
 
@@ -325,13 +365,20 @@ export const authStore = signalStore(
                   patchState(store, {
                     user,
                     isLoading: false,
-                    successMessage: 'تم حفظ إعدادات المؤسسة',
+                    successMessage: language.text(
+                      'تم حفظ إعدادات المؤسسة',
+                      'Organization settings saved.',
+                    ),
                   });
                 },
                 error: (err) => {
                   patchState(store, {
                     isLoading: false,
-                    error: err.message || 'حدث خطأ أثناء تحديث بيانات المؤسسة',
+                    error: apiErrors.message(
+                      err,
+                      'حدث خطأ أثناء تحديث بيانات المؤسسة',
+                      'An error occurred while updating organization details.',
+                    ),
                   });
                 },
               }),
@@ -346,10 +393,21 @@ export const authStore = signalStore(
       pipe(
         tap(() => patchState(store, { isLoading: true })),
         switchMap(() => {
-          if (
-            typeof window !== 'undefined' &&
-            window.location.pathname.startsWith('/auth/callback')
-          ) {
+          const publicAuthPaths = [
+            '/auth/login',
+            '/auth/signup',
+            '/auth/forget-password',
+            '/auth/reset-password',
+            '/reset-password',
+            '/verify-email',
+            '/auth/verify-email',
+            '/auth/email/confirm-change',
+            '/auth/callback',
+          ];
+          const currentPath =
+            typeof window !== 'undefined' ? window.location.pathname : '';
+
+          if (publicAuthPaths.some((path) => currentPath.startsWith(path))) {
             patchState(store, { isLoading: false });
             return of(null);
           }

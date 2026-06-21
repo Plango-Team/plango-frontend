@@ -21,7 +21,6 @@
           name="updateTitle"
           required
           class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          [value]="currentApp.title"
         />
       </div>
 
@@ -110,7 +109,6 @@
           @for (t of transports; track t.id) {
             <button
               type="button"
-               [value]="currentApp.transportation"
               (click)="updateApptTransport = t.id"
               class="flex flex-col items-center gap-1 rounded-lg border px-2 py-3 text-xs transition"
               [ngClass]="updateApptTransport === t.id

@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { DatePipe } from '@angular/common';
 import {
   Component,
@@ -19,10 +20,12 @@ import { SocialService } from '../../../social/services/social.service';
 import { MapStore } from '../../map.store';
 import { AppointmentChatMessage, AppointmentChatService } from '../../services/appointment-chat.service';
 import { InvitModalComponent } from '../invit-modal/invit-modal.component';
+import { LanguageService } from '../../../../../core/services/language.service';
+import { ApiErrorService } from '../../../../../core/services/api-error.service';
 
 @Component({
   selector: 'app-trips',
-  imports: [DatePipe, IconComponent, InvitModalComponent, SetLocationModalComponent],
+  imports: [TranslatePipe, DatePipe, IconComponent, InvitModalComponent, SetLocationModalComponent],
   templateUrl: './trips.component.html',
   styleUrl: './trips.component.css',
 })
@@ -33,6 +36,8 @@ export class TripsComponent {
   readonly chatService = inject(AppointmentChatService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly socialService = inject(SocialService);
+  readonly language = inject(LanguageService);
+  private readonly apiErrors = inject(ApiErrorService);
   private readonly loadingOwnerIds = new Set<string>();
 
   readonly upcomingAppointments = computed(() => this.mapStore.sortedAppointments().slice(0, 4));
@@ -85,7 +90,7 @@ export class TripsComponent {
     return (
       appointment.destinationLocation?.addressName ||
       appointment.destinationLocation?.fullAddress ||
-      'الموقع غير محدد'
+      this.language.text('الموقع غير محدد', 'Location not specified')
     );
   }
 
@@ -115,7 +120,9 @@ export class TripsComponent {
       });
     }
 
-    return names.size ? [...names.values()].join('، ') : 'المشاركون';
+    return names.size
+      ? [...names.values()].join(this.language.text('، ', ', '))
+      : this.language.text('المشاركون', 'Participants');
   }
 
   canChat(appointment: Appointment): boolean {
@@ -153,7 +160,13 @@ export class TripsComponent {
       },
       error: (err) => {
         if (this.activeChatAppointmentId() !== appointment._id) return;
-        this.chatError.set(err.error?.message || err.message || 'تعذر تحميل محادثة الموعد');
+        this.chatError.set(
+          this.apiErrors.message(
+            err,
+            'تعذر تحميل محادثة الموعد',
+            'Could not load the appointment chat',
+          ),
+        );
         this.chatLoading.set(false);
       },
     });
@@ -176,7 +189,9 @@ export class TripsComponent {
   }
 
   senderName(message: AppointmentChatMessage): string {
-    return typeof message.sender === 'string' ? 'مستخدم' : message.sender.name || 'مستخدم';
+    return typeof message.sender === 'string'
+      ? this.language.text('مستخدم', 'User')
+      : message.sender.name || this.language.text('مستخدم', 'User');
   }
 
   isMine(message: AppointmentChatMessage): boolean {
@@ -203,10 +218,10 @@ export class TripsComponent {
 
   transportLabel(mode: string): string {
     const labels: Record<string, string> = {
-      driving: 'سيارة',
-      walking: 'مشي',
-      bicycling: 'دراجة',
-      other: 'مواصلات',
+      driving: this.language.text('سيارة', 'Car'),
+      walking: this.language.text('مشي', 'Walking'),
+      bicycling: this.language.text('دراجة', 'Bicycle'),
+      other: this.language.text('مواصلات', 'Public transport'),
     };
     return labels[mode] ?? mode;
   }

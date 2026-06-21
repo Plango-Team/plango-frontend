@@ -15,27 +15,27 @@
             class="inline-flex items-center gap-2 rounded-full border border-ink-border bg-ink-2 px-3 py-1 text-xs text-ink-muted hover:bg-ink-3"
           >
             <span class="rounded-full bg-brand/15 px-2 py-0.5 text-[10px] font-medium text-brand"
-              >جديد</span
+              >{{ 'legacy.89465c43e458' | translate }}</span
             >
-            محرك المغادرة الذكي يدعم تنبيهات الطقس
+            {{ 'legacy.0e27ea799417' | translate }}
           </a>
           <h1
             class="font-display mt-6 text-balance text-5xl leading-[1.05] tracking-tight md:text-7xl relative w-fit mx-auto"
           >
-            نورتنا في <span>بلان جو</span>
+            {{ 'legacy.bf4547669c8c' | translate }} <span>{{ 'legacy.c68516983173' | translate }}</span>
             <span
               class="absolute text-xs bg-primary-pink py-2 px-2 rounded-full text-bg-main transform -rotate-25 -left-8 top-4"
-              >صُنع بكل حب</span
+              >{{ 'legacy.702c51d3596b' | translate }}</span
             >
           </h1>
           <h1
             class="font-display mt-6 text-balance text-5xl leading-[1.20] tracking-tight md:text-7xl"
           >
-            خطّط بذكاء، ووفّر مجهودك
+            {{ 'legacy.0c2b532574ab' | translate }}
             <br />
-            <span class="text-accent-500">وكن في الموعد </span>
+            <span class="text-accent-500">{{ 'legacy.ab7bc09a51ee' | translate }} </span>
             <span class="relative inline-block text-accent-500">
-              دائماً
+              {{ 'legacy.a63178635ad3' | translate }}
               <svg
                 class="absolute -bottom-2 right-0 w-full"
                 height="10"
@@ -56,13 +56,12 @@
           <p
             class="mx-auto mt-6 max-w-xl text-balance text-base leading-relaxed text-ink-muted md:text-lg"
           >
-            PlanGo منصة عربية ذكية تحوّل التخطيط من عبء إلى عادة طبيعية، تتبع حركة المرور والطقس
-            وعاداتك لتخبرك بالوقت الأمثل للمغادرة قبل أن تتأخر.
+            {{ 'legacy.62dedfa96de6' | translate }}
           </p>
 
           <div class="mt-8 flex flex-wrap items-center justify-center gap-2">
-            <a routerLink="/auth/signup" class="btn-landing-primary"> ابدأ تجربتك المجانية </a>
-            <a href="#features" class="btn-landing-secondary"> اكتشف المميزات </a>
+            <a routerLink="/auth/signup" class="btn-landing-primary"> {{ 'legacy.35da90744d75' | translate }} </a>
+            <a href="#features" class="btn-landing-secondary"> {{ 'legacy.2b8e4d19faab' | translate }} </a>
           </div>
 
           <div
@@ -81,7 +80,7 @@
                 >
                   <path d="M20 7L10.5 16.5L4 10"></path>
                 </svg>
-                {{ badge.label }}
+                {{ badge.label | translate }}
               </span>
             }
           </div>
@@ -96,7 +95,7 @@
     <section class="border-y border-ink-border bg-ink-2/40 py-10">
       <div class="mx-auto max-w-6xl px-4">
         <p class="text-center text-xs uppercase tracking-widest text-ink-muted">
-          موثوق به من فرق ومؤسسات عبر المنطقة
+          {{ 'legacy.3e7c13f01718' | translate }}
         </p>
         <div class="mt-6 flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-70">
           @for (brand of trustedBrands; track brand) {
@@ -114,15 +113,15 @@
           <div
             class="inline-flex items-center gap-1.5 rounded-full bg-primary-pink text-ink font-semibold px-3 py-1 text-[11px] uppercase tracking-widest"
           >
-            المميزات
+            {{ 'legacy.ec15ec94c35d' | translate }}
           </div>
           <h2
             class="font-display mt-4 text-balance text-4xl tracking-tight text-accent-500 md:text-5xl"
           >
-            كل ما تحتاجه لتنظيم يومك
+            {{ 'legacy.be66e51da8d0' | translate }}
           </h2>
           <p class="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-ink-muted md:text-base">
-            من تنبيهات قبل الوصول إلى الخريطة الذكية والمسار الفوري، منصة واحدة لكل لحظة في يومك.
+            {{ 'legacy.0f5181ff86e0' | translate }}
           </p>
         </header>
 
@@ -135,17 +134,23 @@
               >01</span
             >
             <h3 class="font-display text-xl tracking-tight text-ink-foreground">
-              إدارة المواعيد بذكاء استثنائي
+              {{ 'legacy.881a03dc5ef0' | translate }}
             </h3>
             <p class="mt-2 text-sm leading-relaxed text-ink-muted">
-              أنشئ، عدل، ووحّد كل مواعيدك. النظام يحسب لك وقت التنقّل ويذكّرك قبل المغادرة بالوقت
-              المثالي.
+              {{ 'legacy.e7ae7ae51007' | translate }}
             </p>
 
             <div class="mt-6 rounded-xl border border-ink-border bg-ink p-4">
               <div class="flex items-center justify-between text-[11px] text-ink-muted">
-                <span>الأحد ١٦ يناير</span>
-                <span>{{ scheduleItems.length }} تنبيهات</span>
+                <span>{{ 'legacy.6f582e24bd81' | translate }}</span>
+                <span>
+                  {{
+                    language.text(
+                      scheduleItems.length + ' تنبيهات',
+                      scheduleItems.length + ' alerts'
+                    )
+                  }}
+                </span>
               </div>
               <div class="mt-3 space-y-2">
                 @for (item of scheduleItems; track item.time) {
@@ -158,7 +163,7 @@
                       [class.bg-brand]="item.highlighted"
                       [class.bg-ink-muted/40]="!item.highlighted"
                     ></div>
-                    <span class="text-xs text-ink-foreground">{{ item.title }}</span>
+                    <span class="text-xs text-ink-foreground">{{ item.title | translate }}</span>
                   </div>
                 }
               </div>
@@ -172,14 +177,14 @@
               class="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-full border border-ink-border bg-ink text-[10px] text-ink-muted"
               >02</span
             >
-            <h3 class="font-display text-xl tracking-tight text-ink-foreground">التقويم الموحّد</h3>
+            <h3 class="font-display text-xl tracking-tight text-ink-foreground">{{ 'legacy.4bd6c9a16ad6' | translate }}</h3>
             <p class="mt-2 text-sm leading-relaxed text-ink-muted">
-              عرض يومي وأسبوعي وشهري مع كتل تنقل واضحة قبل كل موعد.
+              {{ 'legacy.0a0a91623c7b' | translate }}
             </p>
             <div class="mt-6 rounded-xl border border-ink-border bg-ink p-3">
               <div class="grid grid-cols-7 gap-1 text-center text-[10px] text-ink-muted">
                 @for (dayName of calendarWeekDays; track dayName) {
-                  <div class="py-1">{{ dayName }}</div>
+                  <div class="py-1">{{ dayName | translate }}</div>
                 }
                 @for (day of calendarDays; track day.day) {
                   <div
@@ -206,10 +211,10 @@
               >03</span
             >
             <h3 class="font-display text-xl tracking-tight text-ink-foreground">
-              تتبع المسار الفوري
+              {{ 'legacy.a42c1b34e533' | translate }}
             </h3>
             <p class="mt-2 text-sm leading-relaxed text-ink-muted">
-              تكامل مع الخرائط لحساب أسرع مسار في الوقت الفعلي، مع تحديث ديناميكي عند تغيّر الحركة.
+              {{ 'legacy.3c265fcbc240' | translate }}
             </p>
 
             <div
@@ -239,8 +244,8 @@
               <div
                 class="absolute bottom-3 right-3 rounded-lg bg-ink/90 px-2.5 py-1.5 backdrop-blur"
               >
-                <div class="text-[10px] text-ink-muted">المسار الأسرع</div>
-                <div class="text-xs font-medium text-ink-foreground">12 دقيقة</div>
+                <div class="text-[10px] text-ink-muted">{{ 'legacy.9ad057a42ca1' | translate }}</div>
+                <div class="text-xs font-medium text-ink-foreground">{{ 'legacy.6fe4fc5f0da5' | translate }}</div>
               </div>
             </div>
           </article>
@@ -253,10 +258,10 @@
               >04</span
             >
             <h3 class="font-display text-xl tracking-tight text-ink-foreground">
-              رحلات اجتماعية مشتركة
+              {{ 'legacy.f9e4d1f2bf71' | translate }}
             </h3>
             <p class="mt-2 text-sm leading-relaxed text-ink-muted">
-              ادعُ فريقك لنقطة لقاء واحدة، وتابع تقدّم كل شخص حتى الوصول.
+              {{ 'legacy.9f8c617e680f' | translate }}
             </p>
 
             <div class="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -270,7 +275,7 @@
                     </div>
                     <div class="flex-1">
                       <div class="text-[11px] text-ink-foreground">{{ friend.name }}</div>
-                      <div class="text-[9px] text-ink-muted">{{ friend.status }}</div>
+                      <div class="text-[9px] text-ink-muted">{{ friend.status | translate }}</div>
                     </div>
                   </div>
                   <div class="mt-2 h-1 overflow-hidden rounded-full bg-ink-3">
@@ -294,18 +299,18 @@
             <div class="grid gap-6 md:grid-cols-2 md:items-center">
               <div>
                 <h3 class="font-display text-xl tracking-tight text-ink-foreground">
-                  تحليلات ذكية لإنتاجيتك
+                  {{ 'legacy.127f420e9cc7' | translate }}
                 </h3>
                 <p class="mt-2 text-sm leading-relaxed text-ink-muted">
-                  افهم أنماط يومك عبر رؤى أسبوعية توضح الالتزام بالمواعيد والوقت المهدور في التنقل.
+                  {{ 'legacy.6371586f8e17' | translate }}
                 </p>
               </div>
 
               <div class="rounded-xl border border-ink-border bg-ink p-5">
                 <div class="flex items-center justify-between">
-                  <span class="text-xs text-ink-muted">الالتزام هذا الأسبوع</span>
+                  <span class="text-xs text-ink-muted">{{ 'legacy.0c9b51e7bc0f' | translate }}</span>
                   <span class="rounded-full bg-success/15 px-2 py-0.5 text-[10px] text-success"
-                    >+١٢٪</span
+                    >{{ 'legacy.722f537965c0' | translate }}</span
                   >
                 </div>
                 <div class="mt-3 flex h-24 items-end gap-1.5">
@@ -318,7 +323,7 @@
                 </div>
                 <div class="mt-2 flex justify-between text-[10px] text-ink-muted">
                   @for (dayName of calendarWeekDays; track dayName) {
-                    <span>{{ dayName }}</span>
+                    <span>{{ dayName | translate }}</span>
                   }
                 </div>
               </div>
@@ -334,15 +339,15 @@
           <div
             class="inline-flex items-center gap-1.5 rounded-full bg-primary-pink text-ink font-semibold px-3 py-1 text-[11px] uppercase tracking-widest"
           >
-            كيف يعمل
+            {{ 'legacy.34d41e4c58a3' | translate }}
           </div>
           <h2
             class="font-display mt-4 text-balance text-4xl tracking-tight text-accent-500 md:text-5xl"
           >
-            ابدأ رحلتك نحو تنظيم أفضل
+            {{ 'legacy.69528863bb63' | translate }}
           </h2>
           <p class="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-ink-muted md:text-base">
-            أربع خطوات بسيطة تفصلك عن إتقان وقتك.
+            {{ 'legacy.9072e2c23f49' | translate }}
           </p>
         </header>
 
@@ -424,8 +429,8 @@
                   }
                 }
               </div>
-              <h3 class="font-display mt-4 text-lg text-ink-foreground">{{ step.title }}</h3>
-              <p class="mt-1.5 text-sm leading-relaxed text-ink-muted">{{ step.description }}</p>
+              <h3 class="font-display mt-4 text-lg text-ink-foreground">{{ step.title | translate }}</h3>
+              <p class="mt-1.5 text-sm leading-relaxed text-ink-muted">{{ step.description | translate }}</p>
             </article>
           }
         </div>
@@ -438,12 +443,12 @@
           <div
             class="inline-flex items-center gap-1.5 rounded-full bg-primary-pink text-ink font-semibold px-3 py-1 text-[11px] uppercase tracking-widest"
           >
-            الإحصائيات
+            {{ 'legacy.810ea582a54f' | translate }}
           </div>
           <h2
             class="font-display mt-4 text-balance text-4xl tracking-tight text-accent-500 md:text-5xl"
           >
-            أرقام تتحدث عن التجربة
+            {{ 'legacy.44c5fca52c23' | translate }}
           </h2>
         </header>
 
@@ -455,8 +460,8 @@
               <div class="font-display text-5xl tracking-tight text-ink-foreground">
                 {{ stat.value }}
               </div>
-              <div class="mt-2 text-sm font-medium text-ink-foreground">{{ stat.label }}</div>
-              <p class="mt-2 text-xs leading-relaxed text-ink-muted">{{ stat.description }}</p>
+              <div class="mt-2 text-sm font-medium text-ink-foreground">{{ stat.label | translate }}</div>
+              <p class="mt-2 text-xs leading-relaxed text-ink-muted">{{ stat.description | translate }}</p>
             </article>
           }
         </div>
@@ -469,15 +474,15 @@
           <div
             class="inline-flex items-center gap-1.5 rounded-full bg-primary-pink text-ink font-semibold px-3 py-1 text-[11px] uppercase tracking-widest"
           >
-            الأسعار
+            {{ 'legacy.d3d452110c4d' | translate }}
           </div>
           <h2
             class="font-display mt-4 text-balance text-4xl tracking-tight text-accent-500 md:text-5xl"
           >
-            اشترك حسب احتياجك
+            {{ 'legacy.6c38bfab5a97' | translate }}
           </h2>
           <p class="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-ink-muted md:text-base">
-            ابدأ مجاناً ورقّ متى احتجت — بدون التزامات.
+            {{ 'legacy.639a1913f74b' | translate }}
           </p>
         </header>
 
@@ -495,20 +500,20 @@
                 <span
                   class="absolute -top-3 right-7 rounded-full bg-brand px-3 py-1 text-[10px] font-medium text-white"
                 >
-                  {{ plan.tag }}
+                  {{ plan.tag | translate }}
                 </span>
               }
 
-              <div class="text-sm text-ink-muted">{{ plan.name }}</div>
+              <div class="text-sm text-ink-muted">{{ plan.name | translate }}</div>
               <div class="mt-2 flex items-baseline gap-1">
                 <span class="font-display text-5xl tracking-tight text-ink-foreground">{{
                   plan.price
                 }}</span>
-                <span class="text-sm text-ink-muted">ج / شهر</span>
+                <span class="text-sm text-ink-muted">{{ 'legacy.f9a00174ebe5' | translate }}</span>
               </div>
 
               @if (!plan.popular) {
-                <div class="mt-1 text-xs text-ink-muted">{{ plan.tag }}</div>
+                <div class="mt-1 text-xs text-ink-muted">{{ plan.tag | translate }}</div>
               }
 
               <ul class="mt-6 space-y-2.5">
@@ -525,18 +530,18 @@
                     >
                       <path d="M20 7L10.5 16.5L4 10"></path>
                     </svg>
-                    {{ feature }}
+                    {{ feature | translate }}
                   </li>
                 }
               </ul>
 
               @if (plan.popular) {
                 <a routerLink="/auth/signup" class="mt-7 btn-landing-primary w-full">
-                  {{ plan.cta }}
+                  {{ plan.cta | translate }}
                 </a>
               } @else {
                 <a routerLink="/auth/signup" class="mt-7 btn-landing-inverse w-full">
-                  {{ plan.cta }}
+                  {{ plan.cta | translate }}
                 </a>
               }
             </article>
@@ -551,12 +556,12 @@
           <div
             class="inline-flex items-center gap-1.5 rounded-full bg-primary-pink text-ink font-semibold px-3 py-1 text-[11px] uppercase tracking-widest"
           >
-            الأسئلة الشائعة
+            {{ 'legacy.90b224ff944b' | translate }}
           </div>
           <h2
             class="font-display mt-4 text-balance text-4xl tracking-tight text-accent-500 md:text-5xl"
           >
-            إجابات سريعة
+            {{ 'legacy.acea32229c7f' | translate }}
           </h2>
         </header>
 
@@ -568,7 +573,7 @@
                 class="flex w-full items-center justify-between gap-4 px-5 py-4 text-right"
                 (click)="toggleFaq(i)"
               >
-                <span class="text-sm font-medium text-ink-foreground">{{ faq.question }}</span>
+                <span class="text-sm font-medium text-ink-foreground">{{ faq.question | translate }}</span>
                 <svg
                   class="h-4 w-4 text-ink-muted transition"
                   [class.rotate-180]="isFaqOpen(i)"
@@ -583,7 +588,7 @@
                 </svg>
               </button>
               @if (isFaqOpen(i)) {
-                <div class="px-5 pb-5 text-sm leading-relaxed text-ink-muted">{{ faq.answer }}</div>
+                <div class="px-5 pb-5 text-sm leading-relaxed text-ink-muted">{{ faq.answer | translate }}</div>
               }
             </article>
           }
@@ -597,15 +602,15 @@
           <div
             class="inline-flex items-center gap-1.5 rounded-full bg-primary-pink text-ink font-semibold px-3 py-1 text-[11px] uppercase tracking-widest"
           >
-            الفريق
+            {{ 'legacy.c3a143b7cb78' | translate }}
           </div>
           <h2
             class="font-display mt-4 text-balance text-4xl tracking-tight text-accent-500 md:text-5xl"
           >
-            صُنّاع بلان جو
+            {{ 'legacy.31a309f9ef7f' | translate }}
           </h2>
           <p class="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-ink-muted md:text-base">
-            الفريق الذي حوّل الفكرة إلى منتج يساعدك يومياً في الوصول على الوقت.
+            {{ 'legacy.dc8d7ab203be' | translate }}
           </p>
         </header>
 
@@ -620,7 +625,7 @@
               />
               <h3 class="font-display mt-4 text-xl text-ink-foreground">{{ creator.name }}</h3>
               <p class="mt-1 text-xs text-accent-500">{{ creator.role }}</p>
-              <p class="mt-3 text-sm leading-relaxed text-ink-muted">{{ creator.bio }}</p>
+              <p class="mt-3 text-sm leading-relaxed text-ink-muted">{{ creator.bio | translate }}</p>
 
               <div class="mt-4 flex justify-center gap-2">
                 @for (social of creator.socials; track social.label) {
@@ -670,14 +675,14 @@
             <h2
               class="font-display mt-4 text-balance text-4xl tracking-tight text-accent-500 md:text-5xl"
             >
-              ابدأ رحلتك الآن، يومك يستحق التنظيم
+              {{ 'legacy.71253017b708' | translate }}
             </h2>
             <p class="mx-auto mt-4 max-w-lg text-sm text-ink-muted md:text-base">
-              انضم لآلاف المستخدمين الذين حوّلوا فوضى يومهم إلى نظام بسيط وفعّال.
+              {{ 'legacy.9fb98402def4' | translate }}
             </p>
             <div class="mt-7 flex flex-wrap justify-center gap-2">
-              <a routerLink="/auth/signup" class="btn-landing-primary"> ابدأ مجاناً </a>
-              <a routerLink="/auth/login" class="btn-landing-secondary"> تسجيل الدخول </a>
+              <a routerLink="/auth/signup" class="btn-landing-primary"> {{ 'legacy.4c8f32b82b25' | translate }} </a>
+              <a routerLink="/auth/login" class="btn-landing-secondary"> {{ 'legacy.8c6117b67c8b' | translate }} </a>
             </div>
           </div>
         </div>

@@ -6,11 +6,14 @@ import { authStore } from '../auth.store';
 import { AccountType, ISignUpRequest } from '../../../core/models/iuser';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth/auth.service';
+import { TranslatePipe } from '@ngx-translate/core';
+import { LanguageService } from '../../../core/services/language.service';
+import { ApiErrorService } from '../../../core/services/api-error.service';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule],
+  imports: [RouterLink, CommonModule, FormsModule, TranslatePipe],
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.css', 
 })
@@ -18,6 +21,8 @@ export class SignupComponent {
   public themeService = inject(ThemeService);
   public readonly store = inject(authStore);
   authService = inject(AuthService)
+  private language = inject(LanguageService);
+  private apiErrors = inject(ApiErrorService);
 
   // 4 خطوات: 1=نوع الحساب, 2=الأساسيات, 3=اسم المستخدم, 4=الملف الشخصي
   currentStep = signal(1);
@@ -81,27 +86,27 @@ export class SignupComponent {
     const errors: Record<string, string> = {};
 
     if (!this.fullName.trim()) {
-      errors['fullName'] = 'يرجى إدخال الاسم الكامل';
+      errors['fullName'] = this.language.instant('auth.signup.validation.nameRequired');
     }
     if (!this.email.trim()) {
-      errors['email'] = 'يرجى إدخال البريد الإلكتروني';
+      errors['email'] = this.language.instant('auth.signup.validation.emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
-      errors['email'] = 'تنسيق البريد الإلكتروني غير صحيح';
+      errors['email'] = this.language.instant('auth.signup.validation.emailInvalid');
     }
     const phoneValue = this.phoneNumber.trim();
     const phoneRegex = /^\+201[0125]\d{8}$/
     if (!phoneValue) {
-      errors['phoneNumber'] = 'يرجى إدخال رقم الهاتف';
+      errors['phoneNumber'] = this.language.instant('auth.signup.validation.phoneRequired');
     }else if(!phoneRegex.test(phoneValue)){
-      errors['phoneNumber'] = 'رقم الهاتف غير صحيح ،يجب ان يتكون من 11 رقم و يبدأ ب +2';
+      errors['phoneNumber'] = this.language.instant('auth.signup.validation.phoneInvalid');
     }
     const passValue = this.password.trim();
     const confPassValue = this.confPassword.trim();
     const passwordRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passValue) {
-      errors['password'] = 'يرجى إدخال كلمة المرور';
+      errors['password'] = this.language.instant('auth.signup.validation.passwordRequired');
     } else if (!passwordRegex.test(passValue)) {
-      errors['password'] = 'يجب أن تحتوي كلمة المرور علي حرف كبير،حرف صغير، رقم،و رمز خاص و لا تقل عن 8 أحرف';
+      errors['password'] = this.language.instant('auth.signup.validation.passwordInvalid');
     }
     if (!confPassValue) {
       errors['confpassword'] = 'يرجى تأكيد كلمة المرور';
@@ -121,7 +126,7 @@ export class SignupComponent {
         if(!res.data.isAvailable){
           this.step3Errors.update(errors => ({
           ...errors,
-          username : 'اسم المستخدم موجود بالفعل'
+          username : this.language.instant('auth.signup.validation.usernameTaken')
         }))
         }else {
           this.step3Errors.update(errors => ({
@@ -131,10 +136,14 @@ export class SignupComponent {
         this.currentStep.update(s => s+1)
         }
       },
-      error : () => {
+      error : (error) => {
         this.step3Errors.update(errors => ({
           ...errors,
-          username : 'حدث خطأ أثناء التحقق من اسم المستخدم'
+          username : this.apiErrors.message(
+            error,
+            'حدث خطأ أثناء التحقق من اسم المستخدم.',
+            'Could not check username availability.',
+          )
         }))
       }
     })
@@ -145,9 +154,9 @@ export class SignupComponent {
     const value = this.username.trim().toLowerCase();
 
     if (!value) {
-      errors['username'] = 'يرجى إدخال اسم المستخدم';
+      errors['username'] = this.language.instant('auth.signup.validation.usernameRequired');
     } else if (!/^[a-z0-9]{4,30}$/.test(value)) {
-      errors['username'] = 'اسم المستخدم يجب ان يكون من 4 الي 30 حرفاً';
+      errors['username'] = this.language.instant('auth.signup.validation.usernameInvalid');
     }
 
     this.step3Errors.set(errors);
@@ -191,10 +200,6 @@ export class SignupComponent {
     if (!this.validateStep2() || !this.validateStep3()) {
       return;
     }
-    if(!this.store.verifyEmail(this.email)){
-      return;
-    }
-
     const nameParts = this.fullName.trim().split(' ');
     const firstName = nameParts[0] || '';
     const lastName =

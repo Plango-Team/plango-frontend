@@ -1,4 +1,4 @@
-<div class="w-full px-4 pb-16 pt-6" dir="rtl">
+<div class="w-full px-4 pb-16 pt-6">
   <main class="mx-auto min-h-[calc(100vh-8rem)] max-w-md">
     <div class="w-full">
       <div class="mb-8">
@@ -12,7 +12,7 @@
           }
         </div>
         <div class="mt-3 text-center text-xs text-ink-muted">
-          الخطوة {{ currentStep() }} من {{ totalSteps }}
+          {{ 'auth.signup.progress' | translate: { current: currentStep(), total: totalSteps } }}
         </div>
       </div>
 
@@ -34,7 +34,7 @@
             >
               <path d="M15 18l-6-6 6-6"></path>
             </svg>
-            العودة
+            {{ 'common.back' | translate }}
           </button>
         }
 
@@ -59,9 +59,9 @@
             <div class="animate-fade-in-up">
               <div class="text-center">
                 <h1 class="font-display text-3xl tracking-tight text-ink-foreground">
-                  اختر نوع الحساب
+                  {{ 'auth.signup.chooseAccountType' | translate }}
                 </h1>
-                <p class="mt-2 text-sm text-ink-muted">يمكنك تغيير التفاصيل لاحقاً من الإعدادات</p>
+                <p class="mt-2 text-sm text-ink-muted">{{ 'auth.signup.changeLater' | translate }}</p>
               </div>
 
               <div class="mt-7 grid gap-3">
@@ -93,9 +93,9 @@
                     </svg>
                   </div>
                   <div class="flex-1">
-                    <div class="font-medium text-ink-foreground">حساب شخصي</div>
+                    <div class="font-medium text-ink-foreground">{{ 'auth.signup.personalAccount' | translate }}</div>
                     <div class="mt-0.5 text-xs text-ink-muted">
-                      نظّم مواعيدك، شارك رحلاتك، وانضم لفعاليات.
+                      {{ 'auth.signup.personalDescription' | translate }}
                     </div>
                   </div>
                 </button>
@@ -129,9 +129,9 @@
                     </svg>
                   </div>
                   <div class="flex-1">
-                    <div class="font-medium text-ink-foreground">حساب مؤسسة</div>
+                    <div class="font-medium text-ink-foreground">{{ 'auth.signup.organizationAccount' | translate }}</div>
                     <div class="mt-0.5 text-xs text-ink-muted">
-                      انشر فعالياتك واطمئن أن الجميع يصلون في الوقت المحدد.
+                      {{ 'auth.signup.organizationDescription' | translate }}
                     </div>
                   </div>
                 </button>
@@ -143,13 +143,17 @@
             <div class="animate-fade-in-up">
               <div class="text-center">
                 <h1 class="font-display text-3xl tracking-tight text-ink-foreground">
-                  {{ isOrganizationAccount() ? 'اسم المؤسسة' : 'أنشئ حسابك' }}
+                  {{
+                    (isOrganizationAccount()
+                      ? 'auth.signup.organizationNameTitle'
+                      : 'auth.signup.createTitle') | translate
+                  }}
                 </h1>
                 <p class="mt-2 text-sm text-ink-muted">
                   {{
                     isOrganizationAccount()
-                      ? 'ابدأ بإعداد ملف المؤسسة'
-                      : 'ابدأ رحلتك مع PlanGo في دقائق'
+                      ? ('auth.signup.organizationSetup' | translate)
+                      : ('auth.signup.createSubtitle' | translate)
                   }}
                 </p>
               </div>
@@ -157,7 +161,11 @@
               <div class="mt-7 space-y-4">
                 <div class="space-y-1.5">
                   <label class="text-sm font-medium text-ink-foreground">
-                    {{ isOrganizationAccount() ? 'اسم المؤسسة' : 'الاسم الكامل' }}
+                    {{
+                      (isOrganizationAccount()
+                        ? 'auth.signup.organizationName'
+                        : 'auth.signup.fullName') | translate
+                    }}
                   </label>
                   <input
                     type="text"
@@ -173,7 +181,7 @@
                 </div>
 
                 <div class="space-y-1.5">
-                  <label class="text-sm font-medium text-ink-foreground">البريد الإلكتروني</label>
+                  <label class="text-sm font-medium text-ink-foreground">{{ 'auth.login.email' | translate }}</label>
                   <input
                     type="email"
                     [(ngModel)]="email"
@@ -188,7 +196,7 @@
                 </div>
 
                 <div class="space-y-1.5">
-                  <label class="text-sm font-medium text-ink-foreground">رقم الهاتف</label>
+                  <label class="text-sm font-medium text-ink-foreground">{{ 'auth.signup.phone' | translate }}</label>
                   <input
                     type="tel"
                     [(ngModel)]="phoneNumber"
@@ -203,7 +211,7 @@
                 </div>
 
                 <div class="space-y-1.5">
-                  <label class="text-sm font-medium text-ink-foreground">كلمة المرور</label>
+                  <label class="text-sm font-medium text-ink-foreground">{{ 'auth.login.password' | translate }}</label>
                   <input
                     type="password"
                     [(ngModel)]="password"
@@ -239,14 +247,14 @@
             <div class="animate-fade-in-up">
               <div class="text-center">
                 <h1 class="font-display text-3xl tracking-tight text-ink-foreground">
-                  اختر اسم المستخدم
+                  {{ 'auth.signup.chooseUsername' | translate }}
                 </h1>
-                <p class="mt-2 text-sm text-ink-muted">يظهر للأصدقاء والمتابعين بصيغة @username</p>
+                <p class="mt-2 text-sm text-ink-muted">{{ 'auth.signup.usernameHelp' | translate }}</p>
               </div>
 
               <div class="mt-7 space-y-4">
                 <div class="space-y-1.5">
-                  <label class="text-sm font-medium text-ink-foreground">@اسم المستخدم</label>
+                  <label class="text-sm font-medium text-ink-foreground">{{ 'auth.signup.username' | translate }}</label>
                   <div class="relative">
                     <span
                       class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted"
@@ -267,12 +275,12 @@
                     }
                   </div>
                   <p class="text-xs text-ink-muted">
-                    الأحرف والأرقام فقط، من 4 إلى 30 حرفاً
+                    {{ 'auth.signup.usernameRules' | translate }}
                   </p>
                 </div>
 
                 <div class="rounded-xl border border-ink-border bg-ink p-4 text-sm text-ink-muted">
-                  سيظهر رابطك النهائي بشكل مشابه لـ
+                  {{ 'auth.signup.profileLinkHelp' | translate }}
                   <span class="text-ink-foreground">plango.app/@username</span>
                 </div>
               </div>
@@ -283,44 +291,54 @@
             <div class="animate-fade-in-up">
               <div class="text-center">
                 <h1 class="font-display text-3xl tracking-tight text-ink-foreground">
-                  {{ isOrganizationAccount() ? 'ملف المؤسسة' : 'الملف الشخصي' }}
+                  {{
+                    (isOrganizationAccount()
+                      ? 'auth.signup.organizationProfile'
+                      : 'auth.signup.personalProfile') | translate
+                  }}
                 </h1>
                 <p class="mt-2 text-sm text-ink-muted">
                   {{
                     isOrganizationAccount()
-                      ? 'عرّف مؤسستك ليظهر ملفها بشكل أوضح'
-                      : 'أضف نبذة سريعة وفضّل الظهور المناسب لك'
+                      ? ('auth.signup.organizationProfileHelp' | translate)
+                      : ('auth.signup.personalProfileHelp' | translate)
                   }}
                 </p>
               </div>
 
               <div class="mt-7 space-y-4">
                 <div class="space-y-1.5">
-                  <label class="text-sm font-medium text-ink-foreground">المدينة</label>
+                  <label class="text-sm font-medium text-ink-foreground">{{ 'auth.signup.city' | translate }}</label>
                   <select
                     [(ngModel)]="city"
                     name="city"
                     class="h-11 w-full appearance-none rounded-lg border border-ink-border bg-ink px-3 text-ink-foreground placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand transition-colors cursor-pointer"
                   >
-                    <option value="" disabled class="bg-ink text-ink-muted">اختر المدينة...</option>
-                    <option value="القاهرة" class="bg-ink text-ink-foreground">القاهرة</option>
-                    <option value="الإسكندرية" class="bg-ink text-ink-foreground">
-                      الإسكندرية
+                    <option value="" disabled class="bg-ink text-ink-muted">{{ 'auth.signup.chooseCity' | translate }}</option>
+                    <option [value]="'legacy.93019aa020c8' | translate" class="bg-ink text-ink-foreground">{{ 'cities.cairo' | translate }}</option>
+                    <option [value]="'legacy.a26da63f086a' | translate" class="bg-ink text-ink-foreground">
+                      {{ 'cities.alexandria' | translate }}
                     </option>
-                    <option value="المنصورة" class="bg-ink text-ink-foreground">المنصورة</option>
+                    <option [value]="'legacy.e5e36737cd4e' | translate" class="bg-ink text-ink-foreground">{{ 'cities.mansoura' | translate }}</option>
                   </select>
                 </div>
 
                 <div class="space-y-1.5">
                   <label class="text-sm font-medium text-ink-foreground">
-                    {{ isOrganizationAccount() ? 'نبذة عن المؤسسة' : 'نبذة' }}
+                    {{
+                      (isOrganizationAccount()
+                        ? 'auth.signup.organizationBio'
+                        : 'auth.signup.bio') | translate
+                    }}
                   </label>
                   <textarea
                     [(ngModel)]="bio"
                     name="bio"
                     rows="3"
                     [placeholder]="
-                      isOrganizationAccount() ? 'ماذا تقدّم مؤسستك؟' : 'صفّ نفسك بكلمتين'
+                      (isOrganizationAccount()
+                        ? 'auth.signup.organizationBioPlaceholder'
+                        : 'auth.signup.bioPlaceholder') | translate
                     "
                     class="min-h-22 w-full rounded-lg border border-ink-border bg-ink px-3 py-2 text-ink-foreground placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand transition-colors"
                   ></textarea>
@@ -359,13 +377,17 @@
                     </div>
                     <div class="flex-1">
                       <div class="text-sm font-medium text-ink-foreground">
-                        {{ isPrivate() ? 'حساب خاص — يحتاج موافقة' : 'حساب عام' }}
+                        {{
+                          (isPrivate()
+                            ? 'auth.signup.privateAccount'
+                            : 'auth.signup.publicAccount') | translate
+                        }}
                       </div>
                       <div class="text-xs text-ink-muted">
                         {{
                           isPrivate()
-                            ? 'فقط من توافق عليهم يرون نشاطك'
-                            : 'يمكن لأي شخص أن يتابعك'
+                            ? ('auth.signup.privateHelp' | translate)
+                            : ('auth.signup.publicHelp' | translate)
                         }}
                       </div>
                     </div>
@@ -374,12 +396,12 @@
                   <div
                     class="rounded-xl border border-ink-border bg-ink p-4 text-sm text-ink-muted"
                   >
-                    حسابات المؤسسات عامة دائماً ليتمكن المهتمون من متابعة فعالياتك.
+                    {{ 'auth.signup.organizationPublicHelp' | translate }}
                   </div>
                 }
 
                 <div class="rounded-xl border border-ink-border bg-ink p-4 text-sm text-ink-muted">
-                  بعد إنشاء الحساب سيتم حفظ بياناتك الأساسية وبدء جلسة الدخول مباشرة.
+                  {{ 'auth.signup.afterCreate' | translate }}
                 </div>
               </div>
             </div>
@@ -408,9 +430,17 @@
                   d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              <span>{{ currentStep() === 4 ? 'جاري الإنشاء...' : 'جاري التحميل...' }}</span>
+              <span>{{
+                (currentStep() === 4
+                  ? 'auth.signup.creating'
+                  : 'common.loading') | translate
+              }}</span>
             } @else {
-              <span>{{ currentStep() === 4 ? 'إنشاء الحساب' : 'التالي' }}</span>
+              <span>{{
+                (currentStep() === 4
+                  ? 'auth.signup.createAccount'
+                  : 'common.next') | translate
+              }}</span>
               <svg
                 class="h-4 w-4"
                 viewBox="0 0 24 24"
@@ -428,9 +458,9 @@
 
         @if (currentStep() === 1) {
           <p class="mt-6 text-center text-sm text-ink-muted">
-            لديك حساب بالفعل؟
+            {{ 'auth.signup.haveAccount' | translate }}
             <a routerLink="/auth/login" class="font-medium text-ink-foreground hover:underline"
-              >تسجيل دخول</a
+              >{{ 'auth.login.action' | translate }}</a
             >
           </p>
         }

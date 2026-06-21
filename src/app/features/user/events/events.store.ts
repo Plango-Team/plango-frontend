@@ -17,13 +17,17 @@ import {
 } from './interfaces/Ievents';
 import { EventService } from './services/event.service';
 import { AppointmentsStore } from '../appointments/appointments.store';
+import { LanguageService } from '../../../core/services/language.service';
+import { ApiErrorService } from '../../../core/services/api-error.service';
 
 const initialState: EventsState = {
   events: [],
   isLoading: false,
   error: null,
   joiningEventId: null,
+  leavingEventId: null,
   scheduledEventIds: [],
+  eventAppointmentIds: {},
   filters: {
     selectedCategory: 'all',
     selectedPrice: 'all',
@@ -49,6 +53,9 @@ export const EventsStore = signalStore(
       });
     }),
     totalCount: computed(() => events().length),
+    attendeeCount: computed(() =>
+      events().reduce((total, event) => total + event.attendeesCount, 0),
+    ),
     upcomingCount: computed(
       () => events().filter((event) => new Date(event.startDate).getTime() > Date.now()).length,
     ),
@@ -68,6 +75,9 @@ export const EventsStore = signalStore(
     const eventService = inject(EventService);
     const appointmentsStore = inject(AppointmentsStore);
     const toast = inject(ToastService);
+    const language = inject(LanguageService);
+    const apiErrors = inject(ApiErrorService);
+    const t = (ar: string, en: string) => language.text(ar, en);
 
     return {
       loadEvents() {
@@ -83,10 +93,14 @@ export const EventsStore = signalStore(
               isLoading: false,
             });
           },
-          error: () => {
+          error: (error) => {
             patchState(store, {
               isLoading: false,
-              error: 'تعذر تحميل الفعاليات. حاول مرة أخرى.',
+              error: apiErrors.message(
+                error,
+                'تعذر تحميل الفعاليات. حاول مرة أخرى.',
+                'Could not load events. Please try again.',
+              ),
             });
           },
         });
@@ -108,13 +122,16 @@ export const EventsStore = signalStore(
         if (store.joiningEventId()) return false;
         const event = store.events().find((item) => item._id === eventId);
         if (store.scheduledEventIds().includes(eventId)) {
-          toast.info('هذه الفعالية موجودة بالفعل في جدولك.');
+          toast.info(t('هذه الفعالية موجودة بالفعل في جدولك.', 'This event is already in your schedule.'));
           return false;
         }
         if (event && new Date(event.startDate).getTime() <= Date.now()) {
           toast.error(
-            'لا يمكن إضافة فعالية بدأت بالفعل',
-            'المواعيد لا تقبل وقت وصول في الماضي. اختر فعالية قادمة.',
+            t('لا يمكن إضافة فعالية بدأت بالفعل', 'An event that already started cannot be added'),
+            t(
+              'المواعيد لا تقبل وقت وصول في الماضي. اختر فعالية قادمة.',
+              'Appointments cannot use a past arrival time. Choose an upcoming event.',
+            ),
           );
           return false;
         }
@@ -127,24 +144,89 @@ export const EventsStore = signalStore(
           patchState(store, {
             joiningEventId: null,
             scheduledEventIds: [...new Set([...store.scheduledEventIds(), eventId])],
+            eventAppointmentIds: {
+              ...store.eventAppointmentIds(),
+              [eventId]: appointment._id,
+            },
+            events: store.events().map((item) =>
+              item._id === eventId
+                ? { ...item, attendeesCount: item.attendeesCount + 1 }
+                : item,
+            ),
           });
-          toast.success('تمت إضافة الفعالية إلى جدولك', 'ستظهر الآن ضمن مواعيدك القادمة.');
+          toast.success(
+            t('تمت إضافة الفعالية إلى جدولك', 'Event added to your schedule'),
+            t('ستظهر الآن ضمن مواعيدك القادمة.', 'It now appears in your upcoming appointments.'),
+          );
           return true;
         } catch (error: any) {
           patchState(store, { joiningEventId: null });
-          const code = error?.error?.code;
+          const normalized = apiErrors.normalize(error);
+          const code = normalized.code;
           const message =
             code === 'DUPLICATE_FIELD'
-              ? 'يوجد موعد آخر في نفس وقت هذه الفعالية.'
+              ? t('يوجد موعد آخر في نفس وقت هذه الفعالية.', 'Another appointment exists at this event time.')
               : code === 'INTERNAL_ERROR'
-                ? 'تعذر إنشاء الموعد من الخادم. تحقق أن الفعالية قادمة وأن الموقع صالح.'
-                : error?.error?.message;
+                ? t(
+                    'تعذر إنشاء الموعد من الخادم. تحقق أن الفعالية قادمة وأن الموقع صالح.',
+                    'The server could not create the appointment. Check that the event is upcoming and its location is valid.',
+                  )
+                : normalized.message;
           toast.error(
-            'تعذر إضافة الفعالية',
-            message || 'تحقق من نقطة الانطلاق وطريقة التنقل ثم حاول مرة أخرى.',
+            t('تعذر إضافة الفعالية', 'Could not add event'),
+            message ||
+              t(
+                'تحقق من نقطة الانطلاق وطريقة التنقل ثم حاول مرة أخرى.',
+                'Check the starting point and transport mode, then try again.',
+              ),
           );
           return false;
         }
+      },
+
+      async removeFromSchedule(eventId: string): Promise<boolean> {
+        if (store.leavingEventId()) return false;
+        const appointmentId = store.eventAppointmentIds()[eventId];
+        if (!appointmentId) {
+          toast.error(
+            t(
+              'تعذر العثور على الموعد المرتبط بهذه الفعالية.',
+              'Could not find the appointment linked to this event.',
+            ),
+          );
+          return false;
+        }
+
+        patchState(store, { leavingEventId: eventId, error: null });
+        const removed = await appointmentsStore.removeAppointmentNow(appointmentId);
+        if (!removed) {
+          patchState(store, { leavingEventId: null });
+          toast.error(
+            t('تعذر إلغاء الحضور', 'Could not cancel attendance'),
+            t('حاول مرة أخرى من صفحة المواعيد.', 'Try again from the appointments page.'),
+          );
+          return false;
+        }
+
+        const eventAppointmentIds = { ...store.eventAppointmentIds() };
+        delete eventAppointmentIds[eventId];
+        patchState(store, {
+          leavingEventId: null,
+          scheduledEventIds: store.scheduledEventIds().filter((id) => id !== eventId),
+          eventAppointmentIds,
+          events: store.events().map((item) =>
+            item._id === eventId
+              ? { ...item, attendeesCount: Math.max(0, item.attendeesCount - 1) }
+              : item,
+          ),
+        });
+        toast.info(
+          t(
+            'تم إلغاء حضور الفعالية وإزالتها من جدولك.',
+            'Event attendance was canceled and removed from your schedule.',
+          ),
+        );
+        return true;
       },
     };
   }),
@@ -156,11 +238,18 @@ export const EventsStore = signalStore(
       onInit() {
         store.loadEvents();
         effect(() => {
-          const eventIds = appointmentsStore
+          const eventAppointmentIds = appointmentsStore
             .appointments()
-            .map((appointment) => appointment.eventId)
-            .filter((eventId): eventId is string => typeof eventId === 'string' && !!eventId);
-          patchState(store, { scheduledEventIds: [...new Set(eventIds)] });
+            .reduce<Record<string, string>>((result, appointment) => {
+              if (typeof appointment.eventId === 'string' && appointment.eventId) {
+                result[appointment.eventId] = appointment._id;
+              }
+              return result;
+            }, {});
+          patchState(store, {
+            scheduledEventIds: Object.keys(eventAppointmentIds),
+            eventAppointmentIds,
+          });
         });
       },
     };

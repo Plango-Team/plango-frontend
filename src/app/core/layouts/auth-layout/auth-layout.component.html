@@ -26,7 +26,7 @@
         <button
           type="button"
           class="grid h-9 w-9 place-items-center rounded-lg border border-ink-border bg-ink-2 text-ink-muted hover:bg-ink-3 transition"
-          aria-label="تبديل الوضع"
+          [aria-label]="'legacy.61bed28d3250' | translate"
           (click)="themeService.toggleTheme()"
         >
           @if (themeService.isDark()) {
@@ -58,7 +58,7 @@
           routerLink="/"
           class="rounded-lg border border-ink-border bg-ink-2 px-3 py-2 text-xs text-ink-muted hover:bg-ink-3 hover:text-ink-foreground transition"
         >
-          العودة للرئيسية
+          {{ 'legacy.3fb5312625d8' | translate }}
         </a>
       </div>
     </div>

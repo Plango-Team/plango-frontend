@@ -1,8 +1,25 @@
 <!doctype html>
-<html class="scroll-smooth dark" lang="ar" dir="rtl">
+<html class="scroll-smooth" lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
   <title>PlanGo</title>
+  <script>
+    (() => {
+      try {
+        const savedTheme = localStorage.getItem('plango-theme');
+        const isDark =
+          savedTheme === 'dark' ||
+          (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', isDark);
+        document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+      } catch {
+        document.documentElement.classList.toggle(
+          'dark',
+          window.matchMedia('(prefers-color-scheme: dark)').matches,
+        );
+      }
+    })();
+  </script>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta
@@ -11,7 +28,7 @@
   >
   <meta name="application-name" content="PlanGo">
   <meta name="apple-mobile-web-app-title" content="PlanGo">
-  <meta name="theme-color" content="#0f1115">
+  <meta name="theme-color" content="#141414">
   <meta name="color-scheme" content="dark light">
   <meta name="format-detection" content="telephone=no">
   <meta name="robots" content="index, follow">

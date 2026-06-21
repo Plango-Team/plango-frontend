@@ -1,17 +1,20 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { Component, inject, computed } from '@angular/core';
 import { IconComponent } from '../../../../../shared/components/icon/icon.component';
 import { RouterLink } from "@angular/router";
 import { AppointmentsStore } from '../../../appointments/appointments.store';
 import { Appointment } from '../../../appointments/interfaces/IAppointment';
+import { LanguageService } from '../../../../../core/services/language.service';
 
 @Component({
   selector: 'app-dashboard-appointments',
-  imports: [IconComponent, RouterLink],
+  imports: [TranslatePipe, IconComponent, RouterLink],
   templateUrl: './dashboard-appointments.component.html',
   styleUrl: './dashboard-appointments.component.css',
 })
 export class DashboardAppointmentsComponent {
   private appointmentStore = inject(AppointmentsStore);
+  readonly language = inject(LanguageService);
 
   upcomingAppointments = computed(() => {
     const now = Date.now();
@@ -25,7 +28,9 @@ export class DashboardAppointmentsComponent {
   });
 
   sourceLabel(appointment: Appointment): string {
-    return appointment.eventId ? 'فعالية' : 'موعد';
+    return appointment.eventId
+      ? this.language.text('فعالية', 'Event')
+      : this.language.text('موعد', 'Appointment');
   }
 
   destinationLabel(appointment: Appointment): string {
@@ -33,7 +38,7 @@ export class DashboardAppointmentsComponent {
       appointment.destinationLocation?.addressName ||
       appointment.destinationLocation?.fullAddress ||
       appointment.destinationLocation?.fullAddres ||
-      'الموقع غير محدد'
+      this.language.text('الموقع غير محدد', 'Location not specified')
     );
   }
 

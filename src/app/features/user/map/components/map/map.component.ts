@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import {
   Component,
   effect,
@@ -16,7 +17,7 @@ import { Appointment } from '../../../appointments/interfaces/IAppointment';
 
 @Component({
   selector: 'app-map',
-  imports: [IconComponent],
+  imports: [TranslatePipe, IconComponent],
   templateUrl: './map.component.html',
   styleUrl: './map.component.css',
 })
@@ -172,6 +173,8 @@ export class MapComponent implements OnDestroy {
     events.forEach((event) => {
       const coords = event.location?.coordinates;
       if (!coords || coords.length < 2) return;
+      const locationLabel =
+        event.location?.addressName || event.location?.fullAddress || '';
       const el = document.createElement('div');
       el.className = `flex flex-col item-center gap-1 cursor-pointer custom-marker`;
 
@@ -203,7 +206,7 @@ export class MapComponent implements OnDestroy {
           new Popup({ offset: 18 }).setHTML(
             `<div dir="rtl" style="font-family:inherit">
               <strong>${event.title}</strong>
-              <div style="font-size:12px;margin-top:4px">${event.location.addressName || event.location.fullAddress || ''}</div>
+              <div style="font-size:12px;margin-top:4px">${locationLabel}</div>
             </div>`,
           ),
         )

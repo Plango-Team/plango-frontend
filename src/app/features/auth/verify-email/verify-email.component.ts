@@ -2,11 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { authStore } from '../auth.store';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-verify-email',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './verify-email.component.html',
   styleUrls: ['./verify-email.component.css'],
 })
@@ -23,8 +24,6 @@ export class VerifyEmailComponent {
     const tokenValue = qpToken || paramToken || this.route.snapshot.queryParamMap.get('token');
 
     this.token.set(tokenValue ?? null);
-    console.log('Captured Verification Token:', tokenValue);
-
     if (tokenValue) {
       // trigger verification call via the store (which calls the AuthService)
       this.authStore.verifyEmail(tokenValue);

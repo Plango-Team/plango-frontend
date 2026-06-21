@@ -1,6 +1,5 @@
 import { Component, effect, inject, signal, OnInit } from '@angular/core';
 import { email, form, minLength, required, FormField, FormRoot } from '@angular/forms/signals';
-import { HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
@@ -9,10 +8,13 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 import { authStore } from '../auth.store';
 import { ILoginRequest } from '../../../core/models/iuser';
 import { environment } from '../../../../environments/environment';
+import { TranslatePipe } from '@ngx-translate/core';
+import { LanguageService } from '../../../core/services/language.service';
+import { ApiErrorService } from '../../../core/services/api-error.service';
 
 @Component({
   selector: 'app-login',
-  imports: [FormField, FormRoot, RouterLink],
+  imports: [FormField, FormRoot, RouterLink, TranslatePipe],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
@@ -22,6 +24,8 @@ export class LoginComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private authService = inject(AuthService);
+  private language = inject(LanguageService);
+  private apiErrors = inject(ApiErrorService);
   showPassword = signal(false);
 
   private readonly STORAGE_KEY = 'plan_go_login_draft';
@@ -51,7 +55,10 @@ export class LoginComponent implements OnInit {
     const onVerifyPath = currentPath.includes('/verify-email');
 
     if (token && onLoginPath && !onVerifyPath) {
-      this.router.navigate(['/auth/forget-password'], { queryParams: { token } });
+      this.router.navigate(['/auth/reset-password'], {
+        queryParams: { token },
+        replaceUrl: true,
+      });
     }
   }
 
@@ -91,7 +98,7 @@ export class LoginComponent implements OnInit {
     const verificationToken = this.route.snapshot.queryParamMap.get('token');
 
     if (!email || !credentials.password) {
-      this.authStore.setError('يرجى إدخال البريد الإلكتروني وكلمة المرور');
+      this.authStore.setError(this.language.instant('auth.login.validation.credentialsRequired'));
       return;
     }
 
@@ -105,28 +112,29 @@ export class LoginComponent implements OnInit {
       localStorage.setItem('token', response.token);
       this.router.navigate([this.authService.getHomeRoute(response.user)]);
     } catch (error: unknown) {
-      const httpError = error as HttpErrorResponse;
+      const httpError = this.apiErrors.normalize(error);
 
-      if (httpError.status === 403) {
+      if (httpError.code === 'EMAIL_NOT_VERIFIED') {
         if (verificationToken) {
           try {
             await firstValueFrom(this.authService.verifyEmail(verificationToken));
             this.authStore.setSuccessMessage('Account verified successfully! Please log in now.');
           } catch (verifyError: unknown) {
-            const resendError = verifyError as HttpErrorResponse;
             this.authStore.setError(
-              resendError?.error?.message || resendError?.message || 'حدث خطأ أثناء التحقق من البريد الإلكتروني',
+              this.apiErrors.message(
+                verifyError,
+                'حدث خطأ أثناء التحقق من البريد الإلكتروني.',
+                'Email verification failed.',
+              ),
             );
           }
         } else {
-          this.authStore.setError('Account not verified. Please use your verification link or request a new verification email.');
+          this.authStore.setError(httpError.message);
         }
 
         await this.router.navigate(['/auth/login']);
-      } else if (httpError.status === 401) {
-        this.authStore.setError('Incorrect email or password.');
       } else {
-        this.authStore.setError(httpError?.error?.message || httpError?.message || 'حدث خطأ أثناء تسجيل الدخول');
+        this.authStore.setError(httpError.message);
       }
     } finally {
       this.authStore.setLoading(false);

@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,18 +7,20 @@ import { authStore } from '../../../auth/auth.store';
 import { Profile } from '../../../user/social/services/social.service';
 import { SocialStore } from '../../../user/social/social.store';
 import { PendingRequest } from '../../../user/social/services/follow.service';
+import { LanguageService } from '../../../../core/services/language.service';
 
 type CommunityTab = 'followers' | 'following' | 'requests';
 
 @Component({
   selector: 'app-organization-followers-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [TranslatePipe, CommonModule, FormsModule, RouterLink],
   templateUrl: './followers-page.component.html',
 })
 export class OrganizationFollowersPageComponent {
   readonly authStore = inject(authStore);
   readonly socialStore = inject(SocialStore);
+  readonly language = inject(LanguageService);
 
   readonly tab = signal<CommunityTab>('followers');
   readonly query = signal('');
@@ -72,9 +75,21 @@ export class OrganizationFollowersPageComponent {
   readonly tabs = computed(
     () =>
       [
-        { key: 'followers', label: 'المتابعون', count: this.followers().length },
-        { key: 'following', label: 'تتابع', count: this.following().length },
-        { key: 'requests', label: 'طلبات', count: this.requests().length },
+        {
+          key: 'followers',
+          label: this.language.text('المتابعون', 'Followers'),
+          count: this.followers().length,
+        },
+        {
+          key: 'following',
+          label: this.language.text('تتابع', 'Following'),
+          count: this.following().length,
+        },
+        {
+          key: 'requests',
+          label: this.language.text('طلبات', 'Requests'),
+          count: this.requests().length,
+        },
       ] as const,
   );
 
@@ -98,9 +113,11 @@ export class OrganizationFollowersPageComponent {
 
   followLabel(profile: Profile): string {
     const state = this.followState(profile.id);
-    if (state === 'accepted') return 'إلغاء المتابعة';
-    if (state === 'pending') return 'إلغاء الطلب';
-    return profile.isPrivate ? 'طلب متابعة' : 'متابعة';
+    if (state === 'accepted') return this.language.text('إلغاء المتابعة', 'Unfollow');
+    if (state === 'pending') return this.language.text('إلغاء الطلب', 'Cancel request');
+    return profile.isPrivate
+      ? this.language.text('طلب متابعة', 'Request to follow')
+      : this.language.text('متابعة', 'Follow');
   }
 
   requestProfile(request: PendingRequest): { displayName: string; username: string } {

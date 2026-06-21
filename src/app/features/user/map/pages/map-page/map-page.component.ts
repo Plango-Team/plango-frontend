@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { Component, computed, inject, signal, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MapComponent } from "../../components/map/map.component";
@@ -7,15 +8,17 @@ import { MapStore } from '../../map.store';
 import { TripsComponent } from '../../components/trips/trips.component';
 import { InvitModalComponent } from '../../components/invit-modal/invit-modal.component';
 import { AppointmentsStore } from '../../../appointments/appointments.store';
+import { LanguageService } from '../../../../../core/services/language.service';
 @Component({
   selector: 'app-map-page',
-  imports: [MapComponent, IconComponent, CardComponent, TripsComponent, InvitModalComponent, RouterLink],
+  imports: [TranslatePipe, MapComponent, IconComponent, CardComponent, TripsComponent, InvitModalComponent, RouterLink],
   templateUrl: './map-page.component.html',
   styleUrl: './map-page.component.css',
 })
 export class MapPageComponent {
   mapStore = inject(MapStore)
   appStore = inject(AppointmentsStore)
+  readonly language = inject(LanguageService);
   isFullScreen = signal(false)
   nextAppointment = computed(() => this.mapStore.nextAppointment());
   nearbyEventsCount = computed(() => {

@@ -1,26 +1,26 @@
 <div class="px-4 py-6 sm:px-6 lg:px-8">
   @if (!isOrganization()) {
     <section class="grid place-items-center rounded-2xl border border-dashed border-ink-border p-10 text-center">
-      <h1 class="font-display text-xl text-ink-fg">هذه المساحة مخصصة للمؤسسات</h1>
+      <h1 class="font-display text-xl text-ink-fg">{{ 'legacy.21e18bc90ce6' | translate }}</h1>
       <a
         routerLink="/user/dashboard"
         class="mt-5 rounded-full bg-brand px-4 py-2 text-xs font-semibold text-brand-foreground"
       >
-        العودة للوحة المستخدم
+        {{ 'legacy.61e4fef29437' | translate }}
       </a>
     </section>
   } @else {
     <header class="flex flex-col gap-5 border-b border-ink-border pb-6 lg:flex-row lg:items-end lg:justify-between">
       <div class="flex items-center gap-4">
         <div class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-brand text-lg font-bold text-brand-foreground">
-          {{ initials(currentProfile()?.displayName || 'مؤسسة') }}
+          {{ initials(currentProfile()?.displayName || language.text('مؤسسة', 'Organization')) }}
         </div>
         <div>
-          <div class="text-xs font-medium text-brand">لوحة المؤسسة</div>
+          <div class="text-xs font-medium text-brand">{{ 'legacy.d7e20caded6d' | translate }}</div>
           <h1 class="mt-1 font-display text-2xl text-ink-fg sm:text-3xl">
-            {{ currentProfile()?.displayName || 'مؤسستك' }}
+            {{ currentProfile()?.displayName || language.text('مؤسستك', 'Your organization') }}
           </h1>
-          <p class="mt-1 text-sm text-ink-muted">تابع الفعاليات والمنشورات وتفاعل الجمهور.</p>
+          <p class="mt-1 text-sm text-ink-muted">{{ 'legacy.98cf1903d57d' | translate }}</p>
         </div>
       </div>
 
@@ -31,19 +31,23 @@
           [disabled]="isLoading()"
           class="rounded-full border border-ink-border px-4 py-2 text-xs font-semibold text-ink-fg transition hover:bg-ink-2 disabled:opacity-50"
         >
-          {{ isLoading() ? 'جارٍ التحديث...' : 'تحديث البيانات' }}
+          {{
+            isLoading()
+              ? language.text('جارٍ التحديث...', 'Refreshing...')
+              : language.text('تحديث البيانات', 'Refresh data')
+          }}
         </button>
         <a
           routerLink="/organization/events"
           class="rounded-full bg-brand px-4 py-2 text-xs font-semibold text-brand-foreground transition hover:bg-brand/90"
         >
-          إدارة الفعاليات
+          {{ 'legacy.2bb4ac8e30c6' | translate }}
         </a>
         <a
           routerLink="/organization/posts"
           class="rounded-full border border-ink-border px-4 py-2 text-xs font-semibold text-ink-fg transition hover:bg-ink-2"
         >
-          منشور جديد
+          {{ 'legacy.c128cc252afd' | translate }}
         </a>
       </div>
     </header>
@@ -67,59 +71,71 @@
             {{ eventsStore.error() || socialStore.postsError() }}
           </p>
           <button type="button" (click)="refresh()" class="text-xs font-medium text-amber-100 hover:underline">
-            إعادة المحاولة
+            {{ 'legacy.2e47b5f289f1' | translate }}
           </button>
         </div>
       }
 
-      <section class="mt-7 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-ink-border bg-ink-border sm:grid-cols-3 lg:grid-cols-6">
+      <section class="mt-7 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-ink-border bg-ink-border sm:grid-cols-4 lg:grid-cols-7">
         <div class="metric-cell">
-          <span>المتابعون</span>
+          <span>{{ 'legacy.0b5fbcdf1436' | translate }}</span>
           <strong>{{ summary().followers }}</strong>
-          <small>جمهور المؤسسة الحالي</small>
+          <small>{{ 'legacy.70fd96bfcb94' | translate }}</small>
         </div>
         <div class="metric-cell">
-          <span>الفعاليات</span>
+          <span>{{ 'legacy.8d6e4c2f231f' | translate }}</span>
           <strong>{{ summary().events }}</strong>
-          <small>{{ summary().activeEvents }} فعالية متاحة</small>
+          <small>
+            {{
+              language.text(
+                summary().publicEvents + ' عامة · ' + summary().privateEvents + ' للمتابعين',
+                summary().publicEvents + ' public · ' + summary().privateEvents + ' followers only'
+              )
+            }}
+          </small>
         </div>
         <div class="metric-cell">
-          <span>الفعاليات القادمة</span>
+          <span>{{ 'legacy.c1226422426e' | translate }}</span>
           <strong class="text-brand">{{ summary().upcomingEvents }}</strong>
-          <small>مجدولة بعد اليوم</small>
+          <small>{{ 'legacy.c7b9a059f6b0' | translate }}</small>
         </div>
         <div class="metric-cell">
-          <span>المنشورات</span>
+          <span>{{ 'legacy.bce26216c0f8' | translate }}</span>
+          <strong>{{ summary().attendees }}</strong>
+          <small>{{ 'legacy.895b02f2f710' | translate }}</small>
+        </div>
+        <div class="metric-cell">
+          <span>{{ 'legacy.13debb824cad' | translate }}</span>
           <strong>{{ summary().posts }}</strong>
-          <small>منشورات حساب المؤسسة</small>
+          <small>{{ 'legacy.46a3626a361f' | translate }}</small>
         </div>
         <div class="metric-cell">
-          <span>الإعجابات</span>
+          <span>{{ 'legacy.dc5e895cd89c' | translate }}</span>
           <strong>{{ summary().totalLikes }}</strong>
-          <small>إجمالي التفاعل</small>
+          <small>{{ 'legacy.227b93dc696c' | translate }}</small>
         </div>
         <div class="metric-cell">
-          <span>متوسط الإعجابات</span>
+          <span>{{ 'legacy.a4d1525bc149' | translate }}</span>
           <strong>{{ summary().averageLikes }}</strong>
-          <small>لكل منشور</small>
+          <small>{{ 'legacy.0da04f6a339c' | translate }}</small>
         </div>
       </section>
 
       <div class="mt-6 grid gap-6 lg:grid-cols-3">
         <section class="dashboard-panel rounded-2xl border border-ink-border bg-ink-2 p-5 lg:col-span-2 sm:p-6">
           <div>
-            <h2 class="font-display text-xl text-ink-fg">نشاط المؤسسة خلال 6 أشهر</h2>
-            <p class="mt-1 text-xs text-ink-muted">عدد الفعاليات والمنشورات التي أُنشئت كل شهر.</p>
+            <h2 class="font-display text-xl text-ink-fg">{{ 'legacy.e1962e188327' | translate }}</h2>
+            <p class="mt-1 text-xs text-ink-muted">{{ 'legacy.37faf8b804a7' | translate }}</p>
           </div>
 
           <div class="mt-5 flex items-center gap-5 text-[11px] text-ink-muted">
             <span class="inline-flex items-center gap-2">
               <span class="h-2.5 w-2.5 rounded-full bg-brand"></span>
-              فعاليات
+              {{ 'legacy.1d67a8c71de3' | translate }}
             </span>
             <span class="inline-flex items-center gap-2">
               <span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
-              منشورات
+              {{ 'legacy.f1707ae8a639' | translate }}
             </span>
           </div>
 
@@ -149,8 +165,8 @@
         </section>
 
         <aside class="dashboard-panel rounded-2xl border border-ink-border bg-ink-2 p-5 sm:p-6">
-          <h2 class="font-display text-xl text-ink-fg">حالة الفعاليات</h2>
-          <p class="mt-1 text-xs text-ink-muted">توزيع كل فعاليات المؤسسة حسب حالتها الحالية.</p>
+          <h2 class="font-display text-xl text-ink-fg">{{ 'legacy.c762a1f06634' | translate }}</h2>
+          <p class="mt-1 text-xs text-ink-muted">{{ 'legacy.89cc9b9389f0' | translate }}</p>
 
           <div class="mt-7 space-y-5">
             @for (item of statusBreakdown(); track item.key) {
@@ -179,19 +195,19 @@
         <section class="dashboard-panel overflow-hidden rounded-2xl border border-ink-border bg-ink-2">
           <div class="flex items-center justify-between gap-4 border-b border-ink-border p-5 sm:px-6">
             <div>
-              <h2 class="font-display text-xl text-ink-fg">الفعاليات التالية</h2>
-              <p class="mt-1 text-xs text-ink-muted">أقرب فعاليات المؤسسة حسب موعد البداية.</p>
+              <h2 class="font-display text-xl text-ink-fg">{{ 'legacy.7bba37dbc66f' | translate }}</h2>
+              <p class="mt-1 text-xs text-ink-muted">{{ 'legacy.efc8a77614d0' | translate }}</p>
             </div>
             <a routerLink="/organization/events" class="text-xs font-medium text-brand hover:underline">
-              عرض الكل
+              {{ 'legacy.d36294e5abb3' | translate }}
             </a>
           </div>
 
           @if (recentEvents().length === 0) {
             <div class="p-10 text-center">
-              <p class="text-sm text-ink-muted">لا توجد فعاليات بعد.</p>
+              <p class="text-sm text-ink-muted">{{ 'legacy.02ffbafe1f60' | translate }}</p>
               <a routerLink="/organization/events" class="mt-4 inline-flex rounded-full bg-brand px-4 py-2 text-xs text-brand-foreground">
-                إنشاء فعالية
+                {{ 'legacy.a6b146784081' | translate }}
               </a>
             </div>
           } @else {
@@ -204,10 +220,14 @@
                       <span [class]="'rounded-full border px-2 py-0.5 text-[10px] ' + statusClasses(eventStatus(event))">
                         {{ statusLabel(eventStatus(event)) }}
                       </span>
+                      <span class="rounded-full border border-ink-border px-2 py-0.5 text-[10px] text-ink-muted">
+                        {{ visibilityLabel(event) }}
+                      </span>
                     </div>
                     <div class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-muted">
                       <span>{{ event.startDate | date: 'd MMM y، h:mm a' }}</span>
                       <span>{{ locationLabel(event) }}</span>
+                      <span>{{ language.text(event.attendeesCount + ' مسجل', event.attendeesCount + ' registered') }}</span>
                     </div>
                   </div>
                   <span class="text-xs text-ink-muted">{{ categoryLabel(event.category) }}</span>
@@ -220,17 +240,17 @@
         <section class="dashboard-panel rounded-2xl border border-ink-border bg-ink-2 p-5 sm:p-6">
           <div class="flex items-center justify-between gap-3">
             <div>
-              <h2 class="font-display text-xl text-ink-fg">أفضل المنشورات</h2>
-              <p class="mt-1 text-xs text-ink-muted">مرتبة حسب عدد الإعجابات.</p>
+              <h2 class="font-display text-xl text-ink-fg">{{ 'legacy.89bdc707a170' | translate }}</h2>
+              <p class="mt-1 text-xs text-ink-muted">{{ 'legacy.c3423d43574a' | translate }}</p>
             </div>
             <a routerLink="/organization/posts" class="text-xs font-medium text-brand hover:underline">
-              المنشورات
+              {{ 'legacy.13debb824cad' | translate }}
             </a>
           </div>
 
           @if (topPosts().length === 0) {
             <div class="mt-6 rounded-xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted">
-              لم تنشر المؤسسة أي منشورات بعد.
+              {{ 'legacy.2440ca69509b' | translate }}
             </div>
           } @else {
             <ol class="mt-6 space-y-4">
@@ -246,7 +266,7 @@
                     </span>
                   </div>
                   <span class="rounded-full bg-brand/10 px-2 py-1 text-[11px] font-medium text-brand">
-                    {{ post.likeCount }} إعجاب
+                    {{ language.text(post.likeCount + ' إعجاب', post.likeCount + ' likes') }}
                   </span>
                 </li>
               }
@@ -257,13 +277,13 @@
 
       <section class="dashboard-panel mt-6 rounded-2xl border border-ink-border bg-ink-2 p-5 sm:p-6">
         <div>
-          <h2 class="font-display text-xl text-ink-fg">فئات الفعاليات</h2>
-          <p class="mt-1 text-xs text-ink-muted">الفئات التي تعتمد عليها المؤسسة في فعالياتها.</p>
+          <h2 class="font-display text-xl text-ink-fg">{{ 'legacy.14aa7f2f149a' | translate }}</h2>
+          <p class="mt-1 text-xs text-ink-muted">{{ 'legacy.46b71fc9e31f' | translate }}</p>
         </div>
 
         @if (categoryBreakdown().length === 0) {
           <div class="mt-6 rounded-xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted">
-            ستظهر الفئات بعد إنشاء أول فعالية.
+            {{ 'legacy.26dc013284d8' | translate }}
           </div>
         } @else {
           <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

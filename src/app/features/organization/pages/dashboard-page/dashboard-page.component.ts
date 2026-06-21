@@ -1,6 +1,8 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { LanguageService } from '../../../../core/services/language.service';
 import { authStore } from '../../../auth/auth.store';
 import { EventCategory, EventStatus } from '../../../user/events/interfaces/Ievents';
 import { Profile } from '../../../user/social/services/social.service';
@@ -13,7 +15,7 @@ type DashboardEventStatus = EventStatus | 'ended';
 @Component({
   selector: 'app-organization-dashboard-page',
   standalone: true,
-  imports: [RouterLink, DatePipe],
+  imports: [TranslatePipe, RouterLink, DatePipe],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.css',
 })
@@ -21,6 +23,7 @@ export class OrganizationDashboardPageComponent {
   readonly authStore = inject(authStore);
   readonly socialStore = inject(SocialStore);
   readonly eventsStore = inject(OrganizationEventsStore);
+  readonly language = inject(LanguageService);
 
   readonly currentProfile = computed<Profile | null>(() => {
     const profile = this.socialStore.myProfile();
@@ -59,10 +62,17 @@ export class OrganizationDashboardPageComponent {
     const posts = this.posts();
     const now = Date.now();
     const totalLikes = posts.reduce((total, post) => total + post.likeCount, 0);
+    const attendees = events.reduce(
+      (total, event) => total + event.attendeesCount,
+      0,
+    );
 
     return {
       followers: this.followers().length,
       events: events.length,
+      publicEvents: events.filter((event) => event.visibility === 'public').length,
+      privateEvents: events.filter((event) => event.visibility === 'private').length,
+      attendees,
       activeEvents: events.filter(
         (event) => event.isActive && new Date(event.endDate).getTime() >= now,
       ).length,
@@ -81,7 +91,7 @@ export class OrganizationDashboardPageComponent {
       const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
       return {
         key: `${date.getFullYear()}-${date.getMonth()}`,
-        label: new Intl.DateTimeFormat('ar-EG', { month: 'short' }).format(date),
+        label: this.language.formatDate(date, { month: 'short' }),
         start: date.getTime(),
         end: new Date(date.getFullYear(), date.getMonth() + 1, 1).getTime(),
         events: 0,
@@ -116,10 +126,10 @@ export class OrganizationDashboardPageComponent {
       label: string;
       color: string;
     }> = [
-      { key: 'ongoing', label: 'جارية الآن', color: '#10b981' },
-      { key: 'upcoming', label: 'قادمة', color: '#7c3aed' },
-      { key: 'ended', label: 'انتهت', color: '#64748b' },
-      { key: 'inactive', label: 'موقوفة', color: '#f59e0b' },
+      { key: 'ongoing', label: this.language.text('جارية الآن', 'Ongoing'), color: '#10b981' },
+      { key: 'upcoming', label: this.language.text('قادمة', 'Upcoming'), color: '#7c3aed' },
+      { key: 'ended', label: this.language.text('انتهت', 'Ended'), color: '#64748b' },
+      { key: 'inactive', label: this.language.text('موقوفة', 'Inactive'), color: '#f59e0b' },
     ];
     const total = Math.max(1, this.events().length);
 
@@ -194,11 +204,11 @@ export class OrganizationDashboardPageComponent {
 
   statusLabel(status: DashboardEventStatus): string {
     const labels: Record<DashboardEventStatus, string> = {
-      inactive: 'موقوفة',
-      expired: 'انتهت',
-      ended: 'انتهت',
-      upcoming: 'قادمة',
-      ongoing: 'جارية',
+      inactive: this.language.text('موقوفة', 'Inactive'),
+      expired: this.language.text('انتهت', 'Ended'),
+      ended: this.language.text('انتهت', 'Ended'),
+      upcoming: this.language.text('قادمة', 'Upcoming'),
+      ongoing: this.language.text('جارية', 'Ongoing'),
     };
     return labels[status];
   }
@@ -218,18 +228,28 @@ export class OrganizationDashboardPageComponent {
 
   categoryLabel(category: EventCategory): string {
     const labels: Record<EventCategory, string> = {
-      music: 'موسيقى',
-      sports: 'رياضة',
-      education: 'تعليم',
-      technology: 'تقنية',
-      photography: 'تصوير',
-      art: 'فن',
-      other: 'أخرى',
+      music: this.language.text('موسيقى', 'Music'),
+      sports: this.language.text('رياضة', 'Sports'),
+      education: this.language.text('تعليم', 'Education'),
+      technology: this.language.text('تقنية', 'Technology'),
+      photography: this.language.text('تصوير', 'Photography'),
+      art: this.language.text('فن', 'Art'),
+      other: this.language.text('أخرى', 'Other'),
     };
     return labels[category];
   }
 
   locationLabel(event: OrganizationEvent): string {
-    return event.location.addressName || event.location.fullAddress || 'الموقع غير محدد';
+    return (
+      event.location?.addressName ||
+      event.location?.fullAddress ||
+      this.language.text('الموقع غير محدد', 'Location not specified')
+    );
+  }
+
+  visibilityLabel(event: OrganizationEvent): string {
+    return event.visibility === 'private'
+      ? this.language.text('للمتابعين', 'Followers only')
+      : this.language.text('عامة', 'Public');
   }
 }

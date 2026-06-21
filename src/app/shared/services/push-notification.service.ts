@@ -12,6 +12,7 @@ import {
 } from 'firebase/messaging';
 import { Subject } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { LanguageService } from '../../core/services/language.service';
 
 export type PushPermissionState = NotificationPermission | 'unsupported';
 
@@ -27,6 +28,7 @@ export class PushNotificationService {
   private readonly notificationIcon = '/assets/seo/logo-512.png';
   private readonly notificationBadge = '/favicon-96x96.png';
   private readonly router = inject(Router);
+  private readonly language = inject(LanguageService);
   private messagingPromise: Promise<Messaging | null> | null = null;
   private foregroundListenerReady = false;
   private serviceWorkerRegistration: ServiceWorkerRegistration | null = null;
@@ -42,6 +44,18 @@ export class PushNotificationService {
 
   constructor() {
     if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      if (!environment.production && typeof caches !== 'undefined') {
+        void caches
+          .keys()
+          .then((cacheNames) =>
+            Promise.all(
+              cacheNames
+                .filter((cacheName) => cacheName.startsWith('plango-shell-'))
+                .map((cacheName) => caches.delete(cacheName)),
+            ),
+          );
+      }
+
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data?.type === 'PLANGO_NOTIFICATION_RECEIVED') {
           this.incoming.next(event.data.payload ?? {});
@@ -208,11 +222,17 @@ export class PushNotificationService {
     const message = error instanceof Error ? error.message : String(error);
 
     if (message === 'PUSH_REQUIRES_HTTPS') {
-      return 'إشعارات الجهاز تحتاج إلى HTTPS على رابط الواجهة الأمامية.';
+      return this.language.text(
+        'إشعارات الجهاز تحتاج إلى HTTPS على رابط الواجهة الأمامية.',
+        'Device notifications require HTTPS on the frontend URL.',
+      );
     }
 
     if (message === 'IOS_REQUIRES_HOME_SCREEN') {
-      return 'على iPhone أو iPad: أضف PlanGo إلى الشاشة الرئيسية أولاً، ثم افتحه من الأيقونة وفعّل الإشعارات.';
+      return this.language.text(
+        'على iPhone أو iPad: أضف PlanGo إلى الشاشة الرئيسية أولاً، ثم افتحه من الأيقونة وفعّل الإشعارات.',
+        'On iPhone or iPad, add PlanGo to the Home Screen, open it from the icon, then enable notifications.',
+      );
     }
 
     const normalized = message.toLowerCase();
@@ -221,23 +241,32 @@ export class PushNotificationService {
       normalized.includes('registration failed')
     ) {
       const browserHint = this.isBrave()
-        ? ' فعّل Google Services for Push Messaging من إعدادات Brave.'
+        ? this.language.text(
+            ' فعّل Google Services for Push Messaging من إعدادات Brave.',
+            ' Enable Google Services for Push Messaging in Brave settings.',
+          )
         : '';
-      return (
-        'المتصفح لم يستطع الاتصال بخدمة Push. جرّب إيقاف VPN أو مانع الإعلانات، تأكد أن إشعارات الموقع مسموحة، ثم أعد فتح المتصفح.' +
-        browserHint
-      );
+      return this.language.text(
+        'المتصفح لم يستطع الاتصال بخدمة Push. جرّب إيقاف VPN أو مانع الإعلانات، تأكد أن إشعارات الموقع مسموحة، ثم أعد فتح المتصفح.',
+        'The browser could not connect to the push service. Disable any VPN or ad blocker, allow site notifications, then reopen the browser.',
+      ) + browserHint;
     }
 
     if (normalized.includes('failed-service-worker-registration')) {
-      return 'تعذر تحميل firebase-messaging-sw.js من جذر موقع الواجهة الأمامية.';
+      return this.language.text(
+        'تعذر تحميل firebase-messaging-sw.js من جذر موقع الواجهة الأمامية.',
+        'Could not load firebase-messaging-sw.js from the frontend root.',
+      );
     }
 
     if (normalized.includes('token-subscribe-failed')) {
-      return 'فشل تسجيل FCM. تأكد أن FCM Registration API مفعّل وأن VAPID key مطابق لمشروع Firebase.';
+      return this.language.text(
+        'فشل تسجيل FCM. تأكد أن FCM Registration API مفعّل وأن VAPID key مطابق لمشروع Firebase.',
+        'FCM registration failed. Make sure the FCM Registration API is enabled and the VAPID key matches the Firebase project.',
+      );
     }
 
-    return message || 'FCM registration failed';
+    return message || this.language.text('فشل تسجيل FCM', 'FCM registration failed');
   }
 
   private isIos(): boolean {

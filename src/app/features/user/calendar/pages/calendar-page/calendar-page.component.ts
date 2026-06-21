@@ -13,6 +13,7 @@ import { ToastService } from '../../../../../shared/services/toast.service';
 import { AppointmentPayload } from '../../../appointments/interfaces/IAppointment';
 import { UpdateAppointmentModalComponent } from '../../components/update-appointment-modal/update-appointment-modal.component';
 import { DeletAppModalComponent } from "../../components/delet-app-modal/delet-app-modal.component";
+import { LanguageService } from '../../../../../core/services/language.service';
 
 @Component({
   selector: 'app-calendar-page',
@@ -27,9 +28,12 @@ export class CalendarPageComponent {
   private placesService = inject(PlacesService);
   private notificationsStore = inject(NotificationsStore);
   private toastService = inject(ToastService);
+  private language = inject(LanguageService);
   mapStore = inject(MapStore);
 
-  ar = true;
+  get ar(): boolean {
+    return this.language.isArabic();
+  }
   slotHeight = 56;
   hours = Array.from({ length: 24 }, (_, i) => i);
 

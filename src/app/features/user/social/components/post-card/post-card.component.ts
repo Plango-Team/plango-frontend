@@ -5,6 +5,7 @@ import { Post, Profile } from '../../services/social.service';
 import { SocialStore } from '../../social.store';
 import { authStore } from '../../../../auth/auth.store';
 import { IconComponent } from '../../../../../shared/components/icon/icon.component';
+import { LanguageService } from '../../../../../core/services/language.service';
 
 @Component({
   selector: 'app-post-card',
@@ -82,7 +83,7 @@ import { IconComponent } from '../../../../../shared/components/icon/icon.compon
                     [iconSize]="14"
                     iconColor="currentColor"
                   ></app-icon>
-                  حذف
+                  {{ language.text('حذف', 'Delete') }}
                 </button>
               }
             </div>
@@ -95,6 +96,7 @@ import { IconComponent } from '../../../../../shared/components/icon/icon.compon
 export class PostCardComponent {
   socialStore = inject(SocialStore);
   authStore = inject(authStore);
+  readonly language = inject(LanguageService);
 
   post = input.required<Post>();
 
@@ -148,13 +150,17 @@ export class PostCardComponent {
 
   timeAgo(ms: number) {
     const sec = Math.floor((Date.now() - ms) / 1000);
-    if (sec < 60) return 'الآن';
+    if (sec < 60) return this.language.text('الآن', 'just now');
     const m = Math.floor(sec / 60);
-    if (m < 60) return `قبل ${m} د`;
+    if (m < 60) {
+      return this.language.text(`قبل ${m} د`, `${m}m ago`);
+    }
     const h = Math.floor(m / 60);
-    if (h < 24) return `قبل ${h} س`;
+    if (h < 24) {
+      return this.language.text(`قبل ${h} س`, `${h}h ago`);
+    }
     const d = Math.floor(h / 24);
-    return `قبل ${d} ي`;
+    return this.language.text(`قبل ${d} ي`, `${d}d ago`);
   }
 
   toggleLike() {

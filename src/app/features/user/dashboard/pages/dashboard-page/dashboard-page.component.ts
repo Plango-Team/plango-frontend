@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { Component, computed, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { DashboardAppointmentsComponent } from '../../components/dashboard-appointments/dashboard-appointments.component';
@@ -10,9 +11,10 @@ import { MapStore } from '../../../map/map.store';
 import { SetLocationModalComponent } from "../../components/set-location-modal/set-location-modal.component";
 import { DashboardEventsComponent } from "../../components/dashboard-events/dashboard-events.component";
 import { Appointment } from '../../../appointments/interfaces/IAppointment';
+import { LanguageService } from '../../../../../core/services/language.service';
 
 @Component({
-  imports: [DashboardAppointmentsComponent, CardComponent, IconComponent, RouterModule, SetLocationModalComponent, DashboardEventsComponent],
+  imports: [TranslatePipe, DashboardAppointmentsComponent, CardComponent, IconComponent, RouterModule, SetLocationModalComponent, DashboardEventsComponent],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.css',
 })
@@ -21,6 +23,7 @@ export class DashboardPageComponent {
   appStore = inject(AppointmentsStore)
   mapStore = inject(MapStore)
   public tasksStore = inject(TasksStore);
+  readonly language = inject(LanguageService);
   nextAppointment = computed(() => this.mapStore.nextAppointment());
   sharedAppointments = computed(() =>
     this.appStore
@@ -65,7 +68,7 @@ export class DashboardPageComponent {
   // ─── Today's date formatted in Arabic ─────────────────
   todayFormatted = computed(() => {
     const now = new Date();
-    return now.toLocaleDateString('ar-EG', {
+    return this.language.formatDate(now, {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -76,9 +79,9 @@ export class DashboardPageComponent {
   // ─── Greeting based on time of day ────────────────────
   greeting = computed(() => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'صباح الخير';
-    if (hour < 18) return 'مساء الخير';
-    return 'مساء الخير';
+    if (hour < 12) return this.language.text('صباح الخير', 'Good morning');
+    if (hour < 18) return this.language.text('مساء الخير', 'Good afternoon');
+    return this.language.text('مساء الخير', 'Good evening');
   });
 
   formatTime(arrivalTime: string | Date): string {
@@ -100,19 +103,21 @@ destinationLabel(appointment: Appointment): string {
     appointment.destinationLocation?.addressName ||
     appointment.destinationLocation?.fullAddress ||
     appointment.destinationLocation?.fullAddres ||
-    'الموقع غير محدد'
+    this.language.text('الموقع غير محدد', 'Location not specified')
   );
 }
 
 distanceLabel(appointment: Appointment): string {
   const meters = appointment.distanceInMeters ?? 0;
-  if (!meters) return 'غير متاح';
-  return `${(meters / 1000).toFixed(1)} كم`;
+  if (!meters) return this.language.text('غير متاح', 'Unavailable');
+  return `${(meters / 1000).toFixed(1)} ${this.language.text('كم', 'km')}`;
 }
 
 travelTimeLabel(appointment: Appointment): string {
   const minutes = Math.round(appointment.estimatedTravelTime ?? 0);
-  return minutes ? `${minutes} دقيقة` : 'غير متاح';
+  return minutes
+    ? `${minutes} ${this.language.text('دقيقة', 'min')}`
+    : this.language.text('غير متاح', 'Unavailable');
 }
 
 departureTimeLabel(appointment: Appointment): string {
@@ -128,7 +133,7 @@ departureTimeLabel(appointment: Appointment): string {
 participantCount(appointment: Appointment): number {
   return appointment.participants?.filter((participant) => participant.receiverId).length ?? 0;
 }
-getMinutesRemaining(arrivalTime:string | Date) : number{
+getMinutesRemaining(arrivalTime: string | Date | null): number {
   if (!arrivalTime) return -1;
   const now = new Date();
   const eventTime = new Date(arrivalTime);

@@ -7,27 +7,40 @@
     (ngSubmit)="onSubmit()"
     class="max-h-[90vh] overflow-y-auto rounded-2xl border border-ink-border bg-ink-2 p-6 shadow-elevated"
   >
-    <h2 class="font-display text-2xl text-ink-fg">إضافة الفعالية إلى جدولك</h2>
+    <h2 class="font-display text-2xl text-ink-fg">{{ 'legacy.15c4c214f236' | translate }}</h2>
     @if (selectedEvent(); as event) {
       <p class="mt-1 text-sm text-ink-muted">{{ event.title }}</p>
+      <p class="mt-1 text-xs text-ink-muted">
+        {{
+          event.visibility === 'private'
+            ? language.text('للمتابعين فقط', 'Followers only')
+            : language.text('فعالية عامة', 'Public event')
+        }}
+        ·
+        {{ language.text(event.attendeesCount + ' مسجل', event.attendeesCount + ' registered') }}
+      </p>
     }
 
     <div class="mt-6 space-y-4">
       <div class="space-y-1.5">
         <div class="flex items-center justify-between gap-3">
-          <label class="text-sm font-medium text-ink-fg">نقطة الانطلاق</label>
+          <label class="text-sm font-medium text-ink-fg">{{ 'legacy.9709e9d4a284' | translate }}</label>
           <button
             type="button"
             (click)="useCurrentLocation()"
             [disabled]="resolvingLocation()"
             class="text-xs font-medium text-brand disabled:opacity-50"
           >
-            {{ resolvingLocation() ? 'جارٍ تحديد الموقع...' : 'استخدم موقعي الحالي' }}
+            {{
+              resolvingLocation()
+                ? language.text('جارٍ تحديد الموقع...', 'Locating...')
+                : language.text('استخدم موقعي الحالي', 'Use my current location')
+            }}
           </button>
         </div>
         <app-location-combobox
           [value]="originName"
-          placeholder="ابحث عن نقطة الانطلاق"
+          [placeholder]="'legacy.4650922f3e6d' | translate"
           [allowCreate]="false"
           (valueChange)="onOriginNameChange($event)"
           (placeSelected)="onPlaceSelected($event)"
@@ -35,9 +48,9 @@
       </div>
 
       <div class="space-y-1.5">
-        <label class="text-sm font-medium text-ink-fg">طريقة التنقل</label>
+        <label class="text-sm font-medium text-ink-fg">{{ 'legacy.ec965ea64a7a' | translate }}</label>
         <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          @for (transport of transports; track transport.id) {
+          @for (transport of transports(); track transport.id) {
             <button
               type="button"
               (click)="transportation = transport.id"
@@ -67,14 +80,18 @@
         (click)="close()"
         class="rounded-lg border border-ink-border px-4 py-2 text-sm text-ink-fg hover:bg-ink-3"
       >
-        إلغاء
+        {{ 'legacy.e776b0209b50' | translate }}
       </button>
       <button
         type="submit"
         [disabled]="!!store.joiningEventId() || selectedEventStarted()"
         class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 disabled:opacity-50"
       >
-        {{ store.joiningEventId() ? 'جارٍ الإضافة...' : 'إضافة إلى الجدول' }}
+        {{
+          store.joiningEventId()
+            ? language.text('جارٍ الإضافة...', 'Adding...')
+            : language.text('إضافة إلى الجدول', 'Add to schedule')
+        }}
       </button>
     </div>
   </form>

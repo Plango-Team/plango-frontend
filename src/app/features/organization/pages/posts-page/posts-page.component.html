@@ -3,25 +3,25 @@
     <div
       class="inline-flex items-center rounded-full border border-brand/40 bg-brand/10 px-2.5 py-0.5 text-[11px] font-medium text-brand"
     >
-      منشورات المؤسسة
+      {{ 'legacy.91de29aa3ef3' | translate }}
     </div>
     <h1 class="mt-1 font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">
-      إدارة المنشورات
+      {{ 'legacy.31aae31bd722' | translate }}
     </h1>
-    <p class="text-sm text-ink-muted">اكتب وانشر وتابع أداء كل تحديث يتم إرساله لمتابعي مؤسستك.</p>
+    <p class="text-sm text-ink-muted">{{ 'legacy.f51d320a0991' | translate }}</p>
   </div>
 
   <div class="mb-6 grid gap-3 sm:grid-cols-3">
     <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
-      <div class="text-xs text-ink-muted">إجمالي المنشورات</div>
+      <div class="text-xs text-ink-muted">{{ 'legacy.16afb6c21a43' | translate }}</div>
       <div class="mt-2 font-display text-3xl tabular-nums text-ink-fg">{{ posts().length }}</div>
     </article>
     <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
-      <div class="text-xs text-ink-muted">إجمالي الإعجابات</div>
+      <div class="text-xs text-ink-muted">{{ 'legacy.479a0f47f3b4' | translate }}</div>
       <div class="mt-2 font-display text-3xl tabular-nums text-brand">{{ totalLikes() }}</div>
     </article>
     <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
-      <div class="text-xs text-ink-muted">متوسط لكل منشور</div>
+      <div class="text-xs text-ink-muted">{{ 'legacy.daf96d326363' | translate }}</div>
       <div class="mt-2 font-display text-3xl tabular-nums text-ink-fg">{{ averageLikes() }}</div>
     </article>
   </div>
@@ -29,17 +29,17 @@
   <div class="grid gap-6 lg:grid-cols-12">
     <section class="space-y-4 lg:col-span-8">
       <div>
-        <h2 class="mb-2 font-display text-lg text-ink-fg">منشور جديد</h2>
-        <app-post-composer placeholder="اكتب إعلاناً أو تحديثاً جديداً..."></app-post-composer>
+        <h2 class="mb-2 font-display text-lg text-ink-fg">{{ 'legacy.c128cc252afd' | translate }}</h2>
+        <app-post-composer [placeholder]="'legacy.d8aceeb6c1f9' | translate"></app-post-composer>
       </div>
 
       <div>
-        <h2 class="mb-3 font-display text-lg text-ink-fg">كل منشورات المؤسسة</h2>
+        <h2 class="mb-3 font-display text-lg text-ink-fg">{{ 'legacy.077c6cfb1496' | translate }}</h2>
         @if (posts().length === 0) {
           <article
             class="rounded-2xl border border-dashed border-ink-border bg-ink-2 p-8 text-center text-sm text-ink-muted"
           >
-            لا توجد منشورات بعد. انشر أول خبر أو تحديث وسيظهر هنا مباشرة.
+            {{ 'legacy.1c3d4773f0d5' | translate }}
           </article>
         } @else {
           <div class="space-y-3">
@@ -54,7 +54,11 @@
               [disabled]="socialStore.postsLoadingMore()"
               class="mt-4 rounded-full border border-ink-border bg-ink-2 px-5 py-2 text-xs text-ink-fg hover:bg-ink-3 disabled:opacity-50"
             >
-              {{ socialStore.postsLoadingMore() ? 'جارٍ التحميل...' : 'تحميل منشورات أقدم' }}
+              {{
+                socialStore.postsLoadingMore()
+                  ? language.text('جارٍ التحميل...', 'Loading...')
+                  : language.text('تحميل منشورات أقدم', 'Load older posts')
+              }}
             </button>
           }
         }
@@ -63,16 +67,18 @@
 
     <aside class="space-y-4 lg:col-span-4">
       <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
-        <div class="mb-3 text-sm font-medium text-ink-fg">الأعلى تفاعلاً</div>
+        <div class="mb-3 text-sm font-medium text-ink-fg">{{ 'legacy.11522d53d3c3' | translate }}</div>
         @if (topPosts().length === 0) {
-          <p class="text-xs text-ink-muted">لا توجد بيانات بعد.</p>
+          <p class="text-xs text-ink-muted">{{ 'legacy.e68f51514534' | translate }}</p>
         } @else {
           <ul class="space-y-2">
             @for (post of topPosts(); track post.id; let index = $index) {
               <li class="rounded-xl border border-ink-border bg-ink p-3 text-xs">
                 <div class="flex items-center justify-between">
                   <span class="text-ink-muted">#{{ index + 1 }}</span>
-                  <span class="text-brand">{{ post.likeCount }} إعجاب</span>
+                  <span class="text-brand">
+                    {{ language.text(post.likeCount + ' إعجاب', post.likeCount + ' likes') }}
+                  </span>
                 </div>
                 <p class="mt-1 line-clamp-3 text-ink-fg">{{ post.body }}</p>
               </li>

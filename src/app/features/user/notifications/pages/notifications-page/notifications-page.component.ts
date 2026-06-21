@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IconComponent } from '../../../../../shared/components/icon/icon.component';
@@ -7,11 +8,12 @@ import {
   timeAgoLabel,
 } from '../../../../../shared/stores/notifications.store';
 import { ToastService } from '../../../../../shared/services/toast.service';
+import { LanguageService } from '../../../../../core/services/language.service';
 
 @Component({
   selector: 'app-notifications-page',
   standalone: true,
-  imports: [IconComponent],
+  imports: [TranslatePipe, IconComponent],
   templateUrl: './notifications-page.component.html',
   styleUrl: './notifications-page.component.css',
 })
@@ -19,7 +21,11 @@ export class NotificationsPageComponent {
   readonly notificationsStore = inject(NotificationsStore);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
-  readonly ar = true;
+  readonly language = inject(LanguageService);
+
+  get ar(): boolean {
+    return this.language.isArabic();
+  }
 
   readonly items = computed(() => this.notificationsStore.visible());
   readonly pushEnabled = computed(
@@ -53,7 +59,7 @@ export class NotificationsPageComponent {
   }
 
   refresh() {
-    this.notificationsStore.load();
+    this.notificationsStore.load(true);
   }
 
   loadMore() {

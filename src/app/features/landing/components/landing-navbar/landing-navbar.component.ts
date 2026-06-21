@@ -10,6 +10,8 @@ import {
 import { RouterLink } from '@angular/router';
 import { ThemeService } from '../../../../core/services/theme.service';
 import { authStore } from '../../../auth/auth.store';
+import { LanguageService } from '../../../../core/services/language.service';
+import { TranslatePipe } from '@ngx-translate/core';
 
 export interface LandingNavLink {
   readonly href: string;
@@ -19,7 +21,7 @@ export interface LandingNavLink {
 @Component({
   selector: 'app-landing-navbar',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslatePipe],
   templateUrl: './landing-navbar.component.html',
   styleUrl: './landing-navbar.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,19 +29,15 @@ export interface LandingNavLink {
 export class LandingNavbarComponent {
   readonly links = input<readonly LandingNavLink[]>([]);
   protected readonly themeService = inject(ThemeService);
+  protected readonly language = inject(LanguageService);
   protected readonly store = inject(authStore);
   private readonly elementRef = inject(ElementRef<HTMLElement>);
 
   protected readonly isScrolled = signal(false);
   protected readonly mobileMenuOpen = signal(false);
   protected readonly profileMenuOpen = signal(false);
-  protected readonly locale = signal<'ar' | 'en'>('ar');
 
   constructor() {
-    const savedLocale = localStorage.getItem('plango-locale');
-    if (savedLocale === 'ar' || savedLocale === 'en') {
-      this.locale.set(savedLocale);
-    }
     this.onWindowScroll();
   }
 
@@ -118,10 +116,6 @@ export class LandingNavbarComponent {
     return result ? result.toUpperCase() : 'U';
   }
   toggleLocale(): void {
-    this.locale.update((current) => {
-      const next = current === 'ar' ? 'en' : 'ar';
-      localStorage.setItem('plango-locale', next);
-      return next;
-    });
+    this.language.toggleLocale();
   }
 }

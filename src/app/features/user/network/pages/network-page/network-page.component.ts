@@ -1,22 +1,25 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SocialStore } from '../../../social/social.store';
 import { authStore } from '../../../../auth/auth.store';
+import { LanguageService } from '../../../../../core/services/language.service';
 
 type NetworkTab = 'discover' | 'followers' | 'following' | 'requests';
 
 @Component({
   selector: 'app-network-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [TranslatePipe, CommonModule, RouterModule, FormsModule],
   templateUrl: './network-page.component.html',
   styleUrl: './network-page.component.css',
 })
 export class NetworkPageComponent {
   socialStore = inject(SocialStore);
   auth = inject(authStore);
+  readonly language = inject(LanguageService);
   activeTab = signal<NetworkTab>('discover');
   searchQuery = signal('');
 
@@ -29,13 +32,25 @@ export class NetworkPageComponent {
   tabs = computed(() => [
     {
       key: 'discover' as NetworkTab,
-      label: 'اكتشف',
+      label: this.language.text('اكتشف', 'Discover'),
       count: this.socialStore.profiles().filter((profile) => profile.id !== this.auth.user()?._id)
         .length,
     },
-    { key: 'followers' as NetworkTab, label: 'المتابعون', count: this.stats().followers },
-    { key: 'following' as NetworkTab, label: 'أتابعهم', count: this.stats().following },
-    { key: 'requests' as NetworkTab, label: 'طلبات', count: this.stats().pending },
+    {
+      key: 'followers' as NetworkTab,
+      label: this.language.text('المتابعون', 'Followers'),
+      count: this.stats().followers,
+    },
+    {
+      key: 'following' as NetworkTab,
+      label: this.language.text('أتابعهم', 'Following'),
+      count: this.stats().following,
+    },
+    {
+      key: 'requests' as NetworkTab,
+      label: this.language.text('طلبات', 'Requests'),
+      count: this.stats().pending,
+    },
   ]);
 
   filteredFollowers = computed(() => {
@@ -89,7 +104,7 @@ export class NetworkPageComponent {
       )
       .sort((a, b) => {
         if (a.kind !== b.kind) return a.kind === 'user' ? -1 : 1;
-        return a.displayName.localeCompare(b.displayName, 'ar');
+        return a.displayName.localeCompare(b.displayName, this.language.locale());
       });
   });
 
@@ -119,9 +134,11 @@ export class NetworkPageComponent {
 
   followLabel(userId: string, isPrivate: boolean): string {
     const state = this.socialStore.followState(this.auth.user()?._id ?? null, userId);
-    if (state === 'accepted') return 'إلغاء المتابعة';
-    if (state === 'pending') return 'إلغاء الطلب';
-    return isPrivate ? 'طلب متابعة' : 'متابعة';
+    if (state === 'accepted') return this.language.text('إلغاء المتابعة', 'Unfollow');
+    if (state === 'pending') return this.language.text('إلغاء الطلب', 'Cancel request');
+    return isPrivate
+      ? this.language.text('طلب متابعة', 'Request to follow')
+      : this.language.text('متابعة', 'Follow');
   }
 
   isPrivate(userId: string): boolean {
@@ -168,7 +185,11 @@ export class NetworkPageComponent {
   formatDate(dateStr: string): string {
     try {
       const d = new Date(dateStr);
-      return d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' });
+      return this.language.formatDate(d, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
     } catch {
       return dateStr;
     }

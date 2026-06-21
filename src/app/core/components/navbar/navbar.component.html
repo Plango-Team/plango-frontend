@@ -13,7 +13,11 @@
   >
     <app-icon [iconName]="'Search01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
     <span class="flex-1 truncate">
-      {{ isOrganization() ? 'ابحث في المؤسسة...' : 'ابحث عن أي شيء...' }}
+      {{
+        isOrganization()
+          ? language.text('ابحث في المؤسسة...', 'Search the organization...')
+          : language.text('ابحث عن أي شيء...', 'Search anything...')
+      }}
     </span>
     <span class="hidden items-center gap-1 sm:flex">
       <kbd class="rounded border border-ink-border bg-ink px-1.5 py-0.5 text-[10px] font-mono">Ctrl</kbd>
@@ -30,7 +34,7 @@
         class="mx-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-ink-border bg-ink-2 shadow-2xl"
         role="dialog"
         aria-modal="true"
-        aria-label="البحث"
+        [aria-label]="'legacy.ddd67d40d3b0' | translate"
         (click)="$event.stopPropagation()"
       >
         <div class="flex items-center gap-3 border-b border-ink-border px-4 py-3">
@@ -44,8 +48,14 @@
             class="h-11 min-w-0 flex-1 border-0 bg-transparent text-base text-ink-fg outline-none placeholder:text-ink-muted focus:ring-0"
             [placeholder]="
               isOrganization()
-                ? 'ابحث عن فعالية، منشور، متابع، أو صفحة...'
-                : 'ابحث عن مهمة، فعالية، شخص، منشور، أو صفحة...'
+                ? language.text(
+                    'ابحث عن فعالية، منشور، متابع، أو صفحة...',
+                    'Search events, posts, followers, or pages...'
+                  )
+                : language.text(
+                    'ابحث عن مهمة، فعالية، شخص، منشور، أو صفحة...',
+                    'Search tasks, events, people, posts, or pages...'
+                  )
             "
           />
           <button
@@ -60,23 +70,23 @@
         <div class="max-h-[65vh] overflow-y-auto p-2">
           <div class="px-2 pb-2 pt-1 text-xs font-semibold text-ink-muted">
             @if (searchQuery().trim()) {
-              نتائج البحث
+              {{ 'legacy.912ef062813d' | translate }}
             } @else {
-              اختصارات سريعة
+              {{ 'legacy.ac5061b09c5b' | translate }}
             }
           </div>
 
           @if (isSearchLoading()) {
             <div class="flex items-center gap-2 rounded-xl px-3 py-3 text-sm text-ink-muted">
               <span class="h-4 w-4 animate-spin rounded-full border-2 border-brand border-t-transparent"></span>
-              جارٍ تحديث النتائج...
+              {{ 'legacy.d542ff7482b2' | translate }}
             </div>
           }
 
           @if (searchResults().length === 0 && searchQuery().trim()) {
             <div class="rounded-xl border border-ink-border bg-ink px-5 py-8 text-center">
-              <div class="text-sm font-semibold text-ink-fg">لا توجد نتائج مطابقة</div>
-              <p class="mt-1 text-xs text-ink-muted">جرّب اسم صفحة، شخص، فعالية، مهمة أو منشور.</p>
+              <div class="text-sm font-semibold text-ink-fg">{{ 'legacy.8d88b0583d4d' | translate }}</div>
+              <p class="mt-1 text-xs text-ink-muted">{{ 'legacy.44ce2dafdff6' | translate }}</p>
             </div>
           } @else {
             <div class="space-y-1">
@@ -105,18 +115,22 @@
         </div>
 
         <div class="flex items-center justify-between border-t border-ink-border px-4 py-2 text-[11px] text-ink-muted">
-          <span>Enter لفتح أول نتيجة</span>
-          <span>Ctrl + K للبحث من أي مكان</span>
+          <span>{{ 'legacy.5fddcf1235ce' | translate }}</span>
+          <span>{{ 'legacy.c0359c56da27' | translate }}</span>
         </div>
       </section>
     </div>
   }
 
-  <div class="ms-auto flex items-center gap-2">
+  <div
+    class="navbar-actions ms-auto flex min-w-0 max-w-full items-center gap-2 py-1"
+    [class.overflow-x-auto]="!isMenuOpen() && !isNotificationsOpen()"
+    [class.overflow-visible]="isMenuOpen() || isNotificationsOpen()"
+  >
     <div class="hidden sm:block">
       <button
         (click)="themeService.toggleTheme()"
-        class="rounded-lg p-2 text-ink-muted transition-colors hover:bg-ink-3 hover:text-ink-fg"
+        class="shrink-0 rounded-lg p-2 text-ink-muted transition-colors hover:bg-ink-3 hover:text-ink-fg"
       >
         @if (themeService.isDark()) {
           <svg class="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -144,7 +158,21 @@
       </button>
     </div>
 
-    <div class="relative" #notificationsMenuWrap>
+    <button
+      type="button"
+      (click)="language.toggleLocale()"
+      class="flex h-10 shrink-0 items-center gap-1.5 rounded-lg border border-ink-border bg-ink-2/60 px-2.5 text-xs font-semibold text-ink-fg transition-colors hover:bg-ink-3"
+      [attr.aria-label]="'common.switchLanguage' | translate"
+    >
+      <app-icon
+        [iconName]="'LanguageSkillIcon'"
+        [iconSize]="16"
+        [iconColor]="'currentColor'"
+      ></app-icon>
+      {{ language.isArabic() ? 'EN' : 'AR' }}
+    </button>
+
+    <div class="relative shrink-0" #notificationsMenuWrap>
       <button
         (click)="toggleNotificationsMenu()"
         class="relative grid h-10 w-10 place-items-center rounded-lg border border-ink-border bg-ink-2/60 text-ink-fg transition-colors hover:bg-ink-3"
@@ -161,13 +189,18 @@
       </button>
 
       @if (isNotificationsOpen()) {
-        <div class="absolute left-0 top-full z-50 mt-2 w-[360px] rounded-xl border border-ink-border bg-ink-2 p-0 shadow-lg">
+        <div class="absolute end-0 top-full z-50 mt-2 w-[min(360px,calc(100vw-1rem))] rounded-xl border border-ink-border bg-ink-2 p-0 shadow-lg">
           <div class="flex items-center justify-between border-b border-ink-border px-3 py-2.5">
             <div class="text-sm font-semibold text-ink-fg">
-              الإشعارات
+              {{ 'legacy.0eb7129edb51' | translate }}
               @if (notificationsStore.unreadCount() > 0) {
                 <span class="ms-2 rounded-full bg-brand/15 px-1.5 py-0.5 text-[10px] text-brand">
-                  {{ notificationsStore.unreadCount() }} جديدة
+                  {{
+                    language.text(
+                      notificationsStore.unreadCount() + ' جديدة',
+                      notificationsStore.unreadCount() + ' new'
+                    )
+                  }}
                 </span>
               }
             </div>
@@ -176,7 +209,7 @@
                 type="button"
                 (click)="markAllNotificationsRead()"
                 class="grid h-7 w-7 place-items-center rounded-md text-ink-muted transition-colors hover:bg-ink-3 hover:text-ink-fg"
-                title="تعليم الكل كمقروء"
+                [title]="'legacy.b61154592485' | translate"
               >
                 <app-icon [iconName]="'CheckmarkCircle01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
               </button>
@@ -185,9 +218,9 @@
 
           <div class="max-h-[420px] overflow-y-auto">
             @if (notificationsStore.isLoading() && notificationPreview().length === 0) {
-              <div class="px-6 py-10 text-center text-sm text-ink-muted">جارٍ تحميل الإشعارات...</div>
+              <div class="px-6 py-10 text-center text-sm text-ink-muted">{{ 'legacy.b1902777919d' | translate }}</div>
             } @else if (notificationPreview().length === 0) {
-              <div class="px-6 py-10 text-center text-sm text-ink-muted">لا توجد إشعارات بعد</div>
+              <div class="px-6 py-10 text-center text-sm text-ink-muted">{{ 'legacy.29496731ecc1' | translate }}</div>
             } @else {
               @for (item of notificationPreview(); track item.id) {
                 <a
@@ -215,17 +248,17 @@
               (click)="isNotificationsOpen.set(false)"
               class="block rounded-md px-2 py-1.5 text-center text-xs font-medium text-ink-muted transition-colors hover:bg-ink-3 hover:text-ink-fg"
             >
-              عرض كل الإشعارات
+              {{ 'legacy.229e57fb278b' | translate }}
             </a>
           </div>
         </div>
       }
     </div>
 
-    <div class="relative" #profileMenuWrap>
+    <div class="relative shrink-0" #profileMenuWrap>
       <button
         (click)="toggleMenu()"
-        class="flex cursor-pointer items-center gap-2 rounded-lg border border-ink-border bg-ink-2/60 p-1.5 text-ink-fg transition-all hover:bg-ink-3 sm:pr-3"
+        class="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-ink-border bg-ink-2/60 p-1.5 text-ink-fg transition-all hover:bg-ink-3 sm:pe-3"
       >
         <span class="hidden text-sm font-medium sm:inline">
           @if (authStore.user()) {
@@ -233,7 +266,7 @@
               authStore.user()?.name
             }}
           } @else {
-            زائر
+            {{ 'legacy.58c8a282cc0f' | translate }}
           }
         </span>
         <div
@@ -244,20 +277,21 @@
           @if (authStore.user()?.name) {
             {{ (authStore.user()?.name || authStore.user()?.name)?.charAt(0) || ''}}
           } @else {
-            ز
+            {{ 'legacy.d8c018d350b6' | translate }}
           }
         </div>
         <app-icon [iconName]="'ArrowDown01Icon'" [iconSize]="12" [iconColor]="'currentColor'" class="hidden sm:inline"></app-icon>
       </button>
 
       @if (isMenuOpen()) {
-        <div class="absolute left-0 top-full z-50 mt-2 w-64 rounded-xl border border-ink-border bg-ink-2 p-1 shadow-lg text-ink-fg">
+        <div class="absolute end-0 top-full z-50 mt-2 max-w-[calc(100vw-1rem)] overflow-x-auto rounded-xl border border-ink-border bg-ink-2 p-1 text-ink-fg shadow-lg">
+          <div class="min-w-64">
           <div class="flex items-center gap-2 px-2 py-1.5 text-xs text-ink-muted">
             <app-icon [iconName]="'UserGroupIcon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
             {{
               isOrganization()
-                ? 'تسجيل الدخول كمؤسسة'
-                : 'تسجيل الدخول كشخصي'
+                ? language.text('تسجيل الدخول كمؤسسة', 'Sign in as organization')
+                : language.text('تسجيل الدخول كشخصي', 'Sign in as personal account')
             }}
           </div>
 
@@ -291,7 +325,7 @@
             class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-ink-3"
           >
             <app-icon [iconName]="'Settings01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
-            الإعدادات
+            {{ 'legacy.90b6c869a171' | translate }}
           </a>
 
           <button
@@ -299,8 +333,9 @@
             class="mt-1 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-red-500 transition-colors hover:bg-red-500/10"
           >
             <app-icon [iconName]="'Logout05Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
-            تسجيل الخروج
+            {{ 'legacy.8710d64ff1ad' | translate }}
           </button>
+          </div>
         </div>
       }
     </div>

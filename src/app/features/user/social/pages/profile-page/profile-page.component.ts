@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -9,20 +10,19 @@ import { IconComponent } from '../../../../../shared/components/icon/icon.compon
 import { PostCardComponent } from '../../components/post-card/post-card.component';
 import { PostComposerComponent } from '../../components/post-composer/post-composer.component';
 import { SocialStore } from '../../social.store';
+import { LanguageService } from '../../../../../core/services/language.service';
 
 type TabKey = 'posts' | 'followers' | 'following';
 
 @Component({
   selector: 'app-profile-page',
   standalone: true,
-  imports: [
-    CommonModule,
+  imports: [TranslatePipe, CommonModule,
     RouterModule,
     FormsModule,
     PostCardComponent,
     PostComposerComponent,
-    IconComponent,
-  ],
+    IconComponent,],
   templateUrl: './profile-page.component.html',
   styleUrl: './profile-page.component.css',
 })
@@ -31,6 +31,7 @@ export class ProfilePageComponent {
   readonly router = inject(Router);
   readonly socialStore = inject(SocialStore);
   readonly authStore = inject(authStore);
+  readonly language = inject(LanguageService);
 
   readonly tab = signal<TabKey>('posts');
   readonly isEditing = signal(false);
@@ -106,15 +107,19 @@ export class ProfilePageComponent {
     const profile = this.profile();
     if (!profile) return [];
     return [
-      { key: 'posts' as const, label: 'المنشورات', count: this.userPosts().length },
+      {
+        key: 'posts' as const,
+        label: this.language.text('المنشورات', 'Posts'),
+        count: this.userPosts().length,
+      },
       {
         key: 'followers' as const,
-        label: 'المتابعون',
+        label: this.language.text('المتابعون', 'Followers'),
         count: this.isMe() ? this.followers().length : (profile.followersCount ?? 0),
       },
       {
         key: 'following' as const,
-        label: 'يتابع',
+        label: this.language.text('يتابع', 'Following'),
         count: this.isMe() ? this.following().length : (profile.followingCount ?? 0),
       },
     ];
@@ -146,9 +151,11 @@ export class ProfilePageComponent {
   readonly followButtonLabel = computed(() => {
     const profile = this.profile();
     const status = this.followStatus();
-    if (status === 'accepted') return 'إلغاء المتابعة';
-    if (status === 'pending') return 'إلغاء الطلب';
-    return profile?.isPrivate ? 'طلب متابعة' : 'متابعة';
+    if (status === 'accepted') return this.language.text('إلغاء المتابعة', 'Unfollow');
+    if (status === 'pending') return this.language.text('إلغاء الطلب', 'Cancel request');
+    return profile?.isPrivate
+      ? this.language.text('طلب متابعة', 'Request to follow')
+      : this.language.text('متابعة', 'Follow');
   });
 
   constructor() {
