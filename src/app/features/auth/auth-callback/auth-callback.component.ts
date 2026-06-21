@@ -3,26 +3,29 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { authStore } from '../auth.store';
+import { TranslatePipe } from '@ngx-translate/core';
+import { LanguageService } from '../../../core/services/language.service';
+import { ApiErrorService } from '../../../core/services/api-error.service';
 
 @Component({
   selector: 'app-auth-callback',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   template: `
     <section class="auth-callback-page">
       <div class="container mx-auto p-6 text-center">
-        <h1 class="text-2xl font-semibold">جارٍ إكمال تسجيل الدخول</h1>
+        <h1 class="text-2xl font-semibold">{{ 'auth.callback.title' | translate }}</h1>
 
         <p *ngIf="status() === 'loading'" class="mt-4 text-sm text-ink-muted">
-          سيتم تحويلك تلقائياً بعد التحقق.
+          {{ 'auth.callback.loading' | translate }}
         </p>
 
         <p *ngIf="status() === 'success'" class="mt-4 text-sm text-emerald-600">
-          تم تسجيل الدخول بنجاح. جاري النقل...
+          {{ 'auth.callback.success' | translate }}
         </p>
 
         <p *ngIf="status() === 'error'" class="mt-4 text-sm text-primary-500">
-          فشل تسجيل الدخول: {{ errorMessage() }}
+          {{ 'auth.callback.failed' | translate }}: {{ errorMessage() }}
         </p>
       </div>
     </section>
@@ -32,6 +35,8 @@ export class AuthCallbackComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private store = inject(authStore);
+  private language = inject(LanguageService);
+  private apiErrors = inject(ApiErrorService);
 
   status = signal<'loading' | 'success' | 'error'>('loading');
   errorMessage = signal('');
@@ -40,9 +45,7 @@ export class AuthCallbackComponent implements OnInit {
     const token = this.readTokenFromFragment();
     if (!token) {
       this.status.set('error');
-      this.errorMessage.set(
-        'لم تصل جلسة تسجيل الدخول من Google. يجب نشر تحديث تسجيل Google في الخادم أولاً.',
-      );
+      this.errorMessage.set(this.language.instant('auth.callback.missingSession'));
       return;
     }
 
@@ -58,7 +61,13 @@ export class AuthCallbackComponent implements OnInit {
       error: (err) => {
         localStorage.removeItem('token');
         this.status.set('error');
-        this.errorMessage.set(err?.error?.message || 'حدث خطأ أثناء استرجاع المستخدم.');
+        this.errorMessage.set(
+          this.apiErrors.message(
+            err,
+            'حدث خطأ أثناء استرجاع المستخدم.',
+            'Could not load the signed-in user.',
+          ),
+        );
       },
     });
   }

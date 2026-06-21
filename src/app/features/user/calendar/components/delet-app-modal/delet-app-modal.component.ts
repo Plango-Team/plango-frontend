@@ -1,9 +1,10 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { AppointmentsStore } from '../../../appointments/appointments.store';
 
 @Component({
   selector: 'app-delet-app-modal',
-  imports: [],
+  imports: [TranslatePipe],
   templateUrl: './delet-app-modal.component.html',
   styleUrl: './delet-app-modal.component.css',
 })

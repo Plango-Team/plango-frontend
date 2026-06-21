@@ -3,10 +3,12 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ThemeService } from '../../services/theme.service';
 import { authStore } from '../../../features/auth/auth.store';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { LanguageService } from '../../services/language.service';
 
 type SidebarItem = {
   route: string;
-  label: string;
+  labelAr: string;
+  labelEn: string;
   icon: any;
   exact?: boolean;
 };
@@ -19,32 +21,34 @@ type SidebarItem = {
 })
 export class SidebarComponent {
   public themeService = inject(ThemeService);
+  public language = inject(LanguageService);
   public readonly authStore = inject(authStore);
 
   private readonly userNavItems: SidebarItem[] = [
-    { route: '/user/dashboard', label: 'نبض اليوم', icon: 'DashboardSquare02Icon', exact: true },
-    { route: '/user/feed', label: 'الرئيسية', icon: 'Note01Icon' },
-    { route: '/user/calendar', label: 'التقويم', icon: 'Calendar01Icon' },
-    { route: '/user/appointments', label: 'المواعيد', icon: 'TimeQuarter02Icon' },
-    { route: '/user/tasks', label: 'المهام', icon: 'Task01Icon' },
-    { route: '/user/map', label: 'الخريطة', icon: 'Location01Icon' },
-    { route: '/user/events', label: 'الفعاليات', icon: 'Compass01Icon' },
-    { route: '/user/network', label: 'الشبكة', icon: 'UserGroupIcon' },
-    { route: '/user/settings', label: 'الإعدادات', icon: 'Settings01Icon' },
+    { route: '/user/dashboard', labelAr: 'نبض اليوم', labelEn: 'Today', icon: 'DashboardSquare02Icon', exact: true },
+    { route: '/user/feed', labelAr: 'الرئيسية', labelEn: 'Feed', icon: 'Note01Icon' },
+    { route: '/user/calendar', labelAr: 'التقويم', labelEn: 'Calendar', icon: 'Calendar01Icon' },
+    { route: '/user/appointments', labelAr: 'المواعيد', labelEn: 'Appointments', icon: 'TimeQuarter02Icon' },
+    { route: '/user/tasks', labelAr: 'المهام', labelEn: 'Tasks', icon: 'Task01Icon' },
+    { route: '/user/map', labelAr: 'الخريطة', labelEn: 'Map', icon: 'Location01Icon' },
+    { route: '/user/events', labelAr: 'الفعاليات', labelEn: 'Events', icon: 'Compass01Icon' },
+    { route: '/user/network', labelAr: 'الشبكة', labelEn: 'Network', icon: 'UserGroupIcon' },
+    { route: '/user/settings', labelAr: 'الإعدادات', labelEn: 'Settings', icon: 'Settings01Icon' },
   ];
 
   private readonly organizationNavItems: SidebarItem[] = [
     {
       route: '/organization/dashboard',
-      label: 'نظرة عامة',
+      labelAr: 'نظرة عامة',
+      labelEn: 'Overview',
       icon: 'DashboardSquare02Icon',
       exact: true,
     },
-    { route: '/organization/feed', label: 'الرئيسية', icon: 'Note01Icon' },
-    { route: '/organization/posts', label: 'منشورات المؤسسة', icon: 'Message01Icon' },
-    { route: '/organization/events', label: 'الفعاليات', icon: 'Compass01Icon' },
-    { route: '/organization/followers', label: 'المجتمع', icon: 'UserGroupIcon' },
-    { route: '/organization/settings', label: 'الإعدادات', icon: 'Settings01Icon' },
+    { route: '/organization/feed', labelAr: 'الرئيسية', labelEn: 'Feed', icon: 'Note01Icon' },
+    { route: '/organization/posts', labelAr: 'منشورات المؤسسة', labelEn: 'Organization posts', icon: 'Message01Icon' },
+    { route: '/organization/events', labelAr: 'الفعاليات', labelEn: 'Events', icon: 'Compass01Icon' },
+    { route: '/organization/followers', labelAr: 'المجتمع', labelEn: 'Community', icon: 'UserGroupIcon' },
+    { route: '/organization/settings', labelAr: 'الإعدادات', labelEn: 'Settings', icon: 'Settings01Icon' },
   ];
 
   readonly navItems = computed(() =>
@@ -64,17 +68,27 @@ export class SidebarComponent {
   });
 
   readonly quickActionLabel = computed(() =>
-    this.authStore.user()?.role === 'org' ? 'فعالية جديدة' : 'موعد ذكي جديد',
+    this.authStore.user()?.role === 'org'
+      ? this.language.text('فعالية جديدة', 'New event')
+      : this.language.text('موعد ذكي جديد', 'New smart appointment'),
   );
 
   readonly quickActionDescription = computed(() =>
     this.authStore.user()?.role === 'org'
-      ? 'أنشئ فعالية جديدة وابدأ دعوة الحضور.'
-      : 'أنشئ موعداً جديداً مع تنبيه المغادرة الذكي.',
+      ? this.language.text(
+          'أنشئ فعالية جديدة وابدأ دعوة الحضور.',
+          'Create an event and start inviting attendees.',
+        )
+      : this.language.text(
+          'أنشئ موعداً جديداً مع تنبيه المغادرة الذكي.',
+          'Create an appointment with a smart departure alert.',
+        ),
   );
 
   readonly quickActionButtonLabel = computed(() =>
-   this.authStore.user()?.role === 'org' ? 'إنشاء فعالية' : 'إنشاء موعد',
+   this.authStore.user()?.role === 'org'
+     ? this.language.text('إنشاء فعالية', 'Create event')
+     : this.language.text('إنشاء موعد', 'Create appointment'),
   );
 
   readonly quickActionIcon = computed(() =>
@@ -94,7 +108,7 @@ export class SidebarComponent {
   displayName(): string {
     const user = this.authStore.user();
     if (!user) {
-      return 'زائر';
+      return this.language.text('زائر', 'Guest');
     }
 
     return user.name?.trim();
@@ -103,7 +117,7 @@ export class SidebarComponent {
   initials(): string {
     const user = this.authStore.user();
     if (!user) {
-      return 'ز';
+      return this.language.text('ز', 'G');
     }
 
     const name = user.name?.trim();
@@ -112,6 +126,6 @@ export class SidebarComponent {
     const last = parts[1] ? parts[1].charAt(0) : '';
     const value = `${first}${last}`.trim();
 
-    return value ? value.toUpperCase() : 'ز';
+    return value ? value.toUpperCase() : this.language.text('ز', 'G');
   }
 }

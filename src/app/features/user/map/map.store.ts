@@ -6,6 +6,7 @@ import { authStore } from '../../auth/auth.store';
 import { AppointmentsStore } from '../appointments/appointments.store';
 import { EventsStore } from '../events/events.store';
 import { Appointment } from '../appointments/interfaces/IAppointment';
+import { LanguageService } from '../../../core/services/language.service';
 
 
 let watchId : number | null = null;
@@ -56,11 +57,16 @@ export const MapStore = signalStore(
     };
   }),
 
-  withMethods((store) => ({
+  withMethods((store, language = inject(LanguageService)) => ({
     // فنكشن بتجيب اللوكيشن الحالي من المتصفح
     getCurrentLocation() {
       if (!navigator.geolocation) {
-        patchState(store, { error: 'Geolocation is not supported' });
+        patchState(store, {
+          error: language.text(
+            'تحديد الموقع غير مدعوم في هذا المتصفح.',
+            'Geolocation is not supported in this browser.',
+          ),
+        });
         return;
       }
 
@@ -77,8 +83,11 @@ export const MapStore = signalStore(
             error: null
           })
         },
-        (err) => patchState(store , {
-          error: err.message
+        () => patchState(store , {
+          error: language.text(
+            'تعذر تحديد موقعك الحالي.',
+            'Could not determine your current location.',
+          )
         }),
         {
           enableHighAccuracy: true,
@@ -98,7 +107,12 @@ export const MapStore = signalStore(
 
     loadRouteFromAppointment(appointment: Appointment) {
       if (!appointment || !appointment.polyline) {
-        patchState(store, { error: 'لا يوجد مسار مسجل لهذا الميعاد' });
+        patchState(store, {
+          error: language.text(
+            'لا يوجد مسار مسجل لهذا الموعد.',
+            'No route is saved for this appointment.',
+          ),
+        });
         return;
       }
 
@@ -113,7 +127,13 @@ export const MapStore = signalStore(
           error: null 
         });
       } catch (e) {
-        patchState(store, { isLoading: false, error: 'فشل في قراءة مسار الميعاد' });
+        patchState(store, {
+          isLoading: false,
+          error: language.text(
+            'فشل في قراءة مسار الموعد.',
+            'Could not read the appointment route.',
+          ),
+        });
       }
     },
 

@@ -3,7 +3,7 @@
     <div class="text-sm text-ink-muted">
       {{ greeting() }}، {{ authStore.user()?.name }}
     </div>
-    <h1 class="font-display text-2xl tracking-tight sm:text-3xl text-ink-fg">نبض اليوم</h1>
+    <h1 class="font-display text-2xl tracking-tight sm:text-3xl text-ink-fg">{{ 'legacy.b900c7a48c46' | translate }}</h1>
   </div>
   <div class="text-xs text-ink-muted sm:text-sm">{{ todayFormatted() }}</div>
 </div>
@@ -19,17 +19,17 @@
         <span
           class="inline-flex items-center gap-1.5 rounded-full bg-ink/10 px-2.5 py-1 text-[11px] backdrop-blur"
         >
-          <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-success"></span> بيانات مباشرة
+          <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-success"></span> {{ 'legacy.1bb9d9db83f0' | translate }}
         </span>
-        <span class="text-xs text-ink-muted">الموعد القادم</span>
+        <span class="text-xs text-ink-muted">{{ 'legacy.346b2b294cb7' | translate }}</span>
       </div>
       @if (nextAppointment(); as appointment) {
-      <div class="mt-6 text-sm text-ink-muted">الانطلاق الأمثل خلال</div>
+      <div class="mt-6 text-sm text-ink-muted">{{ 'legacy.2850773582d2' | translate }}</div>
       <div class="mt-1 flex items-baseline gap-2">
         <span class="font-display text-6xl tracking-tight tabular-nums sm:text-7xl">
           {{ departureInMinutes() !== null && departureInMinutes()! > 0 ? departureInMinutes() : 0 }}
         </span>
-        <span class="text-xl text-ink-muted">دقيقة</span>
+        <span class="text-xl text-ink-muted">{{ 'legacy.b030187c8a71' | translate }}</span>
       </div>
       <div class="mt-1 text-base">{{ appointment.title }} — {{ destinationLabel(appointment) }}</div>
 
@@ -40,7 +40,7 @@
             [iconSize]="16"
             [iconColor]="'var(--color-ink-muted)'"
           ></app-icon>
-          <div class="mt-2 text-[11px] text-ink-muted">المسافة</div>
+          <div class="mt-2 text-[11px] text-ink-muted">{{ 'legacy.a374bb89a295' | translate }}</div>
           <div class="font-medium text-sm">{{ distanceLabel(appointment) }}</div>
         </div>
         <div class="rounded-xl border border-ink-border bg-ink/5 p-3 backdrop-blur">
@@ -49,7 +49,7 @@
             [iconSize]="16"
             [iconColor]="'var(--color-ink-muted)'"
           ></app-icon>
-          <div class="mt-2 text-[11px] text-ink-muted">مدة الرحلة</div>
+          <div class="mt-2 text-[11px] text-ink-muted">{{ 'legacy.56c254ca2aee' | translate }}</div>
           <div class="font-medium text-sm">{{ travelTimeLabel(appointment) }}</div>
         </div>
         <div class="rounded-xl border border-ink-border bg-ink/5 p-3 backdrop-blur">
@@ -58,7 +58,7 @@
             [iconSize]="16"
             [iconColor]="'var(--color-ink-muted)'"
           ></app-icon>
-          <div class="mt-2 text-[11px] text-ink-muted">وقت المغادرة</div>
+          <div class="mt-2 text-[11px] text-ink-muted">{{ 'legacy.1556d56656e3' | translate }}</div>
           <div class="font-medium text-sm">{{ departureTimeLabel(appointment) }}</div>
         </div>
       </div>
@@ -68,7 +68,7 @@
           routerLink="/user/map"
           class="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand/90 transition-all"
         >
-          ابدأ الرحلة
+          {{ 'legacy.fcf73ee84329' | translate }}
           <app-icon
             [iconName]="'ArrowLeft02Icon'"
             [iconSize]="16"
@@ -84,19 +84,19 @@
             [iconSize]="16"
             [iconColor]="'currentColor'"
           ></app-icon>
-          موعد جديد
+          {{ 'legacy.fed297dceb07' | translate }}
         </a>
       </div>
       } @else {
         <div class="mt-8 rounded-2xl border border-dashed border-ink-border bg-ink/20 p-8 text-center">
-          <h2 class="font-display text-2xl text-ink-fg">لا توجد مواعيد قادمة</h2>
-          <p class="mt-2 text-sm text-ink-muted">أضف موعداً أو فعالية إلى جدولك ليظهر نبض اليوم هنا.</p>
+          <h2 class="font-display text-2xl text-ink-fg">{{ 'legacy.ad492c75adeb' | translate }}</h2>
+          <p class="mt-2 text-sm text-ink-muted">{{ 'legacy.ad25d4e61a8a' | translate }}</p>
           <div class="mt-5 flex flex-wrap justify-center gap-2">
             <a routerLink="/user/calendar" class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground">
-              إضافة موعد
+              {{ 'legacy.cbac0e7e0615' | translate }}
             </a>
             <a routerLink="/user/events" class="rounded-lg border border-ink-border px-4 py-2 text-sm font-semibold text-ink-fg">
-              تصفح الفعاليات
+              {{ 'legacy.f82565a238bd' | translate }}
             </a>
           </div>
         </div>
@@ -110,7 +110,7 @@
     customClass="flex flex-col justify-center text-ink-fg h-full"
   >
     <div class="flex items-center justify-between gap-2">
-      <h3 class="font-display text-lg">إنتاجية اليوم</h3>
+      <h3 class="font-display text-lg">{{ 'legacy.b44e7076a04d' | translate }}</h3>
       @if (completionPercentage() >= 50) {
         <span class="text-xs text-success inline-flex items-center gap-1">
           <app-icon
@@ -129,24 +129,31 @@
     <div class="mt-5 grid grid-cols-3 gap-4">
       <div>
         <div class="font-display text-2xl tracking-tight sm:text-3xl">{{ totalTasks() }}</div>
-        <div class="text-xs text-ink-muted">إجمالي المهام</div>
-        <div class="text-[10px] text-ink-muted/70">كل المهام</div>
+        <div class="text-xs text-ink-muted">{{ 'legacy.3fc2b47a5f57' | translate }}</div>
+        <div class="text-[10px] text-ink-muted/70">{{ 'legacy.663350b61e3f' | translate }}</div>
       </div>
       <div>
         <div class="font-display text-2xl tracking-tight sm:text-3xl text-success">{{ completedTasks() }}</div>
-        <div class="text-xs text-ink-muted">مكتملة</div>
-        <div class="text-[10px] text-ink-muted/70">بنجاح</div>
+        <div class="text-xs text-ink-muted">{{ 'legacy.439f7dbbbbf8' | translate }}</div>
+        <div class="text-[10px] text-ink-muted/70">{{ 'legacy.c9e81911dd58' | translate }}</div>
       </div>
       <div>
         <div class="font-display text-2xl tracking-tight sm:text-3xl text-brand">{{ pendingTasks() }}</div>
-        <div class="text-xs text-ink-muted">متبقية</div>
-        <div class="text-[10px] text-ink-muted/70">مهام</div>
+        <div class="text-xs text-ink-muted">{{ 'legacy.7030216911ac' | translate }}</div>
+        <div class="text-[10px] text-ink-muted/70">{{ 'legacy.9ab2c3748397' | translate }}</div>
       </div>
     </div>
     <div class="mt-5 h-2 overflow-hidden rounded-full bg-ink-3">
       <div class="h-full rounded-full bg-ink-fg transition-all" [style.width.%]="completionPercentage()"></div>
     </div>
-    <div class="mt-2 text-xs text-ink-muted">{{ completionPercentage() }}% من مهامك مكتملة</div>
+    <div class="mt-2 text-xs text-ink-muted">
+      {{
+        language.text(
+          completionPercentage() + '% من مهامك مكتملة',
+          completionPercentage() + '% of your tasks are complete'
+        )
+      }}
+    </div>
   </app-card>
 
   <!-- Tasks tile — WIRED TO REAL DATA -->
@@ -156,17 +163,25 @@
         <app-icon [iconName]="'Task01Icon'" [iconSize]="20" [iconColor]="'currentColor'"></app-icon>
       </div>
       <div class="flex-1 min-w-0">
-        <h3 class="font-medium">المهام</h3>
+        <h3 class="font-medium">{{ 'legacy.385634c13223' | translate }}</h3>
         <p class="mt-1 text-sm text-ink-muted">
           @if (pendingTasks() > 0) {
-            لديك {{ pendingTasks() }} مهام معلّقة
+            {{
+              language.text(
+                'لديك ' + pendingTasks() + ' مهام معلّقة',
+                'You have ' + pendingTasks() + ' pending tasks'
+              )
+            }}
             @if (latedTasks() > 0) {
-              · <span class="text-brand">{{ latedTasks() }} متأخرة</span>
+              ·
+              <span class="text-brand">
+                {{ language.text(latedTasks() + ' متأخرة', latedTasks() + ' overdue') }}
+              </span>
             }
           } @else if (totalTasks() > 0) {
-            كل المهام مكتملة 🎉
+            {{ 'legacy.ef012cbf82e6' | translate }}
           } @else {
-            لا توجد مهام بعد
+            {{ 'legacy.ac7e9177e971' | translate }}
           }
         </p>
         <div class="mt-3 flex flex-wrap items-center gap-2">
@@ -174,7 +189,7 @@
             routerLink="/user/tasks"
             class="rounded-lg border border-ink-border bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-fg hover:bg-ink-3 transition-all"
           >
-            فتح المهام
+            {{ 'legacy.54ebdbe7df10' | translate }}
           </a>
           <a
             routerLink="/user/tasks"
@@ -185,7 +200,7 @@
               [iconSize]="12"
               [iconColor]="'currentColor'"
             ></app-icon>
-            مهمة سريعة
+            {{ 'legacy.d42faeb56b90' | translate }}
           </a>
         </div>
       </div>
@@ -205,7 +220,7 @@
   <!--Invites list-->
   <app-card class="block lg:col-span-12" customClass="h-full">
     <div class="mb-4 flex items-center justify-between gap-2">
-  <h3 class="font-display text-lg text-ink-fg">دعوات الأصدقاء</h3>
+  <h3 class="font-display text-lg text-ink-fg">{{ 'legacy.f8ae00d49893' | translate }}</h3>
 </div>
 
 <div class="space-y-2">
@@ -218,7 +233,7 @@
         </div>
         <div class="min-w-0 flex-1 text-right">
           <div class="text-xs text-ink-muted">
-            دعوة مشاركة من
+            {{ 'legacy.6a0e013d380a' | translate }}
             <span class="font-semibold text-ink-fg">{{ invite.senderId.name }}</span>
             @if (invite.senderId.username) {
               <span dir="ltr">@{{ invite.senderId.username }}</span>
@@ -229,7 +244,7 @@
             @if (invite.appointmentId.arrivalTime; as arrivalTime) {
               <span>{{ formatDate(arrivalTime) }} · {{ formatTime(arrivalTime) }}</span>
             } @else {
-              <span>الوقت غير محدد</span>
+              <span>{{ 'legacy.9e6ecb6a461e' | translate }}</span>
             }
             @if (
               invite.appointmentId.destinationLocation?.addressName ||
@@ -251,10 +266,10 @@
         @if (minsLeft > 0 && minsLeft <= 60) {
           <div class="rounded-full flex items-center gap-1 bg-brand/10 px-2 py-0.5 text-[10px] font-medium text-brand">
             <app-icon [iconName]="'Notification01Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
-            <span>بعد {{minsLeft}} دقيقة</span>
+            <span>{{ language.text('بعد ' + minsLeft + ' دقيقة', 'in ' + minsLeft + ' min') }}</span>
           </div>
         } @else {
-          <span class="text-xs text-ink-muted">اختر قبول الدعوة لإضافتها إلى جدولك</span>
+          <span class="text-xs text-ink-muted">{{ 'legacy.9bae89636bfc' | translate }}</span>
         }
         <div class="grid min-w-44 grid-cols-2 gap-2">
           <button
@@ -263,7 +278,7 @@
             [disabled]="inviteBusy"
             class="rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-brand-foreground transition hover:bg-brand/90 disabled:cursor-wait disabled:opacity-50"
           >
-            قبول
+            {{ 'legacy.317e88c5782e' | translate }}
           </button>
           <button
             type="button"
@@ -271,14 +286,18 @@
             [disabled]="inviteBusy"
             class="rounded-lg border border-brand/35 px-3 py-2 text-xs font-semibold text-brand transition hover:bg-brand/10 disabled:cursor-wait disabled:opacity-50"
           >
-            {{ inviteBusy ? 'جارٍ التنفيذ...' : 'رفض' }}
+            {{
+              inviteBusy
+                ? language.text('جارٍ التنفيذ...', 'Processing...')
+                : language.text('رفض', 'Decline')
+            }}
           </button>
         </div>
       </div>
     </article>
   } @empty {
     <div class="rounded-xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted">
-      لا توجد دعوات جديدة
+      {{ 'legacy.cd80ecb620b1' | translate }}
     </div>
   }
 </div>
@@ -288,8 +307,15 @@
   <!-- Shared appointments -->
   <app-card class="block lg:col-span-7" customClass="text-ink-fg h-full">
     <div class="mb-4 flex items-center justify-between gap-2">
-      <h3 class="font-display text-lg">الرحلات المشتركة</h3>
-      <span class="text-xs text-ink-muted">{{ sharedAppointments().length }} رحلة</span>
+      <h3 class="font-display text-lg">{{ 'legacy.1d35a6e31df6' | translate }}</h3>
+      <span class="text-xs text-ink-muted">
+        {{
+          language.text(
+            sharedAppointments().length + ' رحلة',
+            sharedAppointments().length + ' shared trips'
+          )
+        }}
+      </span>
     </div>
     <div class="space-y-3">
       @for (appointment of sharedAppointments(); track appointment._id) {
@@ -299,14 +325,21 @@
           </div>
           <div class="flex-1 min-w-0">
             <div class="text-sm font-medium truncate">{{ appointment.title }}</div>
-            <div class="mt-0.5 text-xs text-ink-muted">{{ participantCount(appointment) }} مشارك</div>
+            <div class="mt-0.5 text-xs text-ink-muted">
+              {{
+                language.text(
+                  participantCount(appointment) + ' مشارك',
+                  participantCount(appointment) + ' participants'
+                )
+              }}
+            </div>
           </div>
-          <a routerLink="/user/map" class="text-xs text-brand shrink-0">الخريطة</a>
+          <a routerLink="/user/map" class="text-xs text-brand shrink-0">{{ 'legacy.65d841ec098c' | translate }}</a>
         </div>
       }
       @if (sharedAppointments().length === 0) {
         <div class="rounded-xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted">
-          لا توجد رحلات مشتركة حالياً
+          {{ 'legacy.bf81214a096f' | translate }}
         </div>
       }
     </div>
@@ -320,16 +353,21 @@
         [iconSize]="16"
         [iconColor]="'var(--color-brand)'"
       ></app-icon>
-      <h3 class="font-medium">اقتراح ذكي</h3>
+      <h3 class="font-medium">{{ 'legacy.bc45654b68d0' | translate }}</h3>
     </div>
     @if (nextAppointment(); as appointment) {
       <p class="mt-3 text-sm text-ink-muted">
-        موعدك القادم هو {{ appointment.title }}. وقت المغادرة المحسوب من الخادم:
+        {{
+          language.text(
+            'موعدك القادم هو ' + appointment.title + '. وقت المغادرة المحسوب من الخادم:',
+            'Your next appointment is ' + appointment.title + '. Server-calculated departure time:'
+          )
+        }}
         <span class="font-semibold text-ink-fg">{{ departureTimeLabel(appointment) }}</span>.
       </p>
     } @else {
       <p class="mt-3 text-sm text-ink-muted">
-        لا توجد مواعيد قادمة لتحليلها حالياً. أضف فعالية أو موعداً لتظهر الاقتراحات.
+        {{ 'legacy.768b6eda543e' | translate }}
       </p>
     }
     <div class="mt-4 flex items-center gap-2">
@@ -337,13 +375,13 @@
         routerLink="/user/map"
         class="rounded-lg bg-ink-fg px-3 py-1.5 text-xs font-semibold text-ink hover:bg-ink-fg/90 transition-all"
       >
-        فتح الخريطة
+        {{ 'legacy.253bfac0489d' | translate }}
       </a>
       <a
         routerLink="/user/events"
         class="rounded-lg bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-fg hover:bg-ink-3 transition-all"
       >
-        فعاليات
+        {{ 'legacy.1d67a8c71de3' | translate }}
       </a>
     </div>
   </app-card>

@@ -9,7 +9,7 @@
   >
     <div class="mb-4">
         <p class="font-display text-ink-fg">
-            هل تريد حذف موعدك فقط ام جميع المواعيد المرتبطة به ؟
+            {{ 'legacy.f62fbf1676e9' | translate }}
        </p>
     </div>
 
@@ -22,22 +22,22 @@
           (click)="close()" 
           class="rounded-lg border border-ink-border bg-transparent px-4 py-2 text-sm font-medium text-ink-fg hover:bg-ink-3 transition-colors"
         >
-          {{'إلغاء'}}
+          {{ 'common.cancel' | translate }}
         </button>
             <button
         (click)="deleteAppointment(appid)"
           type="submit"
           class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
         >
-        الموعد فقط
+        {{ 'legacy.27d398b049fb' | translate }}
         </button>
         <button
         (click)="deleteSeries(appid)"
           type="submit"
           class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
         >
-        المواعيد المرتبطة
+        {{ 'legacy.b93796f6ea22' | translate }}
         </button>
       </div>
     </div>
-</dialog> 
+</dialog>

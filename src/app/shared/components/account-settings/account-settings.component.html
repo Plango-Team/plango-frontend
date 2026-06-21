@@ -3,19 +3,33 @@
     <header class="settings-hero">
       <div>
         <div class="mb-3 flex flex-wrap items-center gap-2">
-          <span class="eyebrow">{{ isOrganization() ? 'حساب مؤسسة' : 'حساب شخصي' }}</span>
+          <span class="eyebrow">
+            {{
+              isOrganization()
+                ? language.text('حساب مؤسسة', 'Organization account')
+                : language.text('حساب شخصي', 'Personal account')
+            }}
+          </span>
           <span
             class="status-pill"
             [class.status-pill--success]="user.isEmailVerified && user.isPhoneVerified"
           >
-            {{ user.isEmailVerified && user.isPhoneVerified ? 'الحساب موثّق' : 'يحتاج استكمال التحقق' }}
+            {{
+              user.isEmailVerified && user.isPhoneVerified
+                ? language.text('الحساب موثّق', 'Verified account')
+                : language.text('يحتاج استكمال التحقق', 'Verification incomplete')
+            }}
           </span>
         </div>
         <h1 class="font-display text-3xl tracking-tight text-ink-fg sm:text-4xl">
-          {{ isOrganization() ? 'إعدادات المؤسسة' : 'إعدادات الحساب' }}
+          {{
+            isOrganization()
+              ? language.text('إعدادات المؤسسة', 'Organization settings')
+              : language.text('إعدادات الحساب', 'Account settings')
+          }}
         </h1>
         <p class="mt-2 max-w-2xl text-sm leading-6 text-ink-muted">
-          عدّل المعلومات التي تظهر في ملفك، وراجع وسائل التواصل والأمان والخصوصية من مكان واحد.
+          {{ 'legacy.6377c35506c7' | translate }}
         </p>
       </div>
 
@@ -23,22 +37,22 @@
         [routerLink]="profileRoute()"
         class="inline-flex h-10 items-center justify-center rounded-full border border-ink-border bg-ink-2 px-5 text-sm font-semibold text-ink-fg transition hover:border-brand/50 hover:text-brand"
       >
-        عرض الملف
+        {{ 'legacy.a70ff3cbd743' | translate }}
       </a>
     </header>
 
     @if (isOrganization()) {
       <div class="metrics-strip">
         <div>
-          <span>المتابعون</span>
+          <span>{{ 'legacy.0b5fbcdf1436' | translate }}</span>
           <strong>{{ followersCount() }}</strong>
         </div>
         <div>
-          <span>المنشورات</span>
+          <span>{{ 'legacy.13debb824cad' | translate }}</span>
           <strong>{{ postsCount() }}</strong>
         </div>
         <div>
-          <span>معرّف المؤسسة</span>
+          <span>{{ 'legacy.ed8ccbd1e8b9' | translate }}</span>
           <strong class="text-base">&#64;{{ user.username }}</strong>
         </div>
       </div>
@@ -54,21 +68,21 @@
           </div>
           <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
             <div class="account-fact">
-              <span>نوع الملف</span>
-              <strong>{{ isPrivate ? 'خاص' : 'عام' }}</strong>
+              <span>{{ 'legacy.a05e1b06e1b0' | translate }}</span>
+              <strong>{{ isPrivate ? language.text('خاص', 'Private') : language.text('عام', 'Public') }}</strong>
             </div>
             <div class="account-fact">
-              <span>منذ</span>
+              <span>{{ 'legacy.7708deeced58' | translate }}</span>
               <strong>{{ user.createdAt | date: 'yyyy' }}</strong>
             </div>
           </div>
         </div>
 
-        <nav class="settings-nav" aria-label="أقسام الإعدادات">
-          <button type="button" (click)="scrollToSection('profile')">الملف والخصوصية</button>
-          <button type="button" (click)="scrollToSection('contact')">البريد والهاتف</button>
-          <button type="button" (click)="scrollToSection('security')">الأمان</button>
-          <button type="button" (click)="scrollToSection('danger')">حذف الحساب</button>
+        <nav class="settings-nav" [aria-label]="'legacy.7155e965d701' | translate">
+          <button type="button" (click)="scrollToSection('profile')">{{ 'legacy.d87046ef3f3f' | translate }}</button>
+          <button type="button" (click)="scrollToSection('contact')">{{ 'legacy.f5490b85b60d' | translate }}</button>
+          <button type="button" (click)="scrollToSection('security')">{{ 'legacy.45b6f9491079' | translate }}</button>
+          <button type="button" (click)="scrollToSection('danger')">{{ 'legacy.70b0fb6c0c8a' | translate }}</button>
         </nav>
       </aside>
 
@@ -77,14 +91,14 @@
           <div class="section-heading">
             <div>
               <span class="section-number">01</span>
-              <h2>الملف والخصوصية</h2>
+              <h2>{{ 'legacy.d87046ef3f3f' | translate }}</h2>
               <p>
-                هذه المعلومات تظهر للمستخدمين، مع تطبيق صلاحيات الحساب العام أو الخاص من الخادم.
+                {{ 'legacy.56f8d2a85e1a' | translate }}
               </p>
             </div>
             <div class="flex gap-2">
               @if (profileChanged()) {
-                <button type="button" class="button-secondary" (click)="resetProfile()">تراجع</button>
+                <button type="button" class="button-secondary" (click)="resetProfile()">{{ 'legacy.98df46fbd83b' | translate }}</button>
               }
               <button
                 type="button"
@@ -92,14 +106,24 @@
                 [disabled]="!profileChanged() || profileSaving()"
                 (click)="saveProfile()"
               >
-                {{ profileSaving() ? 'جارٍ الحفظ...' : 'حفظ الملف' }}
+                {{
+                  profileSaving()
+                    ? language.text('جارٍ الحفظ...', 'Saving...')
+                    : language.text('حفظ الملف', 'Save profile')
+                }}
               </button>
             </div>
           </div>
 
           <form class="form-grid" (ngSubmit)="saveProfile()">
             <label class="field">
-              <span>{{ isOrganization() ? 'اسم المؤسسة' : 'الاسم' }}</span>
+              <span>
+                {{
+                  isOrganization()
+                    ? language.text('اسم المؤسسة', 'Organization name')
+                    : language.text('الاسم', 'Name')
+                }}
+              </span>
               <input
                 name="name"
                 [(ngModel)]="name"
@@ -108,30 +132,36 @@
                 maxlength="80"
                 autocomplete="name"
               />
-              <small>من 3 إلى 80 حرفاً.</small>
+              <small>{{ 'legacy.1b5609fed012' | translate }}</small>
             </label>
 
             <label class="field">
-              <span>اسم المستخدم</span>
+              <span>{{ 'legacy.794f68a24741' | translate }}</span>
               <div class="readonly-field">
                 <span>&#64;{{ user.username }}</span>
-                <span class="lock-label">غير قابل للتغيير حالياً</span>
+                <span class="lock-label">{{ 'legacy.4fc05e2b5fe5' | translate }}</span>
               </div>
-              <small>الخادم الحالي لا يدعم تعديل اسم المستخدم بعد إنشاء الحساب.</small>
+              <small>{{ 'legacy.18b611e537fa' | translate }}</small>
             </label>
 
             <label class="field">
-              <span>المدينة أو الموقع</span>
+              <span>{{ 'legacy.5a15e5acc647' | translate }}</span>
               <input
                 name="location"
                 [(ngModel)]="location"
                 autocomplete="address-level2"
-                placeholder="مثال: القاهرة"
+                [placeholder]="'legacy.a4f9b50cce64' | translate"
               />
             </label>
 
             <label class="field field--wide">
-              <span>{{ isOrganization() ? 'نبذة عن المؤسسة' : 'نبذة عنك' }}</span>
+              <span>
+                {{
+                  isOrganization()
+                    ? language.text('نبذة عن المؤسسة', 'About the organization')
+                    : language.text('نبذة عنك', 'About you')
+                }}
+              </span>
               <textarea
                 name="bio"
                 [(ngModel)]="bio"
@@ -139,8 +169,14 @@
                 rows="4"
                 [placeholder]="
                   isOrganization()
-                    ? 'عرّف الجمهور برسالة المؤسسة ونشاطها'
-                    : 'اكتب نبذة قصيرة تظهر في ملفك'
+                    ? language.text(
+                        'عرّف الجمهور برسالة المؤسسة ونشاطها',
+                        'Tell people about the organization and its mission'
+                      )
+                    : language.text(
+                        'اكتب نبذة قصيرة تظهر في ملفك',
+                        'Write a short bio for your profile'
+                      )
                 "
               ></textarea>
               <small>{{ bio.length }}/120</small>
@@ -149,12 +185,24 @@
 
           <div class="privacy-row">
             <div>
-              <h3>{{ isPrivate ? 'ملف خاص' : 'ملف عام' }}</h3>
+              <h3>
+                {{
+                  isPrivate
+                    ? language.text('ملف خاص', 'Private profile')
+                    : language.text('ملف عام', 'Public profile')
+                }}
+              </h3>
               <p>
                 {{
                   isPrivate
-                    ? 'طلبات المتابعة تحتاج موافقتك قبل إظهار المحتوى الخاص.'
-                    : 'يمكن للمستخدمين متابعة الحساب ورؤية المحتوى العام مباشرة.'
+                    ? language.text(
+                        'طلبات المتابعة تحتاج موافقتك قبل إظهار المحتوى الخاص.',
+                        'Follow requests require your approval before private content is visible.'
+                      )
+                    : language.text(
+                        'يمكن للمستخدمين متابعة الحساب ورؤية المحتوى العام مباشرة.',
+                        'People can follow the account and view public content immediately.'
+                      )
                 }}
               </p>
             </div>
@@ -175,15 +223,15 @@
           <div class="section-heading">
             <div>
               <span class="section-number">02</span>
-              <h2>البريد والهاتف</h2>
-              <p>أي تغيير هنا يحتاج كلمة المرور، ثم خطوة تحقق منفصلة لحماية الحساب.</p>
+              <h2>{{ 'legacy.f5490b85b60d' | translate }}</h2>
+              <p>{{ 'legacy.a391d1941fc9' | translate }}</p>
             </div>
           </div>
 
           @if (pendingEmail()) {
             <div class="notice">
-              أرسلنا رابط التأكيد إلى <strong dir="ltr">{{ pendingEmail() }}</strong>. سيظل البريد
-              الحالي فعالاً حتى فتح الرابط.
+              {{ 'legacy.18f465b4c288' | translate }}
+              <strong dir="ltr">{{ pendingEmail() }}</strong>{{ 'legacy.4d6e37581649' | translate }}
             </div>
           }
 
@@ -197,12 +245,16 @@
               </div>
               <div class="min-w-0 flex-1">
                 <div class="mb-2 flex flex-wrap items-center gap-2">
-                  <h3>البريد الإلكتروني</h3>
+                  <h3>{{ 'legacy.0915ef8ea533' | translate }}</h3>
                   <span
                     class="verification-badge"
                     [class.verification-badge--ok]="user.isEmailVerified"
                   >
-                    {{ user.isEmailVerified ? 'مؤكد' : 'غير مؤكد' }}
+                    {{
+                      user.isEmailVerified
+                        ? language.text('مؤكد', 'Verified')
+                        : language.text('غير مؤكد', 'Not verified')
+                    }}
                   </span>
                 </div>
                 <input
@@ -225,7 +277,7 @@
                     [disabled]="verificationSending()"
                     (click)="resendEmailVerification()"
                   >
-                    إرسال التحقق
+                    {{ 'legacy.95715693ef18' | translate }}
                   </button>
                 }
                 <button
@@ -238,7 +290,7 @@
                   "
                   (click)="beginSensitiveChange('email')"
                 >
-                  تغيير البريد
+                  {{ 'legacy.c7db80d262dd' | translate }}
                 </button>
               </div>
             </article>
@@ -254,12 +306,16 @@
               </div>
               <div class="min-w-0 flex-1">
                 <div class="mb-2 flex flex-wrap items-center gap-2">
-                  <h3>رقم الهاتف</h3>
+                  <h3>{{ 'legacy.211cce4ca4ef' | translate }}</h3>
                   <span
                     class="verification-badge"
                     [class.verification-badge--ok]="user.isPhoneVerified"
                   >
-                    {{ user.isPhoneVerified ? 'مؤكد' : 'غير مؤكد' }}
+                    {{
+                      user.isPhoneVerified
+                        ? language.text('مؤكد', 'Verified')
+                        : language.text('غير مؤكد', 'Not verified')
+                    }}
                   </span>
                 </div>
                 <input
@@ -271,7 +327,7 @@
                   dir="ltr"
                   placeholder="+201001234567"
                 />
-                <small>استخدم الصيغة الدولية التي تبدأ بعلامة +.</small>
+                <small>{{ 'legacy.a5b756314a6d' | translate }}</small>
                 @if (user.phoneChangeCooldownHours > 0) {
                   <small>{{ cooldownText(user.phoneChangeCooldownHours) }}</small>
                 }
@@ -284,7 +340,7 @@
                     [disabled]="verificationSending()"
                     (click)="verifyCurrentPhone()"
                   >
-                    تأكيد الرقم
+                    {{ 'legacy.4cc4c6204d56' | translate }}
                   </button>
                 }
                 <button
@@ -297,7 +353,7 @@
                   "
                   (click)="beginSensitiveChange('phone')"
                 >
-                  تغيير الرقم
+                  {{ 'legacy.2025378b6b04' | translate }}
                 </button>
               </div>
             </article>
@@ -308,9 +364,9 @@
           <div class="section-heading">
             <div>
               <span class="section-number">03</span>
-              <h2>الأمان</h2>
+              <h2>{{ 'legacy.45b6f9491079' | translate }}</h2>
               <p>
-                آخر تسجيل دخول:
+                {{ 'legacy.5219e005b3c4' | translate }}
                 <span dir="ltr">{{ user.lastLoginAt | date: 'medium' }}</span>
               </p>
             </div>
@@ -319,7 +375,7 @@
           @if (user.provider === 'local') {
             <form class="password-form" (ngSubmit)="changePassword()">
               <label class="field">
-                <span>كلمة المرور الحالية</span>
+                <span>{{ 'legacy.58305d398847' | translate }}</span>
                 <input
                   type="password"
                   name="currentPassword"
@@ -329,7 +385,7 @@
                 />
               </label>
               <label class="field">
-                <span>كلمة المرور الجديدة</span>
+                <span>{{ 'legacy.a29c7e9659e5' | translate }}</span>
                 <input
                   type="password"
                   name="newPassword"
@@ -340,7 +396,7 @@
                 />
               </label>
               <label class="field">
-                <span>تأكيد كلمة المرور</span>
+                <span>{{ 'legacy.2fe5d407d642' | translate }}</span>
                 <input
                   type="password"
                   name="confirmPassword"
@@ -351,7 +407,7 @@
                 />
               </label>
               <div class="password-rules">
-                استخدم 8 أحرف على الأقل، مع حرف كبير وصغير ورقم ورمز خاص.
+                {{ 'legacy.e43c401df3f7' | translate }}
                 @if (user.passwordChangeCooldownHours > 0) {
                   <strong>{{ cooldownText(user.passwordChangeCooldownHours) }}</strong>
                 }
@@ -361,12 +417,16 @@
                 class="button-primary justify-self-start"
                 [disabled]="passwordSaving() || user.passwordChangeCooldownHours > 0"
               >
-                {{ passwordSaving() ? 'جارٍ التغيير...' : 'تغيير كلمة المرور' }}
+                {{
+                  passwordSaving()
+                    ? language.text('جارٍ التغيير...', 'Changing...')
+                    : language.text('تغيير كلمة المرور', 'Change password')
+                }}
               </button>
             </form>
           } @else {
             <div class="notice">
-              تسجيل الدخول مرتبط بمزوّد خارجي. إدارة كلمة المرور تتم من خلال
+              {{ 'legacy.9a3bd67f292f' | translate }}
               <strong>{{ user.provider }}</strong>.
             </div>
           }
@@ -375,13 +435,13 @@
         <section id="danger" class="settings-section settings-section--danger">
           <div>
             <span class="section-number">04</span>
-            <h2>حذف الحساب</h2>
+            <h2>{{ 'legacy.70b0fb6c0c8a' | translate }}</h2>
             <p>
-              يحذف الحساب ومحتواه نهائياً. هذه العملية لا يمكن التراجع عنها بعد التأكيد.
+              {{ 'legacy.7a22b8be475c' | translate }}
             </p>
           </div>
           <button type="button" class="button-danger" (click)="openDeleteDialog()">
-            حذف الحساب نهائياً
+            {{ 'legacy.e673b6ee012c' | translate }}
           </button>
         </section>
       </main>
@@ -397,13 +457,17 @@
         aria-labelledby="sensitive-title"
         (click)="$event.stopPropagation()"
       >
-        <span class="eyebrow">خطوة أمان</span>
+        <span class="eyebrow">{{ 'legacy.ca449e0724ec' | translate }}</span>
         <h2 id="sensitive-title">
-          {{ pendingChange() === 'email' ? 'تأكيد تغيير البريد' : 'تأكيد تغيير الهاتف' }}
+          {{
+            pendingChange() === 'email'
+              ? language.text('تأكيد تغيير البريد', 'Confirm email change')
+              : language.text('تأكيد تغيير الهاتف', 'Confirm phone change')
+          }}
         </h2>
-        <p>أدخل كلمة المرور الحالية قبل إرسال طلب التغيير.</p>
+        <p>{{ 'legacy.7fece8eef8a1' | translate }}</p>
         <label class="field mt-5">
-          <span>كلمة المرور الحالية</span>
+          <span>{{ 'legacy.58305d398847' | translate }}</span>
           <input
             type="password"
             name="confirmationPassword"
@@ -414,7 +478,7 @@
         </label>
         <div class="mt-6 flex justify-end gap-2">
           <button type="button" class="button-secondary" (click)="cancelSensitiveChange()">
-            إلغاء
+            {{ 'legacy.e776b0209b50' | translate }}
           </button>
           <button
             type="button"
@@ -422,7 +486,11 @@
             [disabled]="sensitiveSaving()"
             (click)="confirmSensitiveChange()"
           >
-            {{ sensitiveSaving() ? 'جارٍ التأكيد...' : 'تأكيد وإرسال' }}
+            {{
+              sensitiveSaving()
+                ? language.text('جارٍ التأكيد...', 'Confirming...')
+                : language.text('تأكيد وإرسال', 'Confirm and send')
+            }}
           </button>
         </div>
       </div>
@@ -436,24 +504,23 @@
   >
     <div class="confirmation-card">
       @if (deleteStep() === 'warning') {
-        <span class="eyebrow eyebrow--danger">منطقة حساسة</span>
-        <h2>هل تريد حذف الحساب نهائياً؟</h2>
+        <span class="eyebrow eyebrow--danger">{{ 'legacy.85396117f0af' | translate }}</span>
+        <h2>{{ 'legacy.0d6b973a599b' | translate }}</h2>
         <p>
-          ستفقد الوصول إلى الملف والمنشورات والعلاقات المرتبطة به، ولا يمكن استعادة الحساب بعد
-          الحذف.
+          {{ 'legacy.7d7916407b35' | translate }}
         </p>
         <div class="mt-6 flex justify-end gap-2">
-          <button type="button" class="button-secondary" (click)="closeDeleteDialog()">إلغاء</button>
+          <button type="button" class="button-secondary" (click)="closeDeleteDialog()">{{ 'legacy.e776b0209b50' | translate }}</button>
           <button type="button" class="button-danger" (click)="deleteStep.set('password')">
-            متابعة الحذف
+            {{ 'legacy.76f7127ebe27' | translate }}
           </button>
         </div>
       } @else {
-        <span class="eyebrow eyebrow--danger">التأكيد الأخير</span>
-        <h2>أدخل كلمة المرور</h2>
-        <p>نحتاج كلمة المرور الحالية للتأكد من أن طلب الحذف صادر منك.</p>
+        <span class="eyebrow eyebrow--danger">{{ 'legacy.3bae4169ad2c' | translate }}</span>
+        <h2>{{ 'legacy.fe369a164b86' | translate }}</h2>
+        <p>{{ 'legacy.e7f0acfe1962' | translate }}</p>
         <label class="field mt-5">
-          <span>كلمة المرور الحالية</span>
+          <span>{{ 'legacy.58305d398847' | translate }}</span>
           <input
             type="password"
             name="deletePassword"
@@ -467,7 +534,7 @@
         }
         <div class="mt-6 flex justify-end gap-2">
           <button type="button" class="button-secondary" [disabled]="deleting()" (click)="closeDeleteDialog()">
-            إلغاء
+            {{ 'legacy.e776b0209b50' | translate }}
           </button>
           <button
             type="button"
@@ -475,7 +542,11 @@
             [disabled]="deleting()"
             (click)="confirmDeleteAccount()"
           >
-            {{ deleting() ? 'جارٍ الحذف...' : 'حذف الحساب' }}
+            {{
+              deleting()
+                ? language.text('جارٍ الحذف...', 'Deleting...')
+                : language.text('حذف الحساب', 'Delete account')
+            }}
           </button>
         </div>
       }

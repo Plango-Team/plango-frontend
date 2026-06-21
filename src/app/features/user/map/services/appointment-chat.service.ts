@@ -4,6 +4,7 @@ import { map } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../../../environments/environment';
+import { LanguageService } from '../../../../core/services/language.service';
 
 export interface AppointmentChatSender {
   _id: string;
@@ -25,6 +26,7 @@ export interface AppointmentChatMessage {
 })
 export class AppointmentChatService {
   private readonly http = inject(HttpClient);
+  private readonly language = inject(LanguageService);
   private readonly baseUrl = `${environment.apiUrl}/messages`;
   private readonly incoming = new Subject<AppointmentChatMessage>();
   private readonly errors = new Subject<string>();
@@ -74,10 +76,22 @@ export class AppointmentChatService {
     this.socket.on('disconnect', () => this.connected.set(false));
     this.socket.on('connect_error', (error) => {
       this.connected.set(false);
-      this.handleError(error.message || 'تعذر الاتصال بمحادثة الموعد');
+      this.handleError(
+        error.message ||
+          this.language.text(
+            'تعذر الاتصال بمحادثة الموعد',
+            'Could not connect to the appointment chat',
+          ),
+      );
     });
     this.socket.on('chatError', (error: { message?: string }) => {
-      this.handleError(error.message || 'حدث خطأ في محادثة الموعد');
+      this.handleError(
+        error.message ||
+          this.language.text(
+            'حدث خطأ في محادثة الموعد',
+            'An appointment chat error occurred',
+          ),
+      );
     });
     this.socket.on('newMessage', (message: AppointmentChatMessage) => {
       this.incoming.next(message);

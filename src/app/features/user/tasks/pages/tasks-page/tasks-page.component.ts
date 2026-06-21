@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { Component, inject, computed, signal, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,13 +8,14 @@ import { authStore } from '../../../../auth/auth.store';
 import { Task, TaskPriority, TaskStatus, CreateTaskPayload } from '../../services/task.service';
 import { NotificationsStore } from '../../../../../shared/stores/notifications.store';
 import { ToastService } from '../../../../../shared/services/toast.service';
+import { LanguageService } from '../../../../../core/services/language.service';
 
 type FilterPriority = 'all' | TaskPriority;
 
 @Component({
   selector: 'app-tasks-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent],
+  imports: [TranslatePipe, CommonModule, FormsModule, IconComponent],
   templateUrl: './tasks-page.component.html',
   styleUrl: './tasks-page.component.css',
 })
@@ -22,8 +24,11 @@ export class TasksPageComponent {
   private auth = inject(authStore);
   private notificationsStore = inject(NotificationsStore);
   private toastService = inject(ToastService);
+  readonly language = inject(LanguageService);
 
-  ar = true;
+  get ar(): boolean {
+    return this.language.isArabic();
+  }
   quickAdd = '';
   filterPriority = signal<FilterPriority>('all');
   filterAppt = signal<string>('all');
@@ -104,10 +109,26 @@ export class TasksPageComponent {
   stats = computed(() => {
     const b = this.buckets();
     return [
-      { label: 'متأخرة', value: b.lated.length, accent: 'danger' as const },
-      { label: 'وشيكة', value: b.soon.length, accent: 'brand' as const },
-      { label: 'قادمة', value: b.upcoming.length, accent: '' as const },
-      { label: 'مكتملة', value: b.completed.length, accent: 'success' as const },
+      {
+        label: this.language.text('متأخرة', 'Overdue'),
+        value: b.lated.length,
+        accent: 'danger' as const,
+      },
+      {
+        label: this.language.text('وشيكة', 'Due soon'),
+        value: b.soon.length,
+        accent: 'brand' as const,
+      },
+      {
+        label: this.language.text('قادمة', 'Upcoming'),
+        value: b.upcoming.length,
+        accent: '' as const,
+      },
+      {
+        label: this.language.text('مكتملة', 'Completed'),
+        value: b.completed.length,
+        accent: 'success' as const,
+      },
     ];
   });
 
@@ -237,17 +258,29 @@ export class TasksPageComponent {
 
   getPriorityChip(priority: TaskPriority): { cls: string; label: string } {
     switch (priority) {
-      case 'high': return { cls: 'border-brand/40 bg-brand/10 text-brand', label: 'عالية' };
-      case 'low': return { cls: 'border-ink-border bg-ink text-ink-muted', label: 'منخفضة' };
-      default: return { cls: 'border-ink-fg/30 bg-ink-fg/10 text-ink-fg', label: 'متوسطة' };
+      case 'high':
+        return {
+          cls: 'border-brand/40 bg-brand/10 text-brand',
+          label: this.language.text('عالية', 'High'),
+        };
+      case 'low':
+        return {
+          cls: 'border-ink-border bg-ink text-ink-muted',
+          label: this.language.text('منخفضة', 'Low'),
+        };
+      default:
+        return {
+          cls: 'border-ink-fg/30 bg-ink-fg/10 text-ink-fg',
+          label: this.language.text('متوسطة', 'Medium'),
+        };
     }
   }
 
   formatAppointmentTime(isoDate: string): string {
     const d = new Date(isoDate);
-    return d.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' }) +
+    return this.language.formatDate(d, { month: 'short', day: 'numeric' }) +
       ' · ' +
-      d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+      this.language.formatDate(d, { hour: '2-digit', minute: '2-digit' });
   }
 
   private minutesUntil(date: Date): number {
@@ -260,9 +293,13 @@ export class TasksPageComponent {
     const hours = Math.floor((abs % 1440) / 60);
     const minutes = abs % 60;
     const parts: string[] = [];
-    if (days) parts.push(`${days} يوم`);
-    if (hours) parts.push(`${hours} س`);
-    if (!days) parts.push(`${minutes} د`);
-    return (mins < 0 ? 'متأخر ' : 'خلال ') + parts.join(' ');
+    if (days) parts.push(this.language.text(`${days} يوم`, `${days}d`));
+    if (hours) parts.push(this.language.text(`${hours} س`, `${hours}h`));
+    if (!days) parts.push(this.language.text(`${minutes} د`, `${minutes}m`));
+    return (
+      (mins < 0
+        ? this.language.text('متأخر ', 'overdue by ')
+        : this.language.text('خلال ', 'in ')) + parts.join(' ')
+    );
   }
 }

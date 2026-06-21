@@ -11,7 +11,7 @@
       routerLink="/organization/dashboard"
       class="inline-flex items-center justify-center rounded-lg border border-ink-border bg-ink-2 px-4 py-2 text-sm text-ink-foreground hover:bg-ink-3"
     >
-      العودة إلى اللوحة
+      {{ 'legacy.5289ffee06b8' | translate }}
     </a>
   </div>
 
@@ -36,21 +36,21 @@
             </div>
           } @empty {
             <div class="rounded-xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted">
-              لا توجد فعاليات من الخادم بعد.
+              {{ 'legacy.ea07896c8965' | translate }}
             </div>
           }
         </div>
       </article>
 
       <article class="rounded-2xl border border-ink-border bg-ink-2 p-5 lg:col-span-5">
-        <h2 class="font-display text-xl text-ink-foreground">جدولة الفعاليات</h2>
+        <h2 class="font-display text-xl text-ink-foreground">{{ 'legacy.5e38507cf682' | translate }}</h2>
         <p class="mt-2 text-sm text-ink-muted">
-          جهّز نشر الفعاليات مع ربطها بموقع ومواعيد مغادرة ذكية.
+          {{ 'legacy.4a5e00026b6f' | translate }}
         </p>
         <div class="mt-4 space-y-2 text-sm text-ink-foreground">
-          <div class="rounded-xl border border-ink-border bg-ink p-3">نموذج إنشاء فعالية</div>
-          <div class="rounded-xl border border-ink-border bg-ink p-3">ربط الموقع</div>
-          <div class="rounded-xl border border-ink-border bg-ink p-3">إشعارات الحضور</div>
+          <div class="rounded-xl border border-ink-border bg-ink p-3">{{ 'legacy.2e18f395a850' | translate }}</div>
+          <div class="rounded-xl border border-ink-border bg-ink p-3">{{ 'legacy.5099ab9d3e0d' | translate }}</div>
+          <div class="rounded-xl border border-ink-border bg-ink p-3">{{ 'legacy.3b2098b5ee39' | translate }}</div>
         </div>
       </article>
     </div>
@@ -63,12 +63,12 @@
               <div class="font-medium text-ink-foreground">{{ member.follower.name }}</div>
               <div class="mt-1 text-xs text-ink-muted">&#64;{{ member.follower.username }}</div>
             </div>
-            <span class="rounded-full bg-ink-3 px-2.5 py-1 text-[10px] text-ink-muted">متابع</span>
+            <span class="rounded-full bg-ink-3 px-2.5 py-1 text-[10px] text-ink-muted">{{ 'legacy.56b1af0e65b5' | translate }}</span>
           </div>
         </article>
       } @empty {
         <div class="rounded-2xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted md:col-span-2 xl:col-span-3">
-          لا يوجد متابعون ظاهرون من الخادم حالياً.
+          {{ 'legacy.097767cf2e86' | translate }}
         </div>
       }
     </div>
@@ -76,7 +76,7 @@
     <div class="rounded-2xl border border-ink-border bg-ink-2 p-5">
       <div class="text-sm text-ink-muted">{{ title }}</div>
       <p class="mt-2 text-sm text-ink-foreground">
-        اضبط إعدادات الشعار، معلومات الاتصال، وبيانات الوصول الخاصة بالمؤسسة.
+        {{ 'legacy.32a48e58999e' | translate }}
       </p>
     </div>
   }

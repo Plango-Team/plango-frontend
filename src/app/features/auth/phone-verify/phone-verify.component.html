@@ -6,9 +6,9 @@
                   <app-icon [iconName]="'LockFreeIcons'" [iconSize]="32" [iconColor]="'currentColor'"></app-icon>
                 </div>
               </div>
-              <h1 class="font-display text-3xl tracking-tight text-ink-foreground">تم إرسال رمز التحقق إلى رقمك</h1>
+              <h1 class="font-display text-3xl tracking-tight text-ink-foreground">{{ 'auth.phoneVerify.title' | translate }}</h1>
                 <p class="mt-2 text-sm text-ink-muted">
-                أدخل الرمز المكوّن من 6 أرقام
+                {{ 'auth.phoneVerify.subtitle' | translate }}
                 </p> 
             </div>
 
@@ -39,15 +39,15 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span>جارٍ التحقق...</span>
+                  <span>{{ 'auth.phoneVerify.checking' | translate }}</span>
                 } @else {
-                  <span>تأكيد</span>
+                  <span>{{ 'common.confirm' | translate }}</span>
                 }
               </button>
 
               <div class="mt-6 text-center">
                 <a routerLink="/auth/login" class="text-sm font-medium text-ink-muted hover:text-ink-foreground transition-colors">
-                  العودة لتسجيل الدخول
+                  {{ 'auth.backToLogin' | translate }}
                 </a>
               </div>
             </div>

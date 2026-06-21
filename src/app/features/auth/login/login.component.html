@@ -1,4 +1,4 @@
-<div class="w-full px-4 pb-16 pt-6" dir="rtl">
+<div class="w-full px-4 pb-16 pt-6">
   <main class="mx-auto grid min-h-[calc(100vh-8rem)] place-items-center max-w-md">
     <div class="w-full">
       <div
@@ -6,9 +6,9 @@
       >
         <div class="text-center">
           <h1 class="font-display text-3xl md:text-4xl tracking-tight text-ink-foreground">
-            تسجيل الدخول 
+            {{ 'auth.login.title' | translate }}
           </h1>
-          <p class="mt-2 text-sm text-ink-muted">أهلاً بك مجدداً! أدخل بياناتك للوصول لحسابك</p>
+          <p class="mt-2 text-sm text-ink-muted">{{ 'auth.login.subtitle' | translate }}</p>
         </div>
 
         @if (authStore.error()) {
@@ -26,7 +26,7 @@
             (click)="resendVerification()"
             [disabled]="authStore.isLoading()"
           >
-            إعادة إرسال رابط التحقق إلى {{ loginData().email }}
+            {{ 'auth.login.resendVerification' | translate: { email: loginData().email } }}
           </button>
         } 
         @if (authStore.successMessage()) { 
@@ -40,7 +40,7 @@
         <form [formRoot]="loginForm" class="mt-8 space-y-4">
           <div class="space-y-1.5">
             <label for="email" class="text-sm font-medium text-ink-foreground"
-              >البريد الإلكتروني</label
+              >{{ 'auth.login.email' | translate }}</label
             >
             <input
               type="email"
@@ -53,10 +53,10 @@
               <div class="mt-1 text-right text-xs text-brand">
                 @for (error of loginForm.email().errors(); track error) {
                   @if (error.kind === 'required') {
-                    <p>يرجى إدخال البريد الإلكتروني.</p>
+                    <p>{{ 'auth.login.validation.emailRequired' | translate }}</p>
                   }
                   @if (error.kind === 'email') {
-                    <p>تنسيق البريد الإلكتروني غير صحيح.</p>
+                    <p>{{ 'auth.login.validation.emailInvalid' | translate }}</p>
                   }
                 }
               </div>
@@ -66,12 +66,12 @@
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
               <label for="password" class="text-sm font-medium text-ink-foreground"
-                >كلمة المرور</label
+                >{{ 'auth.login.password' | translate }}</label
               >
               <a
                 routerLink="/auth/forget-password"
                 class="text-xs text-ink-muted transition-colors hover:text-ink-foreground"
-                >نسيت كلمة المرور؟</a
+                >{{ 'auth.login.forgotPassword' | translate }}</a
               >
             </div>
             <div class="relative">
@@ -86,7 +86,7 @@
                 type="button"
                 (click)="togglePassword()"
                 class="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted transition hover:text-ink-foreground"
-                aria-label="toggle password visibility"
+                [attr.aria-label]="'auth.login.togglePassword' | translate"
               >
                 @if (showPassword()) {
                   <svg
@@ -121,10 +121,10 @@
               <div class="mt-1 text-right text-xs text-brand">
                 @for (error of loginForm.password().errors(); track error) {
                   @if (error.kind === 'required') {
-                    <p>يرجى إدخال كلمة المرور.</p>
+                    <p>{{ 'auth.login.validation.passwordRequired' | translate }}</p>
                   }
                   @if (error.kind === 'minlength') {
-                    <p>كلمة المرور يجب ألا تقل عن 6 أحرف.</p>
+                    <p>{{ 'auth.login.validation.passwordLength' | translate }}</p>
                   }
                 }
               </div>
@@ -153,16 +153,16 @@
                   d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              <span>جاري الدخول...</span>
+              <span>{{ 'auth.login.submitting' | translate }}</span>
             } @else {
-              تسجيل الدخول
+              {{ 'auth.login.submit' | translate }}
             }
           </button>
         </form>
 
         <div class="my-6 flex items-center gap-3">
           <div class="h-px flex-1 bg-ink-border"></div>
-          <span class="text-xs text-ink-muted">أو</span>
+          <span class="text-xs text-ink-muted">{{ 'common.or' | translate }}</span>
           <div class="h-px flex-1 bg-ink-border"></div>
         </div>
 
@@ -172,14 +172,14 @@
             class="h-11 rounded-lg border border-ink-border bg-transparent text-ink-foreground transition hover:bg-ink-3"
             (click)="signInWithGoogle()"
           >
-            المتابعة باستخدام Google
+            {{ 'auth.login.google' | translate }}
           </button>
         </div>
 
         <p class="mt-6 text-center text-sm text-ink-muted">
-          ليس لديك حساب؟
+          {{ 'auth.login.noAccount' | translate }}
           <a routerLink="/auth/signup" class="font-medium text-ink-foreground hover:underline"
-            >إنشاء حساب</a
+            >{{ 'auth.login.createAccount' | translate }}</a
           >
         </p>
       </div>

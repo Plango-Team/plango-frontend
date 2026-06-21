@@ -11,6 +11,8 @@ import { Subscription, catchError, forkJoin, map, of } from 'rxjs';
 import { authStore } from '../../auth/auth.store';
 import { NotificationRealtimeService } from '../../../shared/services/notification-realtime.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { LanguageService } from '../../../core/services/language.service';
+import { ApiErrorService } from '../../../core/services/api-error.service';
 import {
   FollowService,
   FollowerItem,
@@ -109,8 +111,10 @@ export const SocialStore = signalStore(
     const followService = inject(FollowService);
     const auth = inject(authStore);
     const toast = inject(ToastService);
+    const language = inject(LanguageService);
+    const apiErrors = inject(ApiErrorService);
 
-    const t = (ar: string, _en: string) => ar;
+    const t = (ar: string, en: string) => language.text(ar, en);
 
     const asEpoch = (value: unknown): number => {
       if (value instanceof Date) return value.getTime();
@@ -333,7 +337,7 @@ export const SocialStore = signalStore(
               postsLoadingMore: false,
             });
           },
-          error: () => {
+          error: (error) => {
             patchState(store, {
               postsLoadingMore: false,
               postsError: 'تعذر تحميل المزيد من المنشورات.',
@@ -373,7 +377,7 @@ export const SocialStore = signalStore(
               loadProfileRelations(merged.id);
             }
           },
-          error: () => {
+          error: (error) => {
             patchState(store, {
               profileLoadingIds: removeId(store.profileLoadingIds(), userId),
               profileFailedIds: addId(store.profileFailedIds(), userId),
@@ -488,7 +492,7 @@ export const SocialStore = signalStore(
             callbacks?.onSuccess?.(merged);
             toast.success('تم حفظ التعديلات', 'تم تحديث معلومات الملف الشخصي.');
           },
-          error: () => {
+          error: (error) => {
             if (previous) {
               patchState(store, {
                 profiles: store.profiles().map((profile) =>
@@ -501,7 +505,14 @@ export const SocialStore = signalStore(
               });
             }
             callbacks?.onError?.();
-            toast.error('تعذر حفظ التعديلات', 'حاول مرة أخرى بعد قليل.');
+            toast.error(
+              t('تعذر حفظ التعديلات', 'Could not save changes'),
+              apiErrors.message(
+                error,
+                'حاول مرة أخرى بعد قليل.',
+                'Please try again shortly.',
+              ),
+            );
           },
         });
       },
@@ -509,7 +520,10 @@ export const SocialStore = signalStore(
       createPost(authorId: string, body: string) {
         const content = body.trim();
         if (!content || content.length > 500) {
-          toast.warning('تحقق من المنشور', 'يجب أن يكون المحتوى بين 1 و500 حرف.');
+          toast.warning(
+            t('تحقق من المنشور', 'Check the post'),
+            t('يجب أن يكون المحتوى بين 1 و500 حرف.', 'Content must be between 1 and 500 characters.'),
+          );
           return;
         }
 
@@ -517,9 +531,16 @@ export const SocialStore = signalStore(
           next: (created) => {
             const post = { ...created, authorId: created.authorId || authorId };
             patchState(store, { posts: mergePosts(store.posts(), [post]) });
-            toast.success('تم نشر المنشور', 'ظهر المنشور الآن في الرئيسية.');
+            toast.success(
+              t('تم نشر المنشور', 'Post published'),
+              t('ظهر المنشور الآن في الرئيسية.', 'The post is now visible in the feed.'),
+            );
           },
-          error: () => toast.error('تعذر نشر المنشور', 'حاول مرة أخرى.'),
+          error: (error) =>
+            toast.error(
+              t('تعذر نشر المنشور', 'Could not publish post'),
+              apiErrors.message(error, 'حاول مرة أخرى.', 'Please try again.'),
+            ),
         });
       },
 
@@ -528,10 +549,13 @@ export const SocialStore = signalStore(
         patchState(store, { posts: previous.filter((post) => post.id !== postId) });
 
         service.deletePost(postId).subscribe({
-          next: () => toast.info('تم حذف المنشور'),
-          error: () => {
+          next: () => toast.info(t('تم حذف المنشور', 'Post deleted')),
+          error: (error) => {
             patchState(store, { posts: previous });
-            toast.error('تعذر حذف المنشور', 'حاول مرة أخرى.');
+            toast.error(
+              t('تعذر حذف المنشور', 'Could not delete post'),
+              apiErrors.message(error, 'حاول مرة أخرى.', 'Please try again.'),
+            );
           },
         });
       },
@@ -647,7 +671,11 @@ export const SocialStore = signalStore(
               toast.info(t('تم إرسال طلب المتابعة', 'Follow request sent'));
             }
           },
-          error: () => toast.error(t('تعذر تنفيذ المتابعة', 'Could not follow')),
+          error: (error) =>
+            toast.error(
+              t('تعذر تنفيذ المتابعة', 'Could not follow'),
+              apiErrors.normalize(error).message,
+            ),
         });
       },
 
@@ -673,9 +701,13 @@ export const SocialStore = signalStore(
                   : profile?.followersCount,
             });
             if (profile?.isPrivate) clearProfileRelations(followeeId);
-            toast.info('تم إلغاء المتابعة');
+            toast.info(t('تم إلغاء المتابعة', 'Unfollowed'));
           },
-          error: () => toast.error('تعذر إلغاء المتابعة'),
+          error: (error) =>
+            toast.error(
+              t('تعذر إلغاء المتابعة', 'Could not unfollow'),
+              apiErrors.normalize(error).message,
+            ),
         });
       },
 
@@ -691,9 +723,13 @@ export const SocialStore = signalStore(
               });
             }
             reloadFollowData();
-            toast.success('تم قبول الطلب');
+            toast.success(t('تم قبول الطلب', 'Request accepted'));
           },
-          error: () => toast.error('تعذر قبول الطلب'),
+          error: (error) =>
+            toast.error(
+              t('تعذر قبول الطلب', 'Could not accept request'),
+              apiErrors.normalize(error).message,
+            ),
         });
       },
 
@@ -707,9 +743,13 @@ export const SocialStore = signalStore(
                 .pendingRequests()
                 .filter((item) => item._id !== request._id),
             });
-            toast.info('تم رفض الطلب');
+            toast.info(t('تم رفض الطلب', 'Request declined'));
           },
-          error: () => toast.error('تعذر رفض الطلب'),
+          error: (error) =>
+            toast.error(
+              t('تعذر رفض الطلب', 'Could not decline request'),
+              apiErrors.normalize(error).message,
+            ),
         });
       },
     };

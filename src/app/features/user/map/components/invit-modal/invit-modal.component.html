@@ -8,34 +8,39 @@
   >
     <div class="mb-4">
       <h2 class="font-display text-2xl text-ink-fg">
-        {{ 'رحلة مشتركة جديدة' }}
+        {{ language.text('رحلة مشتركة جديدة', 'New shared trip') }}
       </h2>
       <p class="text-sm text-ink-muted mt-1">
-        {{'حدّد نقطة اللقاء وادعُ أصدقاءك — سيرى كل صديق وقت مغادرته الأمثل.' }}
+        {{
+          language.text(
+            'حدّد نقطة اللقاء وادعُ أصدقاءك — سيرى كل صديق وقت مغادرته الأمثل.',
+            'Choose a meeting point and invite friends. Each person will see their ideal departure time.'
+          )
+        }}
       </p>
     </div>
 
     <div class="space-y-4"> 
       <div class="space-y-1.5">
-        <label class="text-sm font-medium text-ink-fg">{{ 'العنوان'}}</label>
+        <label class="text-sm font-medium text-ink-fg">{{ language.text('العنوان', 'Title') }}</label>
         <input
           [(ngModel)]="invitData.title"
           name="title"
           required
           class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          [placeholder]="'عشاء الفريق'"
+          [placeholder]="language.text('عشاء الفريق', 'Team dinner')"
         />
       </div>
 
       <div class="relative space-y-1.5">
-        <label class="text-sm font-medium text-ink-fg">{{'نقطة اللقاء' }}</label>
+        <label class="text-sm font-medium text-ink-fg">{{ language.text('نقطة اللقاء', 'Meeting point') }}</label>
         <input
           type="text"
           [(ngModel)]="invitData.location"
           (input)="onLocationInput(invitData.location)" 
           name="location"
           class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          [placeholder]="'اختر مكاناً او اضف جديداً'"
+          [placeholder]="language.text('اختر مكاناً او اضف جديداً', 'Choose or add a place')"
         />
            @if (showDropDown) {
     <ul class="bg-ink-2 absolute z-9999 w-full mt-1 max-h-44 overflow-y-auto border border-ink-border rounded-lg shadow-lg animate-fade-in">
@@ -57,7 +62,7 @@
 
       <div class="grid grid-cols-3 gap-3">  
         <div class="space-y-1.5">
-          <label class="text-sm font-medium text-ink-fg">{{'التاريخ'}}</label>
+          <label class="text-sm font-medium text-ink-fg">{{ language.text('التاريخ', 'Date') }}</label>
           <input
             type="date"
             [(ngModel)]="date"
@@ -67,7 +72,7 @@
           />
         </div>
         <div class="space-y-1.5">
-          <label class="text-sm font-medium text-ink-fg">{{'الوقت' }}</label>
+          <label class="text-sm font-medium text-ink-fg">{{ language.text('الوقت', 'Time') }}</label>
           <input
             type="time"
             [(ngModel)]="time"
@@ -77,7 +82,9 @@
           />
         </div>
         <div class="space-y-1.5">
-          <label class="text-sm font-medium text-ink-fg">{{'الوصول قبل (د)' }}</label>
+          <label class="text-sm font-medium text-ink-fg">
+            {{ language.text('الوصول قبل (د)', 'Arrive early (min)') }}
+          </label>
           <input
             type="number"
             [(ngModel)]="invitData.arrive"
@@ -92,14 +99,14 @@
         <div class="flex items-center justify-between">
           <label class="text-sm font-medium text-ink-fg flex items-center gap-1.5">
             <span><app-icon [iconName]="'User'" [iconSize]="16" [iconColor]="'#d32e18'"></app-icon></span>
-            {{ 'المدعوون' }}
+            {{ language.text('المدعوون', 'Invitees') }}
           </label>
           <button 
             type="button" 
             (click)="addInvitee()"
             class="text-xs font-semibold flex items-center gap-0.5"
           >
-            + إضافة
+            {{ 'legacy.041a2e7ca315' | translate }}
           </button>
         </div>
 
@@ -113,7 +120,7 @@
                   [name]="'invitee_' + $index"
                   required
                   class="h-10 w-full focus:ring-brand rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1"
-                  [placeholder]="'الاسم'"
+                  [placeholder]="language.text('الاسم', 'Name')"
                 />
               </div>
               
@@ -153,14 +160,14 @@
           (click)="close()" 
           class="rounded-lg border border-ink-border bg-transparent px-4 py-2 text-sm font-medium text-ink-fg hover:bg-ink-3 transition-colors"
         >
-          {{'إلغاء'}}
+          {{ 'common.cancel' | translate }}
         </button>
         <button
           type="submit"
           class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
         >
-          {{'إرسال الدعوات'}}
+          {{ language.text('إرسال الدعوات', 'Send invitations') }}
         </button>
       </div>
     </form>
-</dialog> 
+</dialog>

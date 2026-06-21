@@ -6,11 +6,14 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ThemeService } from '../../../core/services/theme.service';
 import { authStore } from '../auth.store';
 import { AuthService } from '../../../core/services/auth/auth.service';
+import { TranslatePipe } from '@ngx-translate/core';
+import { LanguageService } from '../../../core/services/language.service';
+import { ApiErrorService } from '../../../core/services/api-error.service';
 
 @Component({
   selector: 'app-forget-password',
   standalone: true,
-  imports: [RouterLink, FormsModule, IconComponent],
+  imports: [RouterLink, FormsModule, IconComponent, TranslatePipe],
   templateUrl: './forget-password.component.html',
   styleUrl: './forget-password.component.css',
 })
@@ -20,6 +23,8 @@ export class ForgetPasswordComponent {
   private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly language = inject(LanguageService);
+  private readonly apiErrors = inject(ApiErrorService);
 
   currentStep = signal<1 | 2 | 3 | 4 | 5>(1);
   verifyMethod: 'email' | 'phone' | '' = '';
@@ -58,11 +63,11 @@ export class ForgetPasswordComponent {
 
   submitEmail() {
     if (!this.email.trim()) {
-      this.fieldError.set('يرجى إدخال البريد الإلكتروني');
+      this.fieldError.set(this.language.instant('auth.reset.validation.emailRequired'));
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
-      this.fieldError.set('تنسيق البريد الإلكتروني غير صحيح');
+      this.fieldError.set(this.language.instant('auth.reset.validation.emailInvalid'));
       return;
     }
     this.clearMessages();
@@ -78,8 +83,9 @@ export class ForgetPasswordComponent {
         this.currentStep.set(3);
       },
       error: (err) => {
-        const msg = err?.error?.message ?? err?.message ?? 'فشل إرسال الطلب.';
-        this.fieldError.set(msg);
+        this.fieldError.set(
+          this.apiErrors.message(err, 'فشل إرسال الطلب.', 'Could not send the request.'),
+        );
       },
     }).add(() => {
       this.isSubmitting.set(false);
@@ -89,12 +95,12 @@ export class ForgetPasswordComponent {
   submitPhone() {
     this.phone = this.phone.trim();
     if (!this.phone) {
-      this.fieldError.set('يرجى إدخال رقم الهاتف');
+      this.fieldError.set(this.language.instant('auth.reset.validation.phoneRequired'));
       return;
     }
 
     if (!/^\+[1-9]\d{6,14}$/.test(this.phone)) {
-      this.fieldError.set('أدخل رقم الهاتف بالصيغة الدولية، مثال: +201001234567');
+      this.fieldError.set(this.language.instant('auth.reset.validation.phoneInvalid'));
       return;
     }
 
@@ -111,8 +117,13 @@ export class ForgetPasswordComponent {
         this.currentStep.set(3);
       },
       error: (err) => {
-        const msg = err?.error?.message ?? err?.message ?? 'فشل إرسال كود التحقق.';
-        this.fieldError.set(msg);
+        this.fieldError.set(
+          this.apiErrors.message(
+            err,
+            'فشل إرسال كود التحقق.',
+            'Could not send the verification code.',
+          ),
+        );
       },
     }).add(() => {
       this.isSubmitting.set(false);
@@ -163,7 +174,7 @@ export class ForgetPasswordComponent {
 
   verifyOtp() {
     if (this.otpCode.length !== 6) {
-      this.fieldError.set('يرجى إدخال كود التحقق كاملاً (6 أرقام)');
+      this.fieldError.set(this.language.instant('auth.reset.validation.codeRequired'));
       return;
     }
 
@@ -173,27 +184,27 @@ export class ForgetPasswordComponent {
 
   resetPassword() {
     if (!this.newPassword.trim()) {
-      this.fieldError.set('يرجى إدخال كلمة المرور الجديدة');
+      this.fieldError.set(this.language.instant('auth.reset.validation.passwordRequired'));
       return;
     }
     if (this.newPassword.length < 8) {
-      this.fieldError.set('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+      this.fieldError.set(this.language.instant('auth.reset.validation.passwordLength'));
       return;
     }
     if (!/[A-Z]/.test(this.newPassword) || !/[a-z]/.test(this.newPassword)) {
-      this.fieldError.set('كلمة المرور يجب أن تحتوي على حرف إنجليزي كبير وصغير');
+      this.fieldError.set(this.language.instant('auth.reset.validation.passwordLetters'));
       return;
     }
     if (!/\d/.test(this.newPassword)) {
-      this.fieldError.set('كلمة المرور يجب أن تحتوي على رقم واحد على الأقل');
+      this.fieldError.set(this.language.instant('auth.reset.validation.passwordNumber'));
       return;
     }
     if (!/[@$!%*?&^#]/.test(this.newPassword)) {
-      this.fieldError.set('كلمة المرور يجب أن تحتوي على رمز خاص مثل @ أو #');
+      this.fieldError.set(this.language.instant('auth.reset.validation.passwordSymbol'));
       return;
     }
     if (this.newPassword !== this.confirmPassword) {
-      this.fieldError.set('كلمة المرور غير متطابقة');
+      this.fieldError.set(this.language.instant('auth.reset.validation.passwordMismatch'));
       return;
     }
 
@@ -212,8 +223,13 @@ export class ForgetPasswordComponent {
         .subscribe({
           next: () => this.completeReset(),
           error: (err) => {
-            const msg = err?.error?.message ?? err?.message ?? 'فشل إعادة تعيين كلمة المرور.';
-            this.fieldError.set(msg);
+            this.fieldError.set(
+              this.apiErrors.message(
+                err,
+                'فشل إعادة تعيين كلمة المرور.',
+                'Could not reset the password.',
+              ),
+            );
           },
         });
       return;
@@ -221,7 +237,7 @@ export class ForgetPasswordComponent {
 
     if (this.verifyMethod !== 'phone' || this.otpCode.length !== 6) {
       this.isSubmitting.set(false);
-      this.fieldError.set('رابط أو كود إعادة التعيين غير صالح. ابدأ الطلب مرة أخرى.');
+      this.fieldError.set(this.language.instant('auth.reset.validation.invalidRecovery'));
       return;
     }
 
@@ -236,8 +252,13 @@ export class ForgetPasswordComponent {
       .subscribe({
         next: () => this.completeReset(),
         error: (err) => {
-          const msg = err?.error?.message ?? err?.message ?? 'فشل إعادة تعيين كلمة المرور.';
-          this.fieldError.set(msg);
+          this.fieldError.set(
+            this.apiErrors.message(
+              err,
+              'فشل إعادة تعيين كلمة المرور.',
+              'Could not reset the password.',
+            ),
+          );
         },
       });
   }
@@ -261,7 +282,7 @@ export class ForgetPasswordComponent {
 
   private completeReset(): void {
     this.currentStep.set(5);
-    this.successMessageLocal.set('تم تغيير كلمة المرور بنجاح.');
+    this.successMessageLocal.set(this.language.instant('auth.reset.success'));
     setTimeout(() => {
       void this.router.navigate(['/auth/login'], { replaceUrl: true });
     }, 2000);

@@ -1,9 +1,9 @@
 <!-- Header -->
 <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between px-4 mt-4">
   <div>
-    <h1 class="font-display text-2xl tracking-tight sm:text-3xl text-ink-fg">المهام</h1>
+    <h1 class="font-display text-2xl tracking-tight sm:text-3xl text-ink-fg">{{ 'legacy.385634c13223' | translate }}</h1>
     <p class="text-sm text-ink-muted">
-      اربط كل مهمة بموعد لنذكّرك بإنجازها أو رفعها قبل الموعد.
+      {{ 'legacy.55e363e56c5b' | translate }}
     </p>
   </div>
   <button
@@ -11,7 +11,7 @@
     class="flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
   >
     <app-icon [iconName]="'Add01Icon'" [iconSize]="16" [iconColor]="'currentColor'"></app-icon>
-    مهمة جديدة
+    {{ 'legacy.940db999426e' | translate }}
   </button>
 </div>
 
@@ -22,14 +22,14 @@
     [(ngModel)]="quickAdd"
     name="quick"
     class="flex-1 bg-transparent border-0 px-1 text-sm text-ink-fg placeholder:text-ink-muted focus:outline-none"
-    [placeholder]="'أضِف مهمة سريعة واضغط Enter'"
+    [placeholder]="language.text('أضِف مهمة سريعة واضغط Enter', 'Add a quick task and press Enter')"
   />
   <button
     type="submit"
     [disabled]="!quickAdd.trim()"
     class="rounded-lg border border-ink-border bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-fg hover:bg-ink-3 transition-all disabled:opacity-40"
   >
-    إضافة
+    {{ 'legacy.5e3a3fdfce20' | translate }}
   </button>
 </form>
 
@@ -54,11 +54,19 @@
 
 <!-- Filters -->
 <div class="mb-5 flex flex-wrap items-center gap-2 px-4">
-  <span class="text-xs uppercase tracking-wider text-ink-muted">تصفية</span>
+  <span class="text-xs uppercase tracking-wider text-ink-muted">{{ 'legacy.9ece42b9947d' | translate }}</span>
 
   <!-- Priority chips -->
   <div class="inline-flex rounded-full border border-ink-border bg-ink-2 p-0.5">
-    @for (o of [{v:'all',l:'كل الأولويات'},{v:'high',l:'عالية'},{v:'medium',l:'متوسطة'},{v:'low',l:'منخفضة'}]; track o.v) {
+    @for (
+      o of [
+        { v: 'all', l: language.text('كل الأولويات', 'All priorities') },
+        { v: 'high', l: language.text('عالية', 'High') },
+        { v: 'medium', l: language.text('متوسطة', 'Medium') },
+        { v: 'low', l: language.text('منخفضة', 'Low') }
+      ];
+      track o.v
+    ) {
       <button
         (click)="filterPriority.set($any(o.v))"
         class="rounded-full px-3 py-1 text-xs transition"
@@ -76,8 +84,8 @@
     name="filterAppt"
     class="rounded-full border border-ink-border bg-ink-2 px-3 py-1.5 text-xs text-ink-fg hover:bg-ink-3 focus:outline-none"
   >
-    <option value="all">كل المواعيد</option>
-    <option value="none">غير مرتبطة</option>
+    <option value="all">{{ 'legacy.68c881953a4d' | translate }}</option>
+    <option value="none">{{ 'legacy.e1162b441b0b' | translate }}</option>
     @for (a of linkableAppointments(); track a._id) {
       <option [value]="a._id">{{ a.title }} — {{ formatAppointmentTime(a.arrivalTime) }}</option>
     }
@@ -89,7 +97,7 @@
       class="ms-1 inline-flex items-center gap-1 text-xs text-ink-muted hover:text-ink-fg"
     >
       <app-icon [iconName]="'Cancel01Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
-      مسح
+      {{ 'legacy.0d97fd6e069e' | translate }}
     </button>
   }
 </div>
@@ -102,12 +110,12 @@
     <section>
       <h2 class="mb-2 flex items-center gap-2 text-sm font-medium text-ink-fg">
         <span class="h-2 w-2 rounded-full bg-brand"></span>
-        متأخرة — الموعد مرّ
+        {{ 'legacy.e10fe182c7ea' | translate }}
         <span class="text-ink-muted">· {{ buckets().lated.length }}</span>
       </h2>
       @if (buckets().lated.length === 0) {
         <div class="rounded-2xl border border-dashed border-ink-border bg-ink-2/40 p-6 text-center text-sm text-ink-muted">
-          لا مهام متأخرة 🎉
+          {{ 'legacy.c50ace80283f' | translate }}
         </div>
       } @else {
         <div class="space-y-2">
@@ -122,12 +130,12 @@
     <section>
       <h2 class="mb-2 flex items-center gap-2 text-sm font-medium text-ink-fg">
         <span class="h-2 w-2 rounded-full bg-brand"></span>
-        خلال الساعة القادمة
+        {{ 'legacy.563c65457d2f' | translate }}
         <span class="text-ink-muted">· {{ buckets().soon.length }}</span>
       </h2>
       @if (buckets().soon.length === 0) {
         <div class="rounded-2xl border border-dashed border-ink-border bg-ink-2/40 p-6 text-center text-sm text-ink-muted">
-          لا مهام وشيكة الآن
+          {{ 'legacy.de70c959c23e' | translate }}
         </div>
       } @else {
         <div class="space-y-2">
@@ -142,12 +150,12 @@
     <section>
       <h2 class="mb-2 flex items-center gap-2 text-sm font-medium text-ink-fg">
         <span class="h-2 w-2 rounded-full bg-ink-fg"></span>
-        قادمة
+        {{ 'legacy.8b14e3ff2059' | translate }}
         <span class="text-ink-muted">· {{ buckets().upcoming.length }}</span>
       </h2>
       @if (buckets().upcoming.length === 0) {
         <div class="rounded-2xl border border-dashed border-ink-border bg-ink-2/40 p-6 text-center text-sm text-ink-muted">
-          أضِف مهمتك الأولى
+          {{ 'legacy.7aaec2e03b8c' | translate }}
         </div>
       } @else {
         <div class="space-y-2">
@@ -162,12 +170,12 @@
     <section>
       <h2 class="mb-2 flex items-center gap-2 text-sm font-medium text-ink-fg">
         <span class="h-2 w-2 rounded-full bg-ink-muted"></span>
-        مكتملة
+        {{ 'legacy.439f7dbbbbf8' | translate }}
         <span class="text-ink-muted">· {{ buckets().completed.length }}</span>
       </h2>
       @if (buckets().completed.length === 0) {
         <div class="rounded-2xl border border-dashed border-ink-border bg-ink-2/40 p-6 text-center text-sm text-ink-muted">
-          لم تكتمل مهام بعد
+          {{ 'legacy.9eb9b37ceccc' | translate }}
         </div>
       } @else {
         <div class="space-y-2">
@@ -183,27 +191,27 @@
   <aside class="space-y-4 lg:col-span-4">
     <!-- How it works -->
     <div class="rounded-2xl border border-ink-border bg-ink-2 p-5 text-ink-fg">
-      <h3 class="font-display text-lg">كيف يعمل</h3>
+      <h3 class="font-display text-lg">{{ 'legacy.34d41e4c58a3' | translate }}</h3>
       <ul class="mt-3 space-y-3 text-sm text-ink-muted">
         <li class="flex gap-2">
           <app-icon [iconName]="'Link04Icon'" [iconSize]="16" [iconColor]="'var(--color-brand)'" class="mt-0.5 shrink-0"></app-icon>
-          اربط المهمة بموعد ذكي — يصبح وقت الموعد هو الديدلاين.
+          {{ 'legacy.e54a714bc20c' | translate }}
         </li>
         <li class="flex gap-2">
           <app-icon [iconName]="'Alert01Icon'" [iconSize]="16" [iconColor]="'var(--color-brand)'" class="mt-0.5 shrink-0"></app-icon>
-          نُذكّرك قبل ساعة وعند فوات الموعد لتسلّم أو تحدّث الحالة.
+          {{ 'legacy.20942164a9c8' | translate }}
         </li>
         <li class="flex gap-2">
           <app-icon [iconName]="'Calendar03Icon'" [iconSize]="16" [iconColor]="'var(--color-brand)'" class="mt-0.5 shrink-0"></app-icon>
-          حدّد موعداً نهائياً يدوياً إذا لم تربط بموعد.
+          {{ 'legacy.6f9a4164697f' | translate }}
         </li>
       </ul>
     </div>
 
     <!-- Linkable appointments -->
     <div class="rounded-2xl border border-ink-border bg-ink-2 p-5 text-ink-fg">
-      <h3 class="font-display text-lg">مواعيد يمكن ربطها</h3>
-      <p class="mt-1 text-xs text-ink-muted">أضِف مهمة لتربطها بهذه المواعيد.</p>
+      <h3 class="font-display text-lg">{{ 'legacy.157b86a1c321' | translate }}</h3>
+      <p class="mt-1 text-xs text-ink-muted">{{ 'legacy.e5f7678d1808' | translate }}</p>
       <div class="mt-3 space-y-2">
         @for (a of linkableAppointments(); track a._id) {
           <div class="flex items-center justify-between gap-2 rounded-lg border border-ink-border bg-ink p-3">
@@ -221,7 +229,7 @@
         }
         @if (linkableAppointments().length === 0) {
           <div class="rounded-lg border border-dashed border-ink-border p-4 text-center text-xs text-ink-muted">
-            لا توجد مواعيد قادمة يمكن ربطها
+            {{ 'legacy.d0f6ccd4532a' | translate }}
           </div>
         }
       </div>
@@ -276,7 +284,7 @@
           <!-- Lated badge -->
           @if (task.status === 'lated') {
             <span class="rounded-full border border-brand/40 bg-brand/10 px-2 py-0.5 text-[10px] text-brand">
-              متأخرة
+              {{ 'legacy.80ec57326b0a' | translate }}
             </span>
           }
         </div>
@@ -307,7 +315,7 @@
           } @else {
             <span class="inline-flex items-center gap-1 rounded-full border border-dashed border-ink-border px-2 py-0.5 text-ink-muted">
               <app-icon [iconName]="'Link04Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
-              غير مرتبطة بموعد
+              {{ 'legacy.de79aa00548f' | translate }}
             </span>
           }
         </div>
@@ -322,7 +330,7 @@
         }
         <button
           (click)="deleteTask(task._id)"
-          title="حذف"
+          [title]="'legacy.2d2bbdc2d694' | translate"
           class="grid h-8 w-8 place-items-center rounded-lg text-ink-muted hover:bg-ink-3 hover:text-brand transition-colors"
         >
           <app-icon [iconName]="'Delete01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
@@ -345,16 +353,16 @@
   >
     <!-- Header -->
     <div class="mb-4">
-      <h2 class="font-display text-2xl text-ink-fg">مهمة جديدة</h2>
+      <h2 class="font-display text-2xl text-ink-fg">{{ 'legacy.940db999426e' | translate }}</h2>
       <p class="text-sm text-ink-muted mt-1">
-        اربط المهمة بموعد قادم لنذكّرك بإنجازها أو تسليمها قبل الموعد.
+        {{ 'legacy.37b2562ce5c1' | translate }}
       </p>
     </div>
 
     <form (ngSubmit)="submitTask()" class="space-y-4">
       <!-- Title -->
       <div class="space-y-1.5">
-        <label class="text-sm font-medium text-ink-fg">عنوان المهمة</label>
+        <label class="text-sm font-medium text-ink-fg">{{ 'legacy.acd5788daa50' | translate }}</label>
         <input
           [(ngModel)]="newTaskTitle"
           name="taskTitle"
@@ -362,19 +370,19 @@
           minlength="3"
           maxlength="120"
           class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          placeholder="تجهيز عرض التصميم"
+          [placeholder]="'legacy.5c70f106f72f' | translate"
         />
       </div>
 
       <!-- Description -->
       <div class="space-y-1.5">
-        <label class="text-sm font-medium text-ink-fg">الوصف</label>
+        <label class="text-sm font-medium text-ink-fg">{{ 'legacy.a9965b94a4b8' | translate }}</label>
         <textarea
           [(ngModel)]="newTaskDescription"
           name="taskDescription"
           maxlength="200"
           class="min-h-[80px] w-full rounded-lg border border-ink-border bg-ink p-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          placeholder="تفاصيل إضافية..."
+          [placeholder]="'legacy.ab5efcf87569' | translate"
         ></textarea>
       </div>
 
@@ -382,20 +390,20 @@
       <div class="space-y-1.5">
         <label class="flex items-center gap-1.5 text-sm font-medium text-ink-fg">
           <app-icon [iconName]="'Link04Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
-          الموعد المرتبط (الموعد النهائي)
+          {{ 'legacy.78de2df55cbc' | translate }}
         </label>
         <select
           [(ngModel)]="newTaskLinkedAppointment"
           name="taskAppointment"
           class="h-10 w-full rounded-lg border border-ink-border bg-ink px-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
         >
-          <option value="none">بدون ربط</option>
+          <option value="none">{{ 'legacy.e170d0643e08' | translate }}</option>
           @for (a of linkableAppointments(); track a._id) {
             <option [value]="a._id">{{ a.title }} — {{ formatAppointmentTime(a.arrivalTime) }}</option>
           }
         </select>
         @if (newTaskLinkedAppointment !== 'none') {
-          <p class="text-xs text-brand">ربط الموعد يحدد الموعد النهائي تلقائيًا</p>
+          <p class="text-xs text-brand">{{ 'legacy.58fc5dc808dd' | translate }}</p>
         }
       </div>
 
@@ -404,7 +412,7 @@
         <div class="space-y-1.5">
           <label class="flex items-center gap-1.5 text-sm font-medium text-ink-fg">
             <app-icon [iconName]="'Calendar03Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
-            الموعد النهائي
+            {{ 'legacy.4b45b1f1e417' | translate }}
           </label>
           <input
             type="datetime-local"
@@ -419,7 +427,7 @@
       <div class="space-y-1.5">
         <label class="flex items-center gap-1.5 text-sm font-medium text-ink-fg">
           <app-icon [iconName]="'Flag01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
-          الأولوية
+          {{ 'legacy.303856bc39ec' | translate }}
         </label>
         <div class="grid grid-cols-3 gap-2">
           @for (p of priorities; track p.id) {
@@ -444,13 +452,13 @@
           (click)="closeAddTask()"
           class="rounded-lg border border-ink-border bg-transparent px-4 py-2 text-sm font-medium text-ink-fg hover:bg-ink-3 transition-colors"
         >
-          إلغاء
+          {{ 'legacy.e776b0209b50' | translate }}
         </button>
         <button
           type="submit"
           class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90 transition-colors"
         >
-          إنشاء المهمة
+          {{ 'legacy.a82c0af6300f' | translate }}
         </button>
       </div>
     </form>

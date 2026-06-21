@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { LoadingBarComponent } from '../../../shared/components/loading-bar/loading-bar.component';
@@ -7,7 +8,7 @@ import { ThemeService } from '../../services/theme.service';
 @Component({
   selector: 'app-auth-layout',
   standalone: true,
-  imports: [RouterOutlet, LoadingBarComponent, RouterLink],
+  imports: [TranslatePipe, RouterOutlet, LoadingBarComponent, RouterLink],
   templateUrl: './auth-layout.component.html',
   styleUrl: './auth-layout.component.css',
 })

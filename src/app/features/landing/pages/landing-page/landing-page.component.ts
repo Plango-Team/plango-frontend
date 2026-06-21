@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
@@ -16,6 +17,7 @@ import {
   LandingNavbarComponent,
   LandingNavLink,
 } from '../../components/landing-navbar/landing-navbar.component';
+import { LanguageService } from '../../../../core/services/language.service';
 
 interface HeroBadge {
   readonly label: string;
@@ -86,31 +88,30 @@ interface CreatorSocial {
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [
-    RouterLink,
+  imports: [TranslatePipe, RouterLink,
     LandingNavbarComponent,
     LandingHeroMockupComponent,
     LandingFooterComponent,
-    IconComponent,
-  ],
+    IconComponent,],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LandingPageComponent implements OnInit {
   private readonly animationService = inject(AnimationService);
+  readonly language = inject(LanguageService);
 
   readonly navLinks: readonly LandingNavLink[] = [
-    { href: '#features', label: 'المميزات' },
-    { href: '#how', label: 'كيف يعمل' },
-    { href: '#pricing', label: 'الأسعار' },
-    { href: '#faq', label: 'الأسئلة' },
+    { href: '#features', label: 'landing.navigation.features' },
+    { href: '#how', label: 'landing.navigation.howItWorks' },
+    { href: '#pricing', label: 'landing.navigation.pricing' },
+    { href: '#faq', label: 'landing.navigation.faq' },
   ];
 
   readonly heroBadges: readonly HeroBadge[] = [
-    { label: 'بدون بطاقة ائتمان' },
-    { label: 'دعم كامل للغة العربية' },
-    { label: 'تجربة Pro لمدة 14 يوم' },
+    { label: 'landing.hero.noCard' },
+    { label: 'landing.hero.bilingual' },
+    { label: 'landing.hero.trial' },
   ];
 
   readonly trustedBrands: readonly string[] = [
@@ -123,12 +124,20 @@ export class LandingPageComponent implements OnInit {
   ];
 
   readonly scheduleItems: readonly ScheduleItem[] = [
-    { time: '10:30', title: 'اجتماع دوري مع فريق التطوير', highlighted: true },
-    { time: '13:00', title: 'مراجعة التصاميم الجديدة', highlighted: false },
-    { time: '16:15', title: 'ورشة عمل تقنية', highlighted: false },
+    { time: '10:30', title: 'landing.demo.developmentMeeting', highlighted: true },
+    { time: '13:00', title: 'landing.demo.designReview', highlighted: false },
+    { time: '16:15', title: 'landing.demo.technicalWorkshop', highlighted: false },
   ];
 
-  readonly calendarWeekDays = ['س', 'أ', 'ا', 'ث', 'ر', 'خ', 'ج'] as const;
+  readonly calendarWeekDays = [
+    'landing.week.saturday',
+    'landing.week.sunday',
+    'landing.week.monday',
+    'landing.week.tuesday',
+    'landing.week.wednesday',
+    'landing.week.thursday',
+    'landing.week.friday',
+  ] as const;
 
   readonly calendarDays: readonly CalendarDay[] = Array.from(
     { length: 21 },
@@ -144,9 +153,9 @@ export class LandingPageComponent implements OnInit {
   );
 
   readonly travelers: readonly TravelerProgress[] = [
-    { name: 'نادر', status: 'في الطريق', distance: '1.2 كم', progress: 72 },
-    { name: 'بسمة', status: 'غادر الآن', distance: '3.5 كم', progress: 36 },
-    { name: 'مرام', status: 'وصلت', distance: '0.8 كم', progress: 100 },
+    { name: 'Nader', status: 'landing.demo.onTheWay', distance: '1.2 km', progress: 72 },
+    { name: 'Basma', status: 'landing.demo.leaveNow', distance: '3.5 km', progress: 36 },
+    { name: 'Maram', status: 'landing.demo.arrived', distance: '0.8 km', progress: 100 },
   ];
 
   readonly analyticsBars = [40, 60, 35, 78, 90, 55, 82] as const;
@@ -154,26 +163,26 @@ export class LandingPageComponent implements OnInit {
   readonly journeySteps: readonly JourneyStep[] = [
     {
       id: 1,
-      title: 'أنشئ حسابك',
-      description: 'سجل في دقائق، وحدد تفضيلات التنقل والمدينة التي تتحرك داخلها.',
+      title: 'landing.steps.create.title',
+      description: 'landing.steps.create.description',
       icon: 'user',
     },
     {
       id: 2,
-      title: 'أضف مواعيدك',
-      description: 'أدخل مواعيدك يدويًا أو اربط تقويم Google لتظهر كل التزاماتك تلقائياً.',
+      title: 'landing.steps.appointments.title',
+      description: 'landing.steps.appointments.description',
       icon: 'calendar',
     },
     {
       id: 3,
-      title: 'احصل على التنبيهات',
-      description: 'PlanGo يقترح وقت المغادرة المثالي اعتماداً على الزحام والطقس والمسار.',
+      title: 'landing.steps.alerts.title',
+      description: 'landing.steps.alerts.description',
       icon: 'bell',
     },
     {
       id: 4,
-      title: 'وصل في الموعد',
-      description: 'تابع يومك بثقة أقل توتراً وتنظيم أعلى، من أول مشوار لآخر موعد.',
+      title: 'landing.steps.arrive.title',
+      description: 'landing.steps.arrive.description',
       icon: 'target',
     },
   ];
@@ -181,77 +190,79 @@ export class LandingPageComponent implements OnInit {
   readonly stats: readonly StatCard[] = [
     {
       value: '42%',
-      label: 'تحسن في الالتزام بالمواعيد',
-      description: 'متوسط الزيادة في دقة الوصول بعد شهر استخدام.',
+      label: 'landing.stats.punctuality.label',
+      description: 'landing.stats.punctuality.description',
     },
     {
       value: '69%',
-      label: 'تقليل التوتر اليومي',
-      description: 'من المستخدمين قالوا إن يومهم أصبح أكثر هدوءاً.',
+      label: 'landing.stats.stress.label',
+      description: 'landing.stats.stress.description',
     },
     {
       value: '1337+',
-      label: 'رحلة محسنة يومياً',
-      description: 'يتم تحسينها باستخدام التنبؤ الذكي للمسارات.',
+      label: 'landing.stats.routes.label',
+      description: 'landing.stats.routes.description',
     },
   ];
 
   readonly pricingPlans: readonly PricingPlan[] = [
     {
-      name: 'مجاني',
+      name: 'landing.pricing.free.name',
       price: '0',
-      tag: 'للبداية',
-      cta: 'ابدأ الآن',
+      tag: 'landing.pricing.free.tag',
+      cta: 'landing.pricing.free.cta',
       popular: false,
       features: [
-        'مواعيد بلا حدود',
-        '3 تنبيهات ذكية يومياً',
-        'مزامنة مع Google Calendar',
-        'لوحة متابعة أساسية',
+        'landing.pricing.features.unlimitedAppointments',
+        'landing.pricing.features.threeAlerts',
+        'landing.pricing.features.googleCalendar',
+        'landing.pricing.features.basicDashboard',
       ],
     },
     {
-      name: 'مميز',
+      name: 'landing.pricing.pro.name',
       price: '200',
-      tag: 'الأكثر شيوعاً',
-      cta: 'اشترك الآن',
+      tag: 'landing.pricing.pro.tag',
+      cta: 'landing.pricing.pro.cta',
       popular: true,
       features: [
-        'تنبيهات ذكية بلا حدود',
-        'مسارات بديلة في الوقت الفعلي',
-        'تحليلات أسبوعية لإنتاجيتك',
-        'مزامنة بين كل الأجهزة',
+        'landing.pricing.features.unlimitedAlerts',
+        'landing.pricing.features.liveRoutes',
+        'landing.pricing.features.weeklyAnalytics',
+        'landing.pricing.features.deviceSync',
       ],
     },
     {
-      name: 'عمل',
+      name: 'landing.pricing.business.name',
       price: '500',
-      tag: 'للفرق',
-      cta: 'تواصل معنا',
+      tag: 'landing.pricing.business.tag',
+      cta: 'landing.pricing.business.cta',
       popular: false,
-      features: ['كل مزايا المميز', 'رحلات مشتركة للفرق', 'لوحة تحكم إدارية', 'دعم فني 24/7'],
+      features: [
+        'landing.pricing.features.allPro',
+        'landing.pricing.features.teamTrips',
+        'landing.pricing.features.adminDashboard',
+        'landing.pricing.features.support',
+      ],
     },
   ];
 
   readonly faqs: readonly FaqItem[] = [
     {
-      question: 'هل PlanGo مجاني فعلاً؟',
-      answer:
-        'نعم، الخطة المجانية ستظل متاحة دائماً. يمكنك الترقية فقط إذا احتجت المزايا المتقدمة.',
+      question: 'landing.faq.free.question',
+      answer: 'landing.faq.free.answer',
     },
     {
-      question: 'كيف يحسب PlanGo وقت المغادرة؟',
-      answer:
-        'يعتمد على بيانات المرور والطقس في الوقت الفعلي مع تفضيلاتك للوصول المبكر ووسيلة التنقل.',
+      question: 'landing.faq.departure.question',
+      answer: 'landing.faq.departure.answer',
     },
     {
-      question: 'هل التطبيق يدعم اللغة العربية بالكامل؟',
-      answer: 'نعم، التجربة مبنية بالعربية أولاً مع دعم RTL وخطوط عربية محسنة للقراءة الطويلة.',
+      question: 'landing.faq.language.question',
+      answer: 'landing.faq.language.answer',
     },
     {
-      question: 'هل يمكن ربطه مع Google Calendar؟',
-      answer:
-        'نعم، المزامنة ثنائية الاتجاه متاحة، ويمكن إيقافها أو تخصيصها من الإعدادات في أي وقت.',
+      question: 'landing.faq.calendar.question',
+      answer: 'landing.faq.calendar.answer',
     },
   ];
 
@@ -259,7 +270,7 @@ export class LandingPageComponent implements OnInit {
     {
       name: 'Nader Mohamed',
       role: 'Front-end Developer',
-      bio: 'يقود تصميم تجربة المنتج والهوية البصرية لرحلة المستخدم.',
+      bio: 'landing.team.nader',
       image: '/images/nader.png',
       socials: [
         { label: 'Behance', href: '#', icon: 'Behance01Icon' },
@@ -270,7 +281,7 @@ export class LandingPageComponent implements OnInit {
     {
       name: 'Basma Gamal',
       role: 'Front-end Lead',
-      bio: 'تضمن جودة المنصة واكتشاف المشكلات قبل الإطلاق.',
+      bio: 'landing.team.basma',
       image: '/images/basma.png',
       socials: [
         { label: 'LinkedIn', href: '#', icon: 'Linkedin01Icon' },
@@ -281,7 +292,7 @@ export class LandingPageComponent implements OnInit {
     {
       name: 'Jehad Ashour',
       role: 'UI/UX Designer',
-      bio: 'يعمل على نماذج التنبؤ بالازدحام واقتراح وقت المغادرة.',
+      bio: 'landing.team.jehad',
       image: '/images/jehad.png',
       socials: [
         { label: 'Kaggle', href: '#', icon: 'AiBrain02Icon' },
@@ -292,7 +303,7 @@ export class LandingPageComponent implements OnInit {
     {
       name: 'Ahmed Hisham',
       role: 'Back-end Lead',
-      bio: 'مسؤول بناء الواجهات التفاعلية وتجربة المستخدم على الويب.',
+      bio: 'landing.team.ahmed',
       image: '/images/ahmed.png',
       socials: [
         { label: 'GitHub', href: '#', icon: 'Github01Icon' },
@@ -303,7 +314,7 @@ export class LandingPageComponent implements OnInit {
     {
       name: 'Areej Hassanein',
       role: 'Back-end Developer',
-      bio: 'تعمل على تجربة الموبايل وسلاسة التنبيهات أثناء التنقل.',
+      bio: 'landing.team.areej',
       image: '/images/areej.png',
       socials: [
         { label: 'GitHub', href: '#', icon: 'Github01Icon' },
@@ -314,7 +325,7 @@ export class LandingPageComponent implements OnInit {
     {
       name: 'Maram Amer',
       role: 'Back-end Developer',
-      bio: 'تدير خدمات البيانات وتحسين أداء واجهات التكامل.',
+      bio: 'landing.team.maram',
       image: '/images/maram.png',
       socials: [
         { label: 'GitHub', href: '#', icon: 'Github01Icon' },
@@ -326,27 +337,42 @@ export class LandingPageComponent implements OnInit {
 
   readonly footerGroups: readonly LandingFooterGroup[] = [
     {
-      title: 'روابط سريعة',
-      links: ['عن بلان جو', 'المميزات', 'الأسعار', 'الأسئلة الشائعة'],
+      title: 'landing.footer.quickLinks',
+      links: [
+        'landing.footer.about',
+        'landing.navigation.features',
+        'landing.navigation.pricing',
+        'landing.navigation.faq',
+      ],
     },
     {
-      title: 'المنتج',
-      links: ['لوحة التحكم', 'الخريطة', 'الفعاليات', 'الإعدادات'],
+      title: 'landing.footer.product',
+      links: [
+        'navigation.dashboard',
+        'navigation.map',
+        'navigation.events',
+        'navigation.settings',
+      ],
     },
     {
-      title: 'الدعم',
-      links: ['مركز المساعدة', 'تواصل معنا', 'الشكاوى', 'حالة الخدمة'],
+      title: 'landing.footer.support',
+      links: [
+        'landing.footer.help',
+        'landing.footer.contact',
+        'landing.footer.complaints',
+        'landing.footer.status',
+      ],
     },
   ];
 
   readonly legalLinks: readonly LandingFooterLegalLink[] = [
-    { label: 'الشروط', href: '#' },
-    { label: 'الخصوصية', href: '#' },
-    { label: 'سياسة الاستخدام', href: '#' },
+    { label: 'landing.footer.terms', href: '#' },
+    { label: 'landing.footer.privacy', href: '#' },
+    { label: 'landing.footer.usage', href: '#' },
   ];
 
   readonly openFaqIndex = signal(0);
-  readonly copyrightText = `© ${new Date().getFullYear()} PlanGo - جميع الحقوق محفوظة`;
+  readonly copyrightText = 'landing.footer.copyright';
 
   ngOnInit(): void {
     this.animationService.initAos();
