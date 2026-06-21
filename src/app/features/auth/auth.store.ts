@@ -101,25 +101,20 @@ export const authStore = signalStore(
         tap(() => patchState(store, { isLoading: true, error: null, successMessage: null })),
         switchMap((userData) =>
           authService.signUp(userData).pipe(
-            tap({
-              next: (response) => {
+            tap((response) => {
+              patchState(store,{isLoading:false, successMessage:response.message});
+                router.navigate(['/auth/login']); }),
+              catchError((err) => {
+                const Berror = err.error?.message
                 patchState(store, {
                   isLoading: false,
-                  successMessage: response.message,
+                  error: Berror || 'حدث خطأ أثناء إنشاء الحساب',
                 });
-                router.navigate(['/auth/login']);
-              },
-              error: (err) => {
-                patchState(store, {
-                  isLoading: false,
-                  error: err.message || 'حدث خطأ أثناء إنشاء الحساب',
-                });
-              },
-            }),
-            catchError(() => of(null)),
+                return of(null)
+              }),
+            ),
+            ),
           ),
-        ),
-      ),
     ),
 
     // ─────── إرسال OTP لنسيان كلمة المرور ───────

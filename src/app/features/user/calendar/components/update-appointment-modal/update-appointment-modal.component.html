@@ -75,6 +75,7 @@
           <label class="text-sm block text-right font-medium text-ink-fg">{{ ar ? 'التاريخ' : 'Date' }}</label>
           <input
             type="date"
+            [value]="currentApp.arrivalTime.getDate()"
             [(ngModel)]="updateApptDate"
             name="updatedate"
             required
@@ -95,6 +96,7 @@
               [(ngModel)]="updateApptTime"
               name="updatetime"
               required
+              [value]="currentApp.arrivalTime.getTime()"
               class="h-10 w-full rounded-lg border border-ink-border bg-ink pr-10 pl-3 text-sm text-ink-fg focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
             />
           </div>
@@ -131,6 +133,7 @@
           @for (b of buffers; track b) {
             <button
               type="button"
+              [value]="currentApp.arrivalBuffer"
               (click)="updateApptBufferMin = b"
               class="rounded-lg border py-2 text-xs transition"
               [ngClass]="
@@ -154,6 +157,7 @@
         <div class="grid grid-cols-6 gap-2">
           @for (p of prepOptions; track p) {
             <button
+            [value]="currentApp.preparationTime"
               type="button"
               (click)="updateApptPrepMin = p"
               class="rounded-lg border py-2 text-xs transition"
@@ -180,6 +184,7 @@
         <div class="grid grid-cols-4 gap-2">
           @for (r of repeatArr; track r.id) {
             <button
+            [value]="currentApp.repeatType"
               type="button"
               (click)="repeat = r.text"
               class="rounded-lg border py-2 text-xs transition"
@@ -215,6 +220,7 @@
         <label class="text-sm block text-right font-medium text-ink-fg">{{ ar ? 'ملاحظات' : 'Notes' }}</label>
         <textarea
           [(ngModel)]="updateApptDescription"
+          [value]="currentApp.description"
           name="updatenotes"
           maxlength="400"
           class="min-h-[72px] w-full rounded-lg border border-ink-border bg-ink p-3 text-sm text-ink-fg placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
