@@ -1,7 +1,7 @@
 <div class="mb-4 flex items-center justify-between gap-2">
-  <h3 class="font-display text-lg text-ink-fg">مواعيدك القادمة</h3>
+  <h3 class="font-display text-lg text-ink-fg">{{ 'legacy.fd9c15b206e3' | translate }}</h3>
   <a routerLink="/user/appointments" class="text-xs text-ink-muted hover:text-ink-fg flex items-center gap-1 transition-all">
-    عرض الكل
+    {{ 'legacy.d36294e5abb3' | translate }}
     <app-icon [iconName]="'ArrowLeft02Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
   </a>
 </div>
@@ -33,19 +33,19 @@
         @if (minsLeft > 0 && minsLeft <= 60) {
           <div class="rounded-full flex items-center gap-1 bg-brand/10 px-2 py-0.5 text-[10px] font-medium text-brand">
             <app-icon [iconName]="'Notification01Icon'" [iconSize]="12" [iconColor]="'currentColor'"></app-icon>
-            <span>بعد {{minsLeft}} دقيقة</span>
+            <span>{{ language.text('بعد ' + minsLeft + ' دقيقة', 'in ' + minsLeft + ' min') }}</span>
           </div>
         }
         <a routerLink="/user/map" class="flex items-center justify-center gap-1 rounded-lg bg-brand text-brand-foreground hover:bg-brand/90 p-2 py-1 text-xs font-semibold transition-all">
           <app-icon [iconName]="'Location01Icon'" [iconColor]="'currentColor'" [iconSize]="14"></app-icon>
-          <span class="hidden sm:inline">تتبع</span>
+          <span class="hidden sm:inline">{{ 'legacy.3e648ed5b3fc' | translate }}</span>
         </a>
       </div>
 
     </div>
   } @empty {
     <div class="rounded-xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted">
-      لا توجد مواعيد قادمة اليوم
+      {{ 'legacy.a419ba3c42a5' | translate }}
     </div>
   }
 </div>

@@ -1,17 +1,17 @@
 <section class="verify-page">
   <div class="card">
-    <h1>تأكيد تغيير البريد الألكتروني</h1>
+    <h1>{{ 'auth.confirmEmail.title' | translate }}</h1>
 
     <div class="status">
       @if (!token()) {
       <p class="error">
-        لا يوجد رمز تفعيل. تأكد من فتح الرابط الصحيح من الإيميل.
+        {{ 'auth.verifyEmail.missingToken' | translate }}
       </p>
       }
 
       @if (token() && loading()) {
       <p>
-        جاري التحقق من الرابط...
+        {{ 'auth.verifyEmail.checking' | translate }}
       </p>
       }
 
@@ -29,7 +29,7 @@
     </div>
 
     <button type="button" class="action-button" (click)="goToLogin()">
-      العودة لتسجيل الدخول
+      {{ 'auth.backToLogin' | translate }}
     </button>
   </div>
 </section>

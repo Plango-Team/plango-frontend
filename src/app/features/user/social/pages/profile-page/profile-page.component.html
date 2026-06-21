@@ -7,18 +7,18 @@
     </div>
   } @else if (!profile()) {
     <div class="mt-10 flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-border p-12 text-center">
-      <h3 class="font-display text-lg text-ink-fg">هذا الحساب غير موجود</h3>
+      <h3 class="font-display text-lg text-ink-fg">{{ 'legacy.a78339480f0e' | translate }}</h3>
       <p class="mt-2 text-sm text-ink-muted">&#64;{{ username() }}</p>
       <button type="button" (click)="goBack()" class="mt-6 rounded-lg border border-ink-border bg-ink-2 px-4 py-2 text-sm text-ink-fg hover:bg-ink-3">
-        العودة للوحة التحكم
+        {{ 'legacy.abb3298fa575' | translate }}
       </button>
     </div>
   } @else if (!isMe() && profileLoadFailed()) {
     <div class="mt-10 flex flex-col items-center justify-center rounded-2xl border border-ink-border bg-ink-2 p-12 text-center">
-      <h3 class="font-display text-lg text-ink-fg">تعذر تحميل الملف الشخصي</h3>
-      <p class="mt-2 text-sm text-ink-muted">لم نعرض تفاصيل الحساب لحماية خصوصيته.</p>
+      <h3 class="font-display text-lg text-ink-fg">{{ 'legacy.34e89f7d2346' | translate }}</h3>
+      <p class="mt-2 text-sm text-ink-muted">{{ 'legacy.f909c7c058c6' | translate }}</p>
       <button type="button" (click)="retryProfile()" class="mt-6 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90">
-        إعادة المحاولة
+        {{ 'legacy.2e47b5f289f1' | translate }}
       </button>
     </div>
   } @else if (!profileReady()) {
@@ -52,7 +52,11 @@
                 [iconSize]="12"
                 iconColor="currentColor"
               ></app-icon>
-              {{ profile()!.kind === 'org' ? 'مؤسسة' : 'شخصي' }}
+              {{
+                profile()!.kind === 'org'
+                  ? language.text('مؤسسة', 'Organization')
+                  : language.text('شخصي', 'Personal')
+              }}
             </span>
             <span class="inline-flex items-center gap-1 rounded-full border border-ink-border bg-ink-2 px-2 py-0.5 text-[10px] font-medium text-ink-muted">
               <app-icon
@@ -60,7 +64,11 @@
                 [iconSize]="12"
                 iconColor="currentColor"
               ></app-icon>
-              {{ profile()!.isPrivate ? 'خاص' : 'عام' }}
+              {{
+                profile()!.isPrivate
+                  ? language.text('خاص', 'Private')
+                  : language.text('عام', 'Public')
+              }}
             </span>
           </div>
           <div class="mt-0.5 text-sm text-ink-muted">&#64;{{ profile()!.username }}</div>
@@ -77,14 +85,14 @@
         @if (isMe()) {
           @if (!isEditing()) {
             <button type="button" (click)="openEdit()" class="rounded-lg border border-ink-border bg-ink-2 px-4 py-2 text-sm font-medium text-ink-fg transition hover:bg-ink-3">
-              تعديل الملف الشخصي
+              {{ 'legacy.3c89739532de' | translate }}
             </button>
           } @else {
             <button type="button" (click)="isEditing.set(false)" class="rounded-lg px-4 py-2 text-sm font-medium text-ink-muted transition hover:text-ink-fg">
-              إلغاء
+              {{ 'legacy.e776b0209b50' | translate }}
             </button>
             <button type="button" (click)="saveEdit()" class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground transition hover:bg-brand/90">
-              حفظ
+              {{ 'legacy.56ee6e0d206b' | translate }}
             </button>
           }
         } @else {
@@ -103,15 +111,15 @@
     @if (isEditing()) {
       <div class="mt-6 max-w-2xl space-y-4 rounded-2xl border border-ink-border bg-ink-2 p-5">
         <div>
-          <label class="mb-1 block text-sm font-medium text-ink-fg">الاسم</label>
+          <label class="mb-1 block text-sm font-medium text-ink-fg">{{ 'legacy.0a92494ea1eb' | translate }}</label>
           <input type="text" [(ngModel)]="editForm.displayName" class="w-full rounded-lg border border-ink-border bg-ink px-3 py-2 text-sm text-ink-fg focus:border-brand focus:outline-none" />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-ink-fg">المدينة</label>
+          <label class="mb-1 block text-sm font-medium text-ink-fg">{{ 'legacy.75124a0090df' | translate }}</label>
           <input type="text" [(ngModel)]="editForm.city" class="w-full rounded-lg border border-ink-border bg-ink px-3 py-2 text-sm text-ink-fg focus:border-brand focus:outline-none" />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-ink-fg">النبذة</label>
+          <label class="mb-1 block text-sm font-medium text-ink-fg">{{ 'legacy.9cb064480f02' | translate }}</label>
           <textarea [(ngModel)]="editForm.bio" rows="3" class="w-full rounded-lg border border-ink-border bg-ink px-3 py-2 text-sm text-ink-fg focus:border-brand focus:outline-none"></textarea>
         </div>
         <button
@@ -122,8 +130,8 @@
           class="flex w-full items-center justify-between rounded-xl border border-ink-border bg-ink px-4 py-3 text-start"
         >
           <span>
-            <span class="block text-sm font-medium text-ink-fg">حساب خاص</span>
-            <span class="mt-1 block text-xs text-ink-muted">تحتاج طلبات المتابعة إلى موافقتك قبل عرض النشاط.</span>
+            <span class="block text-sm font-medium text-ink-fg">{{ 'legacy.e1d5d55b84d6' | translate }}</span>
+            <span class="mt-1 block text-xs text-ink-muted">{{ 'legacy.de15887e88a4' | translate }}</span>
           </span>
           <span class="relative inline-flex h-6 w-11 rounded-full transition" [ngClass]="editForm.isPrivate ? 'bg-brand' : 'bg-ink-3'">
             <span class="absolute top-1 h-4 w-4 rounded-full bg-white transition-all" [ngClass]="editForm.isPrivate ? 'start-6' : 'start-1'"></span>
@@ -137,11 +145,19 @@
     @if (restricted()) {
       <div class="mt-10 grid place-items-center rounded-2xl border border-ink-border bg-ink-2 p-10 text-center">
         <app-icon iconName="LockPasswordIcon" [iconSize]="40" iconColor="var(--color-ink-muted)"></app-icon>
-        <div class="mt-4 font-display text-lg text-ink-fg">هذا الحساب خاص</div>
+        <div class="mt-4 font-display text-lg text-ink-fg">{{ 'legacy.1a970807f554' | translate }}</div>
         <p class="mt-1 max-w-md text-sm text-ink-muted">
-          {{ followStatus() === 'pending'
-            ? 'طلب المتابعة قيد المراجعة. يمكنك إلغاء الطلب من الزر بالأعلى.'
-            : 'أرسل طلب متابعة لمشاهدة المنشورات وقوائم المتابعين بعد الموافقة.' }}
+          {{
+            followStatus() === 'pending'
+              ? language.text(
+                  'طلب المتابعة قيد المراجعة. يمكنك إلغاء الطلب من الزر بالأعلى.',
+                  'Your follow request is pending. You can cancel it using the button above.'
+                )
+              : language.text(
+                  'أرسل طلب متابعة لمشاهدة المنشورات وقوائم المتابعين بعد الموافقة.',
+                  'Send a follow request to view posts and follower lists after approval.'
+                )
+          }}
         </p>
       </div>
     } @else {
@@ -167,9 +183,19 @@
             }
             @if (userPosts().length === 0) {
               <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-border p-12 text-center lg:col-span-2">
-                <h3 class="font-display text-lg text-ink-fg">لا منشورات بعد</h3>
+                <h3 class="font-display text-lg text-ink-fg">{{ 'legacy.45adf9036060' | translate }}</h3>
                 <p class="mt-2 text-sm text-ink-muted">
-                  {{ isMe() ? 'ابدأ مشاركة أفكارك مع متابعيك.' : 'لم ينشر هذا الحساب أي شيء بعد.' }}
+                  {{
+                    isMe()
+                      ? language.text(
+                          'ابدأ مشاركة أفكارك مع متابعيك.',
+                          'Start sharing your ideas with your followers.'
+                        )
+                      : language.text(
+                          'لم ينشر هذا الحساب أي شيء بعد.',
+                          'This account has not posted anything yet.'
+                        )
+                  }}
                 </p>
               </div>
             } @else {
@@ -187,7 +213,7 @@
             </div>
           } @else if (currentPeople().length === 0) {
             <div class="flex justify-center rounded-2xl border border-dashed border-ink-border p-10 text-sm text-ink-muted">
-              لا يوجد أحد بعد
+              {{ 'legacy.889894877494' | translate }}
             </div>
           } @else {
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

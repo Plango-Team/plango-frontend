@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, inject, input, output, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -5,16 +6,18 @@ import { IconComponent } from '../../../../../shared/components/icon/icon.compon
 import { MapStore } from '../../map.store';
 import { environment } from '../../../../../../environments/environment';
 import { AppointmentsStore } from '../../../appointments/appointments.store';
+import { LanguageService } from '../../../../../core/services/language.service';
 
 @Component({
   selector: 'app-invit-modal',
-  imports: [FormsModule, IconComponent],
+  imports: [TranslatePipe, FormsModule, IconComponent],
   templateUrl: './invit-modal.component.html',
   styleUrl: './invit-modal.component.css',
 })
 export class InvitModalComponent {
   appStore = inject(AppointmentsStore)
   mapStore = inject(MapStore)
+    readonly language = inject(LanguageService)
     http = inject(HttpClient)
     appId = ''
   
@@ -77,7 +80,7 @@ export class InvitModalComponent {
         this.showDropDown = false
         return;
       }
-      const url = `${environment.nominatimUrl}/search?format=json&q=${encodeURIComponent(searchTerm)}&accept-language=ar&limit=5&email=test-plango@gmail.com`
+      const url = `${environment.nominatimUrl}/search?format=json&q=${encodeURIComponent(searchTerm)}&accept-language=${this.language.locale()}&limit=5&email=test-plango@gmail.com`
       this.http.get<any[]>(url).subscribe({
         next:(data) => {
           this.searchRes = data

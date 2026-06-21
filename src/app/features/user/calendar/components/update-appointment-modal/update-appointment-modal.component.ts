@@ -11,6 +11,7 @@ import { LocationComboboxComponent } from '../../../../../shared/components/loca
 import { IconComponent } from '../../../../../shared/components/icon/icon.component';
 import { CommonModule } from '@angular/common';
 import { Appointment } from '../../../appointments/interfaces/IAppointment';
+import { LanguageService } from '../../../../../core/services/language.service';
 
 @Component({
   selector: 'app-update-appointment-modal',
@@ -24,9 +25,12 @@ private appointmentsStore = inject(AppointmentsStore);
   private placesService = inject(PlacesService);
   private notificationsStore = inject(NotificationsStore);
   private toastService = inject(ToastService);
+  private language = inject(LanguageService);
   mapStore = inject(MapStore);
 
-  ar = true;
+  get ar(): boolean {
+    return this.language.isArabic();
+  }
 
   @ViewChild('updateModal') updateModal!: ElementRef<HTMLDialogElement>;
 

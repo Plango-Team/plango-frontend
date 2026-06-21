@@ -1,10 +1,10 @@
 <section>
   <div class="mb-4 flex items-center justify-between gap-3">
     <div>
-      <h2 class="font-display text-lg text-ink-fg">فعاليات قادمة</h2>
-      <p class="text-xs text-ink-muted">اكتشف فعاليات جديدة وأضفها إلى جدولك.</p>
+      <h2 class="font-display text-lg text-ink-fg">{{ 'legacy.eed8a9d189bc' | translate }}</h2>
+      <p class="text-xs text-ink-muted">{{ 'legacy.af3903adabe0' | translate }}</p>
     </div>
-    <a routerLink="/user/events" class="text-xs font-medium text-brand hover:underline">كل الفعاليات</a>
+    <a routerLink="/user/events" class="text-xs font-medium text-brand hover:underline">{{ 'legacy.3b96b8a56785' | translate }}</a>
   </div>
 
   @if (eventsStore.isLoading()) {
@@ -28,7 +28,7 @@
         </a>
       } @empty {
         <div class="md:col-span-3 rounded-xl border border-dashed border-ink-border p-8 text-center text-sm text-ink-muted">
-          لا توجد فعاليات قادمة حالياً.
+          {{ 'legacy.2c48f0e56c55' | translate }}
         </div>
       }
     </div>

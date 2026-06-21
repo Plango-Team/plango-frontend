@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import {
   Component,
   effect,
@@ -16,7 +17,7 @@ import { Appointment } from '../../../appointments/interfaces/IAppointment';
 
 @Component({
   selector: 'app-map',
-  imports: [IconComponent],
+  imports: [TranslatePipe, IconComponent],
   templateUrl: './map.component.html',
   styleUrl: './map.component.css',
 })

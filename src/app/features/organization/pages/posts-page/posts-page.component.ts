@@ -1,18 +1,21 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { Component, computed, inject } from '@angular/core';
 import { authStore } from '../../../auth/auth.store';
 import { SocialStore } from '../../../user/social/social.store';
 import { PostComposerComponent } from '../../../user/social/components/post-composer/post-composer.component';
 import { PostCardComponent } from '../../../user/social/components/post-card/post-card.component';
+import { LanguageService } from '../../../../core/services/language.service';
 
 @Component({
   selector: 'app-organization-posts-page',
   standalone: true,
-  imports: [PostComposerComponent, PostCardComponent],
+  imports: [TranslatePipe, PostComposerComponent, PostCardComponent],
   templateUrl: './posts-page.component.html',
 })
 export class OrganizationPostsPageComponent {
   readonly authStore = inject(authStore);
   readonly socialStore = inject(SocialStore);
+  readonly language = inject(LanguageService);
 
   readonly currentProfileId = computed(() => {
     const socialProfile = this.socialStore.myProfile();

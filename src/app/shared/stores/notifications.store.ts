@@ -16,6 +16,8 @@ import {
 import { NotificationRealtimeService } from '../services/notification-realtime.service';
 import { PushNotificationService } from '../services/push-notification.service';
 import { ToastService } from '../services/toast.service';
+import { LanguageService } from '../../core/services/language.service';
+import { ApiErrorService } from '../../core/services/api-error.service';
 
 export type NotificationKind =
   | 'task_deadline'
@@ -136,6 +138,8 @@ export const NotificationsStore = signalStore(
     const api = inject(NotificationApiService);
     const push = inject(PushNotificationService);
     const toast = inject(ToastService);
+    const language = inject(LanguageService);
+    const apiErrors = inject(ApiErrorService);
     let lastRemoteLoadAt = 0;
     let pushSyncPromise: Promise<boolean> | null = null;
 
@@ -205,11 +209,15 @@ export const NotificationsStore = signalStore(
             hasMore: pagination.page < pagination.pages,
           });
         },
-        error: () => {
+        error: (error) => {
           patchState(store, {
             isLoading: false,
             isLoadingMore: false,
-            error: 'تعذر تحميل الإشعارات. حاول مرة أخرى.',
+            error: apiErrors.message(
+              error,
+              'تعذر تحميل الإشعارات. حاول مرة أخرى.',
+              'Could not load notifications. Please try again.',
+            ),
           });
         },
       });
@@ -322,7 +330,12 @@ export const NotificationsStore = signalStore(
                   notification.id === id ? { ...notification, read: false } : notification,
                 ),
               );
-              toast.error('تعذر تحديث حالة الإشعار');
+              toast.error(
+                language.text(
+                  'تعذر تحديث حالة الإشعار',
+                  'Could not update the notification status',
+                ),
+              );
             },
           });
         }
@@ -346,7 +359,12 @@ export const NotificationsStore = signalStore(
           api.markAllAsRead().subscribe({
             error: () => {
               commit(previousItems);
-              toast.error('تعذر تعليم الإشعارات كمقروءة');
+              toast.error(
+                language.text(
+                  'تعذر تعليم الإشعارات كمقروءة',
+                  'Could not mark notifications as read',
+                ),
+              );
             },
           });
         }
@@ -387,13 +405,21 @@ export const NotificationsStore = signalStore(
           } catch (error) {
             const message =
               push.lastError() ||
-              (error instanceof Error ? error.message : 'تعذر تسجيل هذا الجهاز');
+              (error instanceof Error
+                ? error.message
+                : language.text('تعذر تسجيل هذا الجهاز', 'Could not register this device'));
             patchState(store, {
               deviceRegistered: false,
               pushRegistrationError: message,
             });
             if (requestPermission) {
-              toast.error('تعذر تفعيل إشعارات الجهاز', message);
+              toast.error(
+                language.text(
+                  'تعذر تفعيل إشعارات الجهاز',
+                  'Could not enable device notifications',
+                ),
+                message,
+              );
             }
             return false;
           }

@@ -3,23 +3,23 @@
     <div
       class="inline-flex items-center rounded-full border border-brand/40 bg-brand/10 px-2.5 py-0.5 text-[11px] font-medium text-brand"
     >
-      الرئيسية
+      {{ 'legacy.b986d8fb163c' | translate }}
     </div>
-    <h1 class="mt-1 font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">آخر المنشورات</h1>
-    <p class="text-sm text-ink-muted">انشر أخبار المؤسسة وتابع منشورات الحسابات التي تهمك.</p>
+    <h1 class="mt-1 font-display text-2xl tracking-tight text-ink-fg sm:text-3xl">{{ 'legacy.8782893132c9' | translate }}</h1>
+    <p class="text-sm text-ink-muted">{{ 'legacy.07aca6908168' | translate }}</p>
   </div>
 
   <div class="mb-6 grid gap-3 sm:grid-cols-3">
     <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
-      <div class="text-xs text-ink-muted">المنشورات</div>
+      <div class="text-xs text-ink-muted">{{ 'legacy.13debb824cad' | translate }}</div>
       <div class="mt-2 font-display text-3xl tabular-nums text-ink-fg">{{ ownPosts().length }}</div>
     </article>
     <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
-      <div class="text-xs text-ink-muted">إجمالي الإعجابات</div>
+      <div class="text-xs text-ink-muted">{{ 'legacy.479a0f47f3b4' | translate }}</div>
       <div class="mt-2 font-display text-3xl tabular-nums text-brand">{{ totalLikes() }}</div>
     </article>
     <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
-      <div class="text-xs text-ink-muted">تتابع</div>
+      <div class="text-xs text-ink-muted">{{ 'legacy.0a1af10ab6f2' | translate }}</div>
       <div class="mt-2 font-display text-3xl tabular-nums text-ink-fg">
         {{ followingIds().size }}
       </div>
@@ -29,19 +29,19 @@
   <div class="grid gap-6 lg:grid-cols-12">
     <section class="space-y-4 lg:col-span-8">
       <div>
-        <h2 class="mb-2 font-display text-lg text-ink-fg">منشور جديد</h2>
+        <h2 class="mb-2 font-display text-lg text-ink-fg">{{ 'legacy.c128cc252afd' | translate }}</h2>
         <app-post-composer
-          placeholder="أعلن عن فعالية، شارك خبر، أو أطلق تحديثاً جديداً..."
+          [placeholder]="'legacy.8257cd763c35' | translate"
         ></app-post-composer>
       </div>
 
       <div>
-        <h2 class="mb-3 font-display text-lg text-ink-fg">منشورات المؤسسة الأخيرة</h2>
+        <h2 class="mb-3 font-display text-lg text-ink-fg">{{ 'legacy.093adb90ce5e' | translate }}</h2>
         @if (ownPosts().length === 0) {
           <div
             class="rounded-2xl border border-dashed border-ink-border bg-ink-2 p-8 text-center text-sm text-ink-muted"
           >
-            لا توجد منشورات بعد. ابدأ بمشاركة أول خبر أو تحديث.
+            {{ 'legacy.881dc52f3274' | translate }}
           </div>
         } @else {
           <div class="space-y-3">
@@ -53,12 +53,12 @@
       </div>
 
       <div>
-        <h2 class="mb-3 font-display text-lg text-ink-fg">من المجتمع</h2>
+        <h2 class="mb-3 font-display text-lg text-ink-fg">{{ 'legacy.2a94702c8436' | translate }}</h2>
         @if (communityPosts().length === 0) {
           <div
             class="rounded-2xl border border-dashed border-ink-border bg-ink-2 p-8 text-center text-sm text-ink-muted"
           >
-            لا توجد منشورات بعد. تابع مزيداً من المؤسسات والأشخاص لرؤية تحديثاتهم هنا.
+            {{ 'legacy.12a1a2c6677a' | translate }}
           </div>
         } @else {
           <div class="space-y-3">
@@ -73,7 +73,11 @@
               [disabled]="socialStore.postsLoadingMore()"
               class="mt-4 rounded-full border border-ink-border bg-ink-2 px-5 py-2 text-xs text-ink-fg hover:bg-ink-3 disabled:opacity-50"
             >
-              {{ socialStore.postsLoadingMore() ? 'جارٍ التحميل...' : 'تحميل المزيد' }}
+              {{
+                socialStore.postsLoadingMore()
+                  ? language.text('جارٍ التحميل...', 'Loading...')
+                  : language.text('تحميل المزيد', 'Load more')
+              }}
             </button>
           }
         }
@@ -82,9 +86,9 @@
 
     <aside class="space-y-4 lg:col-span-4">
       <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
-        <div class="mb-3 text-sm font-medium text-ink-fg">فعاليات قادمة من شبكتك</div>
+        <div class="mb-3 text-sm font-medium text-ink-fg">{{ 'legacy.30211edcb83f' | translate }}</div>
         @if (upcomingFromNetwork().length === 0) {
-          <p class="text-xs text-ink-muted">لا توجد فعاليات قادمة حالياً.</p>
+          <p class="text-xs text-ink-muted">{{ 'legacy.2c48f0e56c55' | translate }}</p>
         } @else {
           <div class="space-y-2">
             @for (event of upcomingFromNetwork(); track event._id) {
@@ -113,25 +117,25 @@
       </article>
 
       <article class="rounded-2xl border border-ink-border bg-ink-2 p-4">
-        <div class="mb-2 text-sm font-medium text-ink-fg">اختصارات</div>
+        <div class="mb-2 text-sm font-medium text-ink-fg">{{ 'legacy.71c73429b013' | translate }}</div>
         <div class="grid gap-2">
           <a
             routerLink="/organization/posts"
             class="rounded-lg border border-ink-border bg-ink px-3 py-2 text-xs text-ink-fg hover:bg-ink-3"
           >
-            إدارة منشورات المؤسسة
+            {{ 'legacy.d4d478956b1e' | translate }}
           </a>
           <a
             routerLink="/organization/followers"
             class="rounded-lg border border-ink-border bg-ink px-3 py-2 text-xs text-ink-fg hover:bg-ink-3"
           >
-            المجتمع والمتابعون
+            {{ 'legacy.b93416ec3b5f' | translate }}
           </a>
           <a
             routerLink="/organization/events"
             class="rounded-lg border border-ink-border bg-ink px-3 py-2 text-xs text-ink-fg hover:bg-ink-3"
           >
-            إدارة الفعاليات
+            {{ 'legacy.2bb4ac8e30c6' | translate }}
           </a>
         </div>
       </article>

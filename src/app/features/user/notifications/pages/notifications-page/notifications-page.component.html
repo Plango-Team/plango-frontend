@@ -1,9 +1,9 @@
 <section class="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
   <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
     <div>
-      <h1 class="font-display text-2xl text-ink-fg sm:text-3xl">الإشعارات</h1>
+      <h1 class="font-display text-2xl text-ink-fg sm:text-3xl">{{ 'legacy.0eb7129edb51' | translate }}</h1>
       <p class="mt-1 text-sm text-ink-muted">
-        مركز تنبيهات PlanGo: المواعيد، المهام، وتحديثات الفعاليات.
+        {{ 'legacy.46c3c13d0c73' | translate }}
       </p>
     </div>
     <div class="flex items-center gap-2">
@@ -13,7 +13,7 @@
         [disabled]="notificationsStore.isLoading()"
         class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-ink-border bg-ink-2 px-3 text-sm text-ink-fg transition-colors hover:bg-ink-3 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        تحديث
+        {{ 'legacy.4309a75e6882' | translate }}
       </button>
       <button
         type="button"
@@ -22,7 +22,7 @@
         class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-ink-border bg-ink-2 px-3 text-sm text-ink-fg transition-colors hover:bg-ink-3"
       >
         <app-icon [iconName]="'CheckmarkCircle01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
-        تعليم الكل كمقروء
+        {{ 'legacy.b61154592485' | translate }}
       </button>
       @if (notificationsStore.localCount() > 0) {
         <button
@@ -31,7 +31,7 @@
           class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-500/40 bg-red-500/10 px-3 text-sm text-red-300 transition-colors hover:bg-red-500/20"
         >
           <app-icon [iconName]="'Delete01Icon'" [iconSize]="14" [iconColor]="'currentColor'"></app-icon>
-          مسح المحلية
+          {{ 'legacy.c9aa0cc767bc' | translate }}
         </button>
       }
     </div>
@@ -40,9 +40,9 @@
   @if (notificationsStore.pushSupported() !== false && !pushEnabled()) {
     <div class="mb-5 flex flex-col gap-3 rounded-2xl border border-brand/30 bg-brand/10 p-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h2 class="text-sm font-semibold text-ink-fg">فعّل إشعارات الجهاز</h2>
+        <h2 class="text-sm font-semibold text-ink-fg">{{ 'legacy.fc98b127c17a' | translate }}</h2>
         <p class="mt-1 text-xs text-ink-muted">
-          استلم تنبيهات المهام والمواعيد والمتابعة حتى عندما لا تكون صفحة PlanGo مفتوحة.
+          {{ 'legacy.ed2fc9d95b85' | translate }}
         </p>
       </div>
       <button
@@ -51,7 +51,11 @@
         [disabled]="notificationsStore.pushBusy()"
         class="h-9 shrink-0 rounded-lg bg-brand px-4 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {{ notificationsStore.pushBusy() ? 'جارٍ التفعيل...' : 'تفعيل الإشعارات' }}
+        {{
+          notificationsStore.pushBusy()
+            ? language.text('جارٍ التفعيل...', 'Enabling...')
+            : language.text('تفعيل الإشعارات', 'Enable notifications')
+        }}
       </button>
     </div>
     @if (notificationsStore.pushRegistrationError()) {
@@ -62,7 +66,7 @@
   } @else if (pushEnabled()) {
     <div class="mb-5 flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-xs text-success">
       <span class="h-2 w-2 rounded-full bg-success"></span>
-      إشعارات هذا الجهاز مفعّلة
+      {{ 'legacy.2c71791ce06c' | translate }}
     </div>
   }
 
@@ -70,14 +74,14 @@
     @if (notificationsStore.isLoading() && items().length === 0) {
       <div class="px-6 py-16 text-center">
         <div class="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-brand border-t-transparent"></div>
-        <p class="text-sm text-ink-muted">جارٍ تحميل الإشعارات...</p>
+        <p class="text-sm text-ink-muted">{{ 'legacy.b1902777919d' | translate }}</p>
       </div>
     } @else if (notificationsStore.error() && items().length === 0) {
       <div class="px-6 py-16 text-center">
-        <h2 class="text-base font-semibold text-ink-fg">تعذر تحميل الإشعارات</h2>
+        <h2 class="text-base font-semibold text-ink-fg">{{ 'legacy.d61c6488db89' | translate }}</h2>
         <p class="mt-1 text-sm text-ink-muted">{{ notificationsStore.error() }}</p>
         <button type="button" (click)="refresh()" class="mt-4 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground">
-          إعادة المحاولة
+          {{ 'legacy.2e47b5f289f1' | translate }}
         </button>
       </div>
     } @else if (items().length === 0) {
@@ -85,8 +89,8 @@
         <div class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full border border-ink-border bg-ink text-ink-muted">
           <app-icon [iconName]="'Notification02Icon'" [iconSize]="20" [iconColor]="'currentColor'"></app-icon>
         </div>
-        <h2 class="text-base font-semibold text-ink-fg">لا توجد إشعارات بعد</h2>
-        <p class="mt-1 text-sm text-ink-muted">عند وصول أي تنبيه جديد سيظهر هنا مباشرة.</p>
+        <h2 class="text-base font-semibold text-ink-fg">{{ 'legacy.29496731ecc1' | translate }}</h2>
+        <p class="mt-1 text-sm text-ink-muted">{{ 'legacy.7099110920a4' | translate }}</p>
       </div>
     } @else {
       @for (item of items(); track item.id) {
@@ -124,7 +128,11 @@
             [disabled]="notificationsStore.isLoadingMore()"
             class="rounded-lg border border-ink-border px-4 py-2 text-sm text-ink-fg transition-colors hover:bg-ink-3 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {{ notificationsStore.isLoadingMore() ? 'جارٍ التحميل...' : 'تحميل المزيد' }}
+            {{
+              notificationsStore.isLoadingMore()
+                ? language.text('جارٍ التحميل...', 'Loading...')
+                : language.text('تحميل المزيد', 'Load more')
+            }}
           </button>
         </div>
       }

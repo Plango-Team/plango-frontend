@@ -1,5 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { ToastService } from '../../services/toast.service';
+import { LanguageService } from '../../../core/services/language.service';
 
 @Component({
   selector: 'app-toast-outlet',
@@ -47,5 +48,6 @@ import { ToastService } from '../../services/toast.service';
 })
 export class ToastOutletComponent {
   readonly toastService = inject(ToastService);
-  readonly isRtl = computed(() => document?.documentElement?.dir === 'rtl');
+  private readonly language = inject(LanguageService);
+  readonly isRtl = computed(() => this.language.isArabic());
 }
