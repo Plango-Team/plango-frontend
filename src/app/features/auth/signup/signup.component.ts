@@ -34,7 +34,7 @@ export class SignupComponent {
   email = '';
   phoneNumber = '';
   password = '';
-  confPassword = '';
+  confirmPassword = '';
   username = '';
   city = '';
   bio = '';
@@ -101,17 +101,22 @@ export class SignupComponent {
       errors['phoneNumber'] = this.language.instant('auth.signup.validation.phoneInvalid');
     }
     const passValue = this.password.trim();
-    const confPassValue = this.confPassword.trim();
-    const passwordRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const confirmPasswordValue = this.confirmPassword.trim();
+    const passwordRegex =
+      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&^#])[A-Za-z\d@$!%*?&^#]{8,}$/;
     if (!passValue) {
       errors['password'] = this.language.instant('auth.signup.validation.passwordRequired');
     } else if (!passwordRegex.test(passValue)) {
       errors['password'] = this.language.instant('auth.signup.validation.passwordInvalid');
     }
-    if (!confPassValue) {
-      errors['confpassword'] = 'يرجى تأكيد كلمة المرور';
-    } else if(confPassValue !== passValue){
-      errors['confpassword'] = 'تأكيد كلمة المرور غير متطابق';
+    if (!confirmPasswordValue) {
+      errors['confirmPassword'] = this.language.instant(
+        'auth.signup.validation.confirmPasswordRequired',
+      );
+    } else if (confirmPasswordValue !== passValue) {
+      errors['confirmPassword'] = this.language.instant(
+        'auth.signup.validation.passwordsMismatch',
+      );
     }
 
     this.step2Errors.set(errors);
@@ -185,7 +190,8 @@ export class SignupComponent {
         this.fullName.trim().length > 0 &&
         this.email.trim().length > 0 && 
         this.phoneNumber.trim().length > 0 && 
-        this.password.trim().length > 0
+        this.password.trim().length > 0 &&
+        this.confirmPassword.trim().length > 0
       );
     }
     if(this.currentStep() === 3) return this.username.trim().length > 0
@@ -212,7 +218,7 @@ export class SignupComponent {
       firstName,
       lastName,
       displayName,
-      username : this.username.trim().toLowerCase(),
+      username,
       email: this.email,
       phoneNumber: this.phoneNumber,
       password: this.password,
@@ -229,7 +235,6 @@ export class SignupComponent {
         locationTracking: true,
       },
     };
-      console.log(signUpData)
     this.store.signUp(signUpData);
   }
 }

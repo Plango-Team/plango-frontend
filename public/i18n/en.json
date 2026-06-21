@@ -153,6 +153,8 @@
         "phoneInvalid": "Use international format, for example +201001234567.",
         "passwordRequired": "Password is required.",
         "passwordInvalid": "Use at least 8 characters with uppercase, lowercase, a number, and a special character.",
+        "confirmPasswordRequired": "Please confirm your password.",
+        "passwordsMismatch": "The password confirmation does not match.",
         "usernameTaken": "This username is already taken.",
         "usernameRequired": "Username is required.",
         "usernameInvalid": "Username must contain 4 to 30 letters or numbers."

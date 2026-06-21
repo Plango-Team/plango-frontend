@@ -109,14 +109,11 @@ export const authStore = signalStore(
         tap(() => patchState(store, { isLoading: true, error: null, successMessage: null })),
         switchMap((userData) =>
           authService.signUp(userData).pipe(
-            tap((response) => {
-              patchState(store,{isLoading:false, successMessage:response.message});
-                router.navigate(['/auth/login']); }),
-              catchError((err) => {
-                const Berror = err.error?.message
+            tap({
+              next: (response) => {
                 patchState(store, {
                   isLoading: false,
-                  error: Berror || 'حدث خطأ أثناء إنشاء الحساب',
+                  successMessage: response.message,
                 });
                 router.navigate(['/auth/login']);
               },
@@ -133,6 +130,8 @@ export const authStore = signalStore(
             }),
             catchError(() => of(null)),
           ),
+        ),
+      ),
     ),
 
     // ─────── إرسال OTP لنسيان كلمة المرور ───────
